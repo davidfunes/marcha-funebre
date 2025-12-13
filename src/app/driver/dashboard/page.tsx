@@ -1,0 +1,340 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/contexts/AuthContext';
+import { db } from '@/lib/firebase/firebase';
+import { doc, getDoc, updateDoc, increment } from 'firebase/firestore';
+import {
+    Camera,
+    AlertTriangle,
+    Car,
+    CheckSquare,
+    User,
+    LogOut,
+    Award,
+    ArrowRight,
+    Gamepad2,
+    MapPin,
+    X,
+    Users
+} from 'lucide-react';
+import Link from 'next/link';
+import { Logo } from '@/components/ui/Logo';
+import { ThemeToggle } from '@/components/ui/ThemeToggle';
+import { Vehicle } from '@/types';
+
+export default function DriverDashboard() {
+    const { user, loading, signOut } = useAuth();
+    const router = useRouter();
+    const [assignedVehicle, setAssignedVehicle] = useState<Vehicle | null>(null);
+    const [showReturnModal, setShowReturnModal] = useState(false);
+    const [parkingLocation, setParkingLocation] = useState('');
+    const [returning, setReturning] = useState(false);
+
+    useEffect(() => {
+        if (!loading && (!user || user.role !== 'conductor')) {
+            if (user && user.role !== 'conductor') {
+                router.push('/login');
+            } else if (!user) {
+                router.push('/login');
+            }
+        }
+    }, [user, loading, router]);
+
+    // Fetch assigned vehicle details
+    useEffect(() => {
+        const fetchVehicle = async () => {
+            if (user?.assignedVehicleId) {
+                try {
+                    const vehicleDoc = await getDoc(doc(db, 'vehicles', user.assignedVehicleId));
+                    if (vehicleDoc.exists()) {
+                        setAssignedVehicle({ id: vehicleDoc.id, ...vehicleDoc.data() } as Vehicle);
+                    }
+                } catch (error) {
+                    console.error("Error fetching vehicle:", error);
+                }
+            } else {
+                setAssignedVehicle(null);
+            }
+        };
+        fetchVehicle();
+    }, [user?.assignedVehicleId]);
+
+    const handleReturnVehicle = async () => {
+        if (!assignedVehicle || !user) return;
+
+        // Validation
+        if (assignedVehicle.requiresParkingSpot && !parkingLocation.trim()) {
+            alert('Debes indicar la ubicación del parking.');
+            return;
+        }
+
+        setReturning(true);
+        try {
+            // 1. Update Vehicle
+            await updateDoc(doc(db, 'vehicles', assignedVehicle.id!), {
+                assignedDriverId: null,
+                status: 'active' as any,
+                parkingLocation: assignedVehicle.requiresParkingSpot ? parkingLocation : null
+            });
+
+            // 2. Update User
+            await updateDoc(doc(db, 'users', user.id!), {
+                assignedVehicleId: null,
+                points: increment(15) // Gamification: +15 points
+            });
+
+            // 3. Reset State
+            setAssignedVehicle(null);
+            setShowReturnModal(false);
+            setParkingLocation('');
+
+        } catch (error) {
+            console.error('Error returning vehicle:', error);
+            alert('Error al devolver el vehículo');
+        } finally {
+            setReturning(false);
+        }
+    };
+
+    if (loading || !user) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-[#0b0c15]">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-500"></div>
+            </div>
+        );
+    }
+
+    const quickActions = [
+        {
+            label: user?.assignedVehicleId
+                ? (assignedVehicle ? `Mi Vehículo: ${assignedVehicle.brand} ${assignedVehicle.model}` : 'Mi Vehículo')
+                : 'Seleccionar Vehículo',
+            description: user?.assignedVehicleId
+                ? (assignedVehicle ? `${assignedVehicle.plate} • Estado e inventario` : 'Cargando datos...')
+                : 'Asignarme un coche disponible',
+            href: user?.assignedVehicleId ? '/driver/fleet' : '/driver/select-vehicle',
+            icon: Car,
+            color: 'text-emerald-400',
+            bg: 'bg-emerald-500/10',
+            border: 'border-emerald-500/20',
+            isVehicleCard: true
+        },
+        {
+            label: 'Registrar KM y Combustible',
+            description: 'Foto del salpicadero',
+            href: '/driver/log-km-fuel',
+            icon: Camera,
+            color: 'text-blue-400',
+            bg: 'bg-blue-500/10',
+            border: 'border-blue-500/20'
+        },
+        {
+            label: 'Reportar Incidencia',
+            description: 'Informe de daños/averías',
+            href: '/driver/report-incident',
+            icon: AlertTriangle,
+            color: 'text-amber-400',
+            bg: 'bg-amber-500/10',
+            border: 'border-amber-500/20'
+        },
+        {
+            label: 'Checklist Pre-Viaje',
+            description: 'Gana puntos extra',
+            href: '/driver/checklist',
+            icon: CheckSquare,
+            color: 'text-purple-400',
+            bg: 'bg-purple-500/10',
+            border: 'border-purple-500/20'
+        },
+        {
+            label: 'Directorio de Flota',
+            description: 'Consultar estado y conductores',
+            href: '/driver/directory',
+            icon: Users,
+            color: 'text-indigo-400',
+            bg: 'bg-indigo-500/10',
+            border: 'border-indigo-500/20'
+        },
+        {
+            label: 'Zona de Descanso',
+            description: '¡Juegos y relax!',
+            href: '/driver/games',
+            icon: Gamepad2,
+            color: 'text-pink-400',
+            bg: 'bg-pink-500/10',
+            border: 'border-pink-500/20'
+        },
+    ];
+
+
+    // ... omitted
+
+    return (
+        <div className="min-h-screen bg-background text-foreground font-sans selection:bg-primary-500/30">
+            {/* Mobile Header */}
+            <div className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-card/95 backdrop-blur border-b border-border px-4 py-3 flex items-center justify-between">
+                <Logo size="sm" />
+                <div className="flex items-center gap-3">
+                    <ThemeToggle />
+                    <div className="flex items-center gap-1 bg-yellow-500/10 px-2 py-1 rounded-full border border-yellow-500/20">
+                        <Award className="w-3 h-3 text-yellow-500" />
+                        <span className="text-xs font-bold text-yellow-500">{user.points || 0}</span>
+                    </div>
+                    <button
+                        onClick={() => signOut()}
+                        className="p-2 text-muted-foreground hover:text-foreground"
+                    >
+                        <LogOut className="w-5 h-5" />
+                    </button>
+                </div>
+            </div>
+
+            <main className="max-w-md mx-auto px-4 pb-20 pt-20 lg:pt-12 lg:max-w-4xl">
+                {/* Header Section */}
+                {/* Header Section */}
+                <div className="mb-8 flex items-center justify-between">
+                    <div>
+                        <h1 className="text-2xl font-display font-bold text-foreground mb-1">
+                            Hola, {user.name.split(' ')[0]} 👋
+                        </h1>
+                        <p className="text-muted-foreground text-sm">
+                            ¿Qué tarea vamos a realizar ahora?
+                        </p>
+                    </div>
+
+                    <div className="hidden lg:flex items-center gap-4">
+                        <ThemeToggle />
+                        <button
+                            onClick={() => signOut()}
+                            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-red-50 text-red-600 font-medium hover:bg-red-100 transition-colors"
+                            title="Cerrar Sesión"
+                        >
+                            <LogOut className="w-5 h-5" />
+                            <span>Salir</span>
+                        </button>
+                    </div>
+                </div>
+
+                {/* Quick Stats / Gamification Banner */}
+                <div className="mb-8 p-4 rounded-xl bg-card border border-border relative overflow-hidden shadow-sm">
+                    <div className="relative z-10 flex items-center justify-between">
+                        <div>
+                            <p className="text-xs font-medium text-primary uppercase tracking-wider mb-1">Nivel actual</p>
+                            <p className="text-xl font-bold text-foreground">Conductor Experto</p>
+                        </div>
+                        <div className="text-right">
+                            <p className="text-2xl font-bold text-yellow-500">{user.points || 0}</p>
+                            <p className="text-xs text-muted-foreground">Puntos totales</p>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Action Grid */}
+                <div className="grid grid-cols-1 gap-4">
+                    {quickActions.map((action) => (
+                        <Link
+                            key={action.href}
+                            href={action.href}
+                            className="group relative overflow-hidden bg-card border border-border p-4 rounded-xl hover:bg-muted/50 transition-all duration-200 shadow-sm"
+                        >
+                            <div className="flex items-center gap-4">
+                                <div className={`p-3 rounded-lg bg-muted border border-border group-hover:bg-background transition-colors`}>
+                                    <action.icon className={`w-6 h-6 text-foreground`} />
+                                </div>
+                                <div className="flex-1">
+                                    <h3 className="text-lg font-bold text-foreground leading-tight mb-0.5">{action.label}</h3>
+                                    <p className="text-sm text-muted-foreground">{action.description}</p>
+                                </div>
+                                <div className="text-muted-foreground group-hover:text-primary transition-colors flex items-center gap-2">
+                                    {/* Return Button Logic */}
+                                    {/* @ts-ignore - Custom property */}
+                                    {action.isVehicleCard && user?.assignedVehicleId && assignedVehicle && (
+                                        <button
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                e.stopPropagation();
+                                                setShowReturnModal(true);
+                                            }}
+                                            className="p-2 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-lg transition-colors mr-2 flex items-center gap-2 text-xs font-bold"
+                                            title="Devolver Vehículo"
+                                        >
+                                            <LogOut className="w-4 h-4" />
+                                            <span className="hidden sm:inline">Devolver</span>
+                                        </button>
+                                    )}
+                                    <ArrowRight className="w-5 h-5" />
+                                </div>
+                            </div>
+                        </Link>
+                    ))}
+                </div>
+
+                {/* Recent Activity Mini-Feed */}
+                <div className="mt-10">
+                    <h3 className="text-lg font-bold text-foreground mb-4">Actividad reciente</h3>
+                    <div className="bg-card border border-border rounded-xl p-6 text-center shadow-sm">
+                        <p className="text-sm text-muted-foreground">No hay actividad reciente para mostrar</p>
+                    </div>
+                </div>
+
+                {/* Return Modal */}
+                {showReturnModal && assignedVehicle && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+                        <div className="bg-card w-full max-w-md rounded-2xl p-6 shadow-xl border border-border animate-in zoom-in-95 duration-200">
+                            <div className="flex items-center justify-between mb-4">
+                                <h3 className="text-xl font-bold text-foreground">Devolver Vehículo</h3>
+                                <button onClick={() => setShowReturnModal(false)} className="p-1 hover:bg-muted rounded-full transition-colors">
+                                    <X className="w-6 h-6 text-muted-foreground" />
+                                </button>
+                            </div>
+
+                            <p className="text-muted-foreground mb-6">
+                                ¿Estás seguro de que deseas devolver el vehículo <strong>{assignedVehicle.brand} {assignedVehicle.model}</strong>?
+                            </p>
+
+                            {assignedVehicle.requiresParkingSpot && (
+                                <div className="mb-6">
+                                    <label className="block text-sm font-medium text-foreground mb-2">
+                                        <span className="flex items-center gap-1.5">
+                                            <MapPin className="w-4 h-4 text-primary" />
+                                            Ubicación del Parking (Obligatorio)
+                                        </span>
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={parkingLocation}
+                                        onChange={(e) => setParkingLocation(e.target.value)}
+                                        placeholder="Ej: Plaza 42, Planta -1"
+                                        className="w-full px-4 py-3 bg-background border border-input rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition"
+                                    />
+                                    <p className="text-xs text-muted-foreground mt-2">
+                                        Este vehículo requiere indicar dónde queda aparcado.
+                                    </p>
+                                </div>
+                            )}
+
+                            <div className="flex gap-3">
+                                <button
+                                    onClick={() => setShowReturnModal(false)}
+                                    disabled={returning}
+                                    className="flex-1 py-3 bg-muted hover:bg-muted/80 text-foreground font-medium rounded-xl transition-colors"
+                                >
+                                    Cancelar
+                                </button>
+                                <button
+                                    onClick={handleReturnVehicle}
+                                    disabled={returning || (assignedVehicle.requiresParkingSpot && !parkingLocation.trim())}
+                                    className="flex-1 py-3 bg-primary hover:bg-primary/90 text-primary-foreground font-bold rounded-xl shadow-lg shadow-primary/20 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                                >
+                                    {returning ? <div className="animate-spin rounded-full h-5 w-5 border-2 border-white/30 border-t-white"></div> : 'Confirmar'}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+            </main>
+        </div>
+    );
+}
