@@ -205,7 +205,7 @@ export default function AdminDashboard() {
     // Dynamic Stats
     const stats = [
         { id: 'vehicles', label: 'Vehículos Total', value: vehicles.length.toString(), icon: Car, trend: 'Activos en flota' },
-        { id: 'incidents', label: 'Incidencias', value: incidents.length.toString(), icon: AlertTriangle, trend: 'Pendientes de revisión' },
+        { id: 'incidents', label: 'Incidencias', value: incidents.filter(i => i.status !== 'resolved').length.toString(), icon: AlertTriangle, trend: 'Pendientes de revisión' },
         { id: 'inventory', label: 'Inventario Musical', value: inventory.length.toString(), icon: Music, trend: 'En almacén' },
         { id: 'maintenance', label: 'Mantenimiento', value: vehicles.filter(v => v.status === 'maintenance').length.toString(), icon: Wrench, trend: 'En taller' },
     ];
