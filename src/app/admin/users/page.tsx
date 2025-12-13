@@ -212,6 +212,7 @@ export default function UsersPage() {
                 isLoading={loading}
                 title="Lista de Usuarios"
                 searchPlaceholder="Buscar por nombre o email..."
+                breakpoint="2xl"
                 mobileItem={(user) => (
                     <div className="bg-card p-4 rounded-xl border border-border shadow-sm space-y-4">
                         <div className="flex items-start justify-between">

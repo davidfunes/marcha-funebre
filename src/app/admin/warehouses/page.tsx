@@ -184,6 +184,43 @@ export default function WarehousesPage() {
                 isLoading={loading}
                 title="Red de Almacenes"
                 searchPlaceholder="Buscar almacén..."
+                breakpoint="2xl"
+                mobileItem={(w) => (
+                    <div className="bg-card p-4 rounded-xl border border-border shadow-sm space-y-3">
+                        <div className="flex items-start justify-between">
+                            <div className="flex items-center gap-3">
+                                <div className="h-10 w-10 rounded-lg bg-emerald-100 flex items-center justify-center text-emerald-700">
+                                    <WarehouseIcon className="h-5 w-5" />
+                                </div>
+                                <h3 className="font-semibold text-foreground">{w.name}</h3>
+                            </div>
+                            <div className="flex items-center gap-1 bg-blue-50 text-blue-700 px-2 py-1 rounded text-xs font-medium">
+                                <Package className="h-3 w-3" />
+                                {w.capacity}
+                            </div>
+                        </div>
+
+                        <div className="flex items-start gap-2 text-sm text-muted-foreground pt-1">
+                            <MapPin className="h-4 w-4 mt-0.5 shrink-0" />
+                            <span className="line-clamp-2">{w.location}</span>
+                        </div>
+
+                        <div className="flex justify-end gap-2 pt-2 border-t border-border/50">
+                            <button
+                                onClick={(e) => { e.stopPropagation(); handleOpenModal(w); }}
+                                className="p-2 hover:bg-muted rounded-lg text-muted-foreground transition-colors"
+                            >
+                                <Edit className="h-4 w-4" />
+                            </button>
+                            <button
+                                onClick={(e) => { e.stopPropagation(); if (w.id) confirmDelete(w.id); }}
+                                className="p-2 hover:bg-red-50 text-muted-foreground hover:text-red-500 rounded-lg transition-colors"
+                            >
+                                <Trash2 className="h-4 w-4" />
+                            </button>
+                        </div>
+                    </div>
+                )}
                 actionButton={
                     <button
                         onClick={() => handleOpenModal()}

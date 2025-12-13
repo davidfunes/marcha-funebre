@@ -448,6 +448,7 @@ export default function InventoryPage() {
                 isLoading={loading}
                 title="Listado de Material"
                 searchPlaceholder="Buscar por nombre, SKU..."
+                breakpoint="2xl"
                 mobileItem={(item) => (
                     <div className="bg-card p-4 rounded-xl border border-border shadow-sm space-y-4">
                         <div className="flex items-start justify-between">

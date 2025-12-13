@@ -288,6 +288,7 @@ export default function VehiclesPage() {
                 isLoading={loading}
                 title="Flota Actual"
                 searchPlaceholder="Buscar por matrícula, marca..."
+                breakpoint="2xl"
                 onRowClick={(vehicle) => {
                     setViewingVehicle(vehicle);
                     setIsDetailModalOpen(true);

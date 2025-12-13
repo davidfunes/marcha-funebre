@@ -171,6 +171,51 @@ export default function RentingPage() {
                 isLoading={loading}
                 title="Proveedores Activos"
                 searchPlaceholder="Buscar empresa..."
+                breakpoint="2xl"
+                mobileItem={(c) => (
+                    <div className="bg-card p-4 rounded-xl border border-border shadow-sm space-y-3">
+                        <div className="flex items-start justify-between">
+                            <div className="flex items-center gap-3">
+                                <div className="h-10 w-10 rounded-lg bg-blue-100 flex items-center justify-center text-blue-700">
+                                    <Building2 className="h-5 w-5" />
+                                </div>
+                                <div>
+                                    <h3 className="font-semibold text-foreground">{c.name}</h3>
+                                    <p className="text-xs text-muted-foreground">{c.contactPerson}</p>
+                                </div>
+                            </div>
+                            <div className="bg-muted/50 text-foreground px-2 py-1 rounded text-xs font-medium">
+                                {c.activeContracts} contratos
+                            </div>
+                        </div>
+
+                        <div className="space-y-2 pt-2 border-t border-border/50">
+                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                <Mail className="h-4 w-4" />
+                                <span className="truncate">{c.email}</span>
+                            </div>
+                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                <Phone className="h-4 w-4" />
+                                <span>{c.phone}</span>
+                            </div>
+                        </div>
+
+                        <div className="flex justify-end gap-2 pt-2">
+                            <button
+                                onClick={(e) => { e.stopPropagation(); handleOpenModal(c); }}
+                                className="p-2 hover:bg-muted rounded-lg text-muted-foreground transition-colors"
+                            >
+                                <Edit className="h-4 w-4" />
+                            </button>
+                            <button
+                                onClick={(e) => { e.stopPropagation(); if (c.id) confirmDelete(c.id); }}
+                                className="p-2 hover:bg-red-50 text-muted-foreground hover:text-red-500 rounded-lg transition-colors"
+                            >
+                                <Trash2 className="h-4 w-4" />
+                            </button>
+                        </div>
+                    </div>
+                )}
                 actionButton={
                     <button
                         onClick={() => handleOpenModal()}

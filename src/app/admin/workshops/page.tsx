@@ -247,6 +247,63 @@ export default function WorkshopsPage() {
                 isLoading={loading}
                 title="Talleres Registrados"
                 searchPlaceholder="Buscar taller..."
+                breakpoint="2xl"
+                mobileItem={(w) => (
+                    <div className="bg-card p-4 rounded-xl border border-border shadow-sm space-y-3">
+                        <div className="flex items-start justify-between">
+                            <div className="flex items-center gap-3">
+                                <div className="h-10 w-10 rounded-lg bg-orange-100 flex items-center justify-center text-orange-700">
+                                    <Wrench className="h-5 w-5" />
+                                </div>
+                                <div>
+                                    <h3 className="font-semibold text-foreground">{w.name}</h3>
+                                    <p className="text-xs font-medium text-orange-600">
+                                        {brands.find(b => b.id === w.brandId)?.name || w.brand || 'Multimarca'}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="space-y-2 pt-1">
+                            <div className="flex items-start gap-2 text-sm text-muted-foreground">
+                                <MapPin className="h-4 w-4 mt-0.5 shrink-0" />
+                                <span className="line-clamp-2">{w.address}</span>
+                            </div>
+                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                <Phone className="h-4 w-4 shrink-0" />
+                                <span>{w.phone}</span>
+                            </div>
+                        </div>
+
+                        <div className="flex items-center justify-between pt-3 border-t border-border/50">
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    setViewingWorkshop(w);
+                                    setIsViewVehiclesModalOpen(true);
+                                }}
+                                className="text-xs font-medium text-primary bg-primary/10 px-2 py-1 rounded hover:bg-primary/20 transition-colors"
+                            >
+                                {getAssignedVehicles(w.id || '').length} vehículos asignados
+                            </button>
+
+                            <div className="flex gap-1">
+                                <button
+                                    onClick={(e) => { e.stopPropagation(); handleOpenModal(w); }}
+                                    className="p-2 hover:bg-muted rounded-lg text-muted-foreground transition-colors"
+                                >
+                                    <Edit className="h-4 w-4" />
+                                </button>
+                                <button
+                                    onClick={(e) => { e.stopPropagation(); if (w.id) confirmDelete(w.id); }}
+                                    className="p-2 hover:bg-red-50 text-muted-foreground hover:text-red-500 rounded-lg transition-colors"
+                                >
+                                    <Trash2 className="h-4 w-4" />
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
                 actionButton={
                     <button
                         onClick={() => handleOpenModal()}

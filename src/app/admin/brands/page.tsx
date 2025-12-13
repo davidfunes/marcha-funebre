@@ -133,6 +133,31 @@ export default function BrandsPage() {
                 isLoading={loading}
                 title="Marcas Registradas"
                 searchPlaceholder="Buscar marca..."
+                breakpoint="2xl"
+                mobileItem={(b) => (
+                    <div className="bg-card p-4 rounded-xl border border-border shadow-sm flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                            <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+                                <Tag className="h-5 w-5" />
+                            </div>
+                            <span className="font-medium text-foreground">{b.name}</span>
+                        </div>
+                        <div className="flex gap-1">
+                            <button
+                                onClick={(e) => { e.stopPropagation(); handleOpenModal(b); }}
+                                className="p-2 hover:bg-muted rounded-lg text-muted-foreground transition-colors"
+                            >
+                                <Edit className="h-4 w-4" />
+                            </button>
+                            <button
+                                onClick={(e) => { e.stopPropagation(); if (b.id) confirmDelete(b.id); }}
+                                className="p-2 hover:bg-red-50 text-muted-foreground hover:text-red-500 rounded-lg transition-colors"
+                            >
+                                <Trash2 className="h-4 w-4" />
+                            </button>
+                        </div>
+                    </div>
+                )}
                 actionButton={
                     <button
                         onClick={() => handleOpenModal()}

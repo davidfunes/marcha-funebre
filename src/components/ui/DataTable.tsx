@@ -27,6 +27,8 @@ interface DataTableProps<T> {
     onRowClick?: (item: T) => void;
     isLoading?: boolean;
     mobileItem?: (item: T) => React.ReactNode;
+    viewMode?: 'table' | 'grid' | 'auto';
+    breakpoint?: 'sm' | 'md' | 'lg' | 'xl' | '2xl';
 }
 
 export function DataTable<T extends { id?: string }>({
@@ -37,11 +39,14 @@ export function DataTable<T extends { id?: string }>({
     searchPlaceholder = "Buscar...",
     onRowClick,
     isLoading,
-    mobileItem
+    mobileItem,
+    viewMode = 'auto',
+    breakpoint = 'md'
 }: DataTableProps<T>) {
     const [sortConfig, setSortConfig] = useState<{ key: keyof T; direction: 'asc' | 'desc' } | null>(null);
     const [searchTerm, setSearchTerm] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
+    const [isSortDropdownOpen, setIsSortDropdownOpen] = useState(false);
     const itemsPerPage = 10;
 
 
@@ -96,145 +101,242 @@ export function DataTable<T extends { id?: string }>({
         )
     }
 
+    // View Mode Logic
+    // If auto, we rely on breakpoint.
+    // We use a map to ensure Tailwind scanner picks up the full class names.
+    // NOTE: For grid, we DO NOT use 'block' because it overrides 'display: grid'.
+    // We only need to specify when it is HIDDEN. the default 'grid' class handles visibility when not hidden.
+    const visibilityMap = {
+        sm: {
+            grid: 'sm:hidden',
+            table: 'hidden sm:block',
+            sort: 'flex sm:hidden'
+        },
+        md: {
+            grid: 'md:hidden',
+            table: 'hidden md:block',
+            sort: 'flex md:hidden'
+        },
+        lg: {
+            grid: 'lg:hidden',
+            table: 'hidden lg:block',
+            sort: 'flex lg:hidden'
+        },
+        xl: {
+            grid: 'xl:hidden',
+            table: 'hidden xl:block',
+            sort: 'flex xl:hidden'
+        },
+        '2xl': {
+            grid: '2xl:hidden',
+            table: 'hidden 2xl:block',
+            sort: 'flex 2xl:hidden'
+        }
+    };
+
+    const gridVisibilityClass = viewMode === 'grid'
+        ? '' // Default display:grid is already on the element
+        : viewMode === 'table'
+            ? 'hidden'
+            : visibilityMap[breakpoint].grid;
+
+    const tableVisibilityClass = viewMode === 'table'
+        ? 'block'
+        : viewMode === 'grid'
+            ? 'hidden'
+            : visibilityMap[breakpoint].table;
+
+    const sortDropdownVisibilityClass = viewMode === 'grid'
+        ? 'flex'
+        : viewMode === 'table'
+            ? 'hidden'
+            : visibilityMap[breakpoint].sort;
+
+
     return (
-        <div className="space-y-4">
+        <div className="space-y-6">
             {/* Header tools */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div className="relative max-w-sm w-full">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <input
-                        type="text"
-                        placeholder={searchPlaceholder}
-                        className="w-full pl-10 pr-4 py-2 rounded-lg border border-input bg-background focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                    />
+                <div className="flex items-center gap-2 w-full sm:w-auto flex-1 max-w-sm">
+                    <div className="relative w-full">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <input
+                            type="text"
+                            placeholder={searchPlaceholder}
+                            className="w-full pl-10 pr-4 py-2 rounded-lg border border-input bg-background focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                        />
+                    </div>
                 </div>
 
-                {actionButton && (
-                    <div>{actionButton}</div>
-                )}
-            </div>
-
-            {/* Mobile View (Cards) */}
-            <div className="block md:hidden space-y-4">
-                {currentData.length > 0 ? (
-                    currentData.map((item, index) => (
-                        <div
-                            key={item.id || index}
-                            onClick={() => onRowClick && onRowClick(item)}
-                            className={cn(onRowClick && "cursor-pointer")}
-                        >
-                            {/* If a custom mobile render is provided, use it. Otherwise fallback to a simple card */}
-                            {/* @ts-ignore - Check if mobileItem exists on props (we'll add it to interface below) */}
-                            {mobileItem ? mobileItem(item) : (
-                                <div className="bg-card p-4 rounded-xl border border-border shadow-sm space-y-2">
-                                    {columns.map((col) => (
-                                        <div key={String(col.key)} className="flex justify-between items-center text-sm">
-                                            <span className="font-medium text-muted-foreground">{col.label}</span>
-                                            <span className="text-right">
-                                                {col.render ? col.render(item) : String(item[col.key as keyof T] || '-')}
-                                            </span>
-                                        </div>
-                                    ))}
-                                </div>
+                <div className="flex items-center gap-2 self-end sm:self-auto">
+                    {/* Sort Dropdown for Grid View mostly */}
+                    <div className="relative">
+                        <button
+                            onClick={() => setIsSortDropdownOpen(!isSortDropdownOpen)}
+                            className={cn(
+                                "items-center gap-2 px-3 py-2 rounded-lg border bg-background hover:bg-muted transition-colors text-sm font-medium",
+                                sortDropdownVisibilityClass
                             )}
-                        </div>
-                    ))
-                ) : (
-                    <div className="w-full py-12 flex flex-col items-center justify-center text-muted-foreground gap-2 border border-border rounded-xl bg-card">
-                        <Search className="h-8 w-8 opacity-20" />
-                        <p>No se encontraron resultados</p>
-                    </div>
-                )}
-            </div>
+                        >
+                            <span>Ordenar</span>
+                            <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                        </button>
 
-            {/* Desktop View (Table) */}
-            <div className="hidden md:block rounded-xl border border-border bg-card overflow-hidden shadow-sm">
-                <div className="overflow-x-auto">
-                    <table className="w-full text-sm text-left">
-                        <thead className="text-xs text-muted-foreground uppercase bg-muted/50 border-b border-border">
-                            <tr>
-                                {columns.map((col) => (
-                                    <th
-                                        key={String(col.key)}
-                                        scope="col"
-                                        className={cn(
-                                            "px-6 py-4 font-medium",
-                                            col.sortable && "cursor-pointer hover:text-foreground transition-colors select-none"
-                                        )}
-                                        onClick={() => col.sortable && requestSort(col.key as keyof T)}
-                                    >
-                                        <div className="flex items-center gap-2">
+                        {isSortDropdownOpen && (
+                            <>
+                                <div className="fixed inset-0 z-10" onClick={() => setIsSortDropdownOpen(false)}></div>
+                                <div className="absolute right-0 top-full mt-2 w-48 rounded-lg border border-border bg-popover p-1 shadow-lg z-20 animate-in fade-in zoom-in-95 duration-100">
+                                    {columns.filter(c => c.sortable).map((col) => (
+                                        <button
+                                            key={String(col.key)}
+                                            className={cn(
+                                                "w-full flex items-center justify-between px-3 py-2 text-sm rounded-md hover:bg-muted transition-colors text-left",
+                                                sortConfig?.key === col.key && "bg-muted font-medium"
+                                            )}
+                                            onClick={() => {
+                                                requestSort(col.key as keyof T);
+                                                setIsSortDropdownOpen(false);
+                                            }}
+                                        >
                                             {col.label}
-                                            {col.sortable && sortConfig?.key === col.key && (
+                                            {sortConfig?.key === col.key && (
                                                 sortConfig.direction === 'asc' ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />
                                             )}
-                                        </div>
-                                    </th>
-                                ))}
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-border">
-                            {currentData.length > 0 ? (
-                                currentData.map((item, index) => (
-                                    <tr
-                                        key={item.id || index}
-                                        onClick={() => onRowClick && onRowClick(item)}
-                                        className={cn(
-                                            "bg-card hover:bg-muted/50 transition-colors",
-                                            onRowClick && "cursor-pointer"
-                                        )}
-                                    >
+                                        </button>
+                                    ))}
+                                </div>
+                            </>
+                        )}
+                    </div>
+
+                    {actionButton && (
+                        <div>{actionButton}</div>
+                    )}
+                </div>
+            </div>
+
+            {/* Content Area */}
+            {currentData.length > 0 ? (
+                <>
+                    {/* Grid View Implementation */}
+                    <div className={cn(
+                        "grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3",
+                        gridVisibilityClass
+                    )}>
+                        {currentData.map((item, index) => (
+                            <div
+                                key={item.id || index}
+                                onClick={() => onRowClick && onRowClick(item)}
+                                className={cn(onRowClick && "cursor-pointer h-full")}
+                            >
+                                {mobileItem ? mobileItem(item) : (
+                                    <div className="bg-card p-4 rounded-xl border border-border shadow-sm space-y-2 h-full">
                                         {columns.map((col) => (
-                                            <td key={String(col.key)} className="px-6 py-4 whitespace-nowrap">
-                                                {col.render ? col.render(item) : String(item[col.key as keyof T] || '-')}
-                                            </td>
+                                            <div key={String(col.key)} className="flex justify-between items-center text-sm">
+                                                <span className="font-medium text-muted-foreground">{col.label}</span>
+                                                <span className="text-right">
+                                                    {col.render ? col.render(item) : String(item[col.key as keyof T] || '-')}
+                                                </span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        ))}
+                    </div>
+
+                    {/* Table View Implementation */}
+                    <div className={cn(
+                        "rounded-xl border border-border bg-card overflow-hidden shadow-sm",
+                        tableVisibilityClass
+                    )}>
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-sm text-left">
+                                <thead className="text-xs text-muted-foreground uppercase bg-muted/50 border-b border-border">
+                                    <tr>
+                                        {columns.map((col) => (
+                                            <th
+                                                key={String(col.key)}
+                                                scope="col"
+                                                className={cn(
+                                                    "px-6 py-4 font-medium",
+                                                    col.sortable && "cursor-pointer hover:text-foreground transition-colors select-none"
+                                                )}
+                                                onClick={() => col.sortable && requestSort(col.key as keyof T)}
+                                            >
+                                                <div className="flex items-center gap-2">
+                                                    {col.label}
+                                                    {col.sortable && sortConfig?.key === col.key && (
+                                                        sortConfig.direction === 'asc' ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />
+                                                    )}
+                                                </div>
+                                            </th>
                                         ))}
                                     </tr>
-                                ))
-                            ) : (
-                                <tr>
-                                    <td colSpan={columns.length} className="px-6 py-12 text-center text-muted-foreground">
-                                        <div className="flex flex-col items-center justify-center gap-2">
-                                            <Search className="h-8 w-8 opacity-20" />
-                                            <p>No se encontraron resultados</p>
-                                        </div>
-                                    </td>
-                                </tr>
-                            )}
-                        </tbody>
-                    </table>
+                                </thead>
+                                <tbody className="divide-y divide-border">
+                                    {currentData.map((item, index) => (
+                                        <tr
+                                            key={item.id || index}
+                                            onClick={() => onRowClick && onRowClick(item)}
+                                            className={cn(
+                                                "bg-card hover:bg-muted/50 transition-colors",
+                                                onRowClick && "cursor-pointer"
+                                            )}
+                                        >
+                                            {columns.map((col) => (
+                                                <td key={String(col.key)} className="px-6 py-4 whitespace-nowrap">
+                                                    {col.render ? col.render(item) : String(item[col.key as keyof T] || '-')}
+                                                </td>
+                                            ))}
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </>
+            ) : (
+                <div className="w-full py-16 flex flex-col items-center justify-center text-muted-foreground gap-4 border border-border rounded-xl bg-card border-dashed">
+                    <div className="h-16 w-16 rounded-full bg-muted flex items-center justify-center opacity-50">
+                        <Search className="h-8 w-8" />
+                    </div>
+                    <div className="text-center">
+                        <p className="font-medium text-lg text-foreground">No se encontraron resultados</p>
+                        <p className="text-sm">Prueba ajustando los términos de búsqueda</p>
+                    </div>
                 </div>
-
-                {/* Pagination (Desktop only here, mobile creates its own below or reused?) -> actually better to reuse pagination for both */}
-            </div>
+            )}
 
             {/* Pagination Controls (Shared) */}
-            <div className="flex items-center justify-between px-2 sm:px-0 pt-2">
-                <div className="text-xs text-muted-foreground">
-                    Mostrando <span className="font-medium">{filteredData.length > 0 ? (currentPage - 1) * itemsPerPage + 1 : 0}</span> a <span className="font-medium">{Math.min(currentPage * itemsPerPage, filteredData.length)}</span> de <span className="font-medium">{filteredData.length}</span> resultados
+            {totalPages > 1 && (
+                <div className="flex items-center justify-between px-2 sm:px-0 pt-2 border-t border-transparent">
+                    <div className="text-xs text-muted-foreground hidden sm:block">
+                        Mostrando <span className="font-medium">{(currentPage - 1) * itemsPerPage + 1}</span> a <span className="font-medium">{Math.min(currentPage * itemsPerPage, filteredData.length)}</span> de <span className="font-medium">{filteredData.length}</span> resultados
+                    </div>
+                    <div className="flex items-center gap-2 mx-auto sm:mx-0">
+                        <button
+                            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                            disabled={currentPage === 1}
+                            className="p-2 rounded-lg border border-border bg-card hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm"
+                        >
+                            <ChevronLeft className="h-4 w-4" />
+                        </button>
+                        <span className="text-sm font-medium px-4 py-2 bg-muted/50 rounded-lg border border-border/50 min-w-[80px] text-center">
+                            {currentPage} / {Math.max(1, totalPages)}
+                        </span>
+                        <button
+                            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                            disabled={currentPage >= totalPages}
+                            className="p-2 rounded-lg border border-border bg-card hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm"
+                        >
+                            <ChevronRight className="h-4 w-4" />
+                        </button>
+                    </div>
                 </div>
-                <div className="flex items-center gap-2">
-                    <button
-                        onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                        disabled={currentPage === 1}
-                        className="p-1 rounded-md hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                    >
-                        <ChevronLeft className="h-5 w-5" />
-                    </button>
-                    <span className="text-sm font-medium px-2">
-                        {currentPage} / {Math.max(1, totalPages)}
-                    </span>
-                    <button
-                        onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                        disabled={currentPage >= totalPages}
-                        className="p-1 rounded-md hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                    >
-                        <ChevronRight className="h-5 w-5" />
-                    </button>
-                </div>
-            </div>
+            )}
         </div>
     );
 }
