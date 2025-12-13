@@ -212,6 +212,56 @@ export default function UsersPage() {
                 isLoading={loading}
                 title="Lista de Usuarios"
                 searchPlaceholder="Buscar por nombre o email..."
+                mobileItem={(user) => (
+                    <div className="bg-card p-4 rounded-xl border border-border shadow-sm space-y-4">
+                        <div className="flex items-start justify-between">
+                            <div className="flex items-center gap-3">
+                                <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold shrink-0">
+                                    {user.name.charAt(0)}
+                                </div>
+                                <div>
+                                    <h3 className="font-semibold text-foreground">{user.name}</h3>
+                                    <p className="text-xs text-muted-foreground">{user.email}</p>
+                                </div>
+                            </div>
+                            <div className="flex items-center gap-1 bg-muted px-2 py-1 rounded text-xs font-medium border border-border">
+                                {user.role === 'admin' ? <ShieldCheck className="h-3 w-3 text-purple-600" /> : <UserIcon className="h-3 w-3 text-blue-600" />}
+                                <span className="capitalize">{user.role}</span>
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-3 py-3 border-y border-border/50">
+                            <div className="flex flex-col items-center justify-center space-y-1 border-r border-border/50">
+                                <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Estado</span>
+                                <StatusBadge status={user.status} />
+                            </div>
+                            <div className="flex flex-col items-center justify-center space-y-1">
+                                <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Puntos</span>
+                                <div className="flex items-center gap-1 font-bold text-amber-600">
+                                    <Award className="h-4 w-4" />
+                                    {user.points}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="flex justify-end gap-2 pt-2 border-t border-border/50">
+                            <button
+                                onClick={(e) => { e.stopPropagation(); handleOpenModal(user); }}
+                                className="p-2 hover:bg-muted rounded-lg text-muted-foreground hover:text-foreground transition-colors flex items-center gap-2 text-xs font-medium"
+                            >
+                                <Edit className="h-3.5 w-3.5" />
+                                <span>Editar</span>
+                            </button>
+                            <button
+                                onClick={(e) => { e.stopPropagation(); confirmDelete(user); }}
+                                className="p-2 hover:bg-red-50 hover:text-red-600 rounded-lg text-muted-foreground transition-colors flex items-center gap-2 text-xs font-medium dark:hover:bg-red-900/20"
+                            >
+                                <Trash2 className="h-3.5 w-3.5" />
+                                <span>Eliminar</span>
+                            </button>
+                        </div>
+                    </div>
+                )}
                 actionButton={
                     <button
                         onClick={() => handleOpenModal()}

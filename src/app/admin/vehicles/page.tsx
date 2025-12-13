@@ -292,6 +292,75 @@ export default function VehiclesPage() {
                     setViewingVehicle(vehicle);
                     setIsDetailModalOpen(true);
                 }}
+                mobileItem={(vehicle) => (
+                    <div className="bg-card p-4 rounded-xl border border-border shadow-sm space-y-4">
+                        <div className="flex items-start justify-between">
+                            <div className="flex items-center gap-3">
+                                <div className="h-12 w-12 rounded-lg bg-muted flex items-center justify-center overflow-hidden flex-shrink-0">
+                                    {vehicle.image ? (
+                                        <img src={vehicle.image} alt={vehicle.model} className="h-full w-full object-cover" />
+                                    ) : (
+                                        <Car className="h-6 w-6 text-muted-foreground" />
+                                    )}
+                                </div>
+                                <div>
+                                    <div className="flex flex-col">
+                                        <h3 className="font-semibold text-foreground line-clamp-1">{vehicle.brand} {vehicle.model}</h3>
+                                        <div className="flex items-center gap-2 mt-1">
+                                            <span className="font-mono bg-muted/50 px-1.5 py-0.5 rounded text-xs text-foreground font-medium border border-border/50">
+                                                {formatLicensePlate(vehicle.plate)}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <StatusBadge status={vehicle.status} />
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-3 pb-3 border-b border-border/50">
+                            <div className="space-y-1">
+                                <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Odómetro</span>
+                                <p className="text-sm font-medium">{vehicle.odometer.toLocaleString()} km</p>
+                            </div>
+                            <div className="space-y-1">
+                                <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Sede</span>
+                                <p className="text-sm font-medium truncate">
+                                    {warehouses.find(w => w.id === vehicle.warehouseId)?.name || '-'}
+                                </p>
+                            </div>
+                        </div>
+
+                        <div className="flex items-center justify-between pt-1">
+                            <div className="flex gap-1">
+                                {vehicle.isManagement && (
+                                    <div className="p-1.5 rounded-md bg-purple-50 text-purple-700 border border-purple-100 dark:bg-purple-900/20 dark:text-purple-300 dark:border-purple-800" title="Vehículo de Gerencia">
+                                        <ShieldAlert className="w-3.5 h-3.5" />
+                                    </div>
+                                )}
+                                {vehicle.requiresParkingSpot && (
+                                    <div className="p-1.5 rounded-md bg-blue-50 text-blue-700 border border-blue-100 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-800" title="Requiere Parking">
+                                        <MapPin className="w-3.5 h-3.5" />
+                                    </div>
+                                )}
+                            </div>
+
+                            <div className="flex gap-1">
+                                <button
+                                    onClick={(e) => { e.stopPropagation(); handleOpenModal(vehicle); }}
+                                    className="p-2 hover:bg-muted rounded-lg text-muted-foreground hover:text-foreground transition-colors"
+                                >
+                                    <Edit className="h-4 w-4" />
+                                </button>
+                                <button
+                                    onClick={(e) => { e.stopPropagation(); if (vehicle.id) confirmDelete(vehicle.id); }}
+                                    className="p-2 hover:bg-red-50 hover:text-red-600 rounded-lg text-muted-foreground transition-colors dark:hover:bg-red-900/20"
+                                >
+                                    <Trash2 className="h-4 w-4" />
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
                 actionButton={
                     <button
                         onClick={() => handleOpenModal()}

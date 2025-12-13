@@ -26,6 +26,7 @@ interface DataTableProps<T> {
     searchPlaceholder?: string;
     onRowClick?: (item: T) => void;
     isLoading?: boolean;
+    mobileItem?: (item: T) => React.ReactNode;
 }
 
 export function DataTable<T extends { id?: string }>({
@@ -35,12 +36,14 @@ export function DataTable<T extends { id?: string }>({
     actionButton,
     searchPlaceholder = "Buscar...",
     onRowClick,
-    isLoading
+    isLoading,
+    mobileItem
 }: DataTableProps<T>) {
     const [sortConfig, setSortConfig] = useState<{ key: keyof T; direction: 'asc' | 'desc' } | null>(null);
     const [searchTerm, setSearchTerm] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 10;
+
 
     // Sorting
     const sortedData = useMemo(() => {
@@ -113,8 +116,41 @@ export function DataTable<T extends { id?: string }>({
                 )}
             </div>
 
-            {/* Table */}
-            <div className="rounded-xl border border-border bg-card overflow-hidden shadow-sm">
+            {/* Mobile View (Cards) */}
+            <div className="block md:hidden space-y-4">
+                {currentData.length > 0 ? (
+                    currentData.map((item, index) => (
+                        <div
+                            key={item.id || index}
+                            onClick={() => onRowClick && onRowClick(item)}
+                            className={cn(onRowClick && "cursor-pointer")}
+                        >
+                            {/* If a custom mobile render is provided, use it. Otherwise fallback to a simple card */}
+                            {/* @ts-ignore - Check if mobileItem exists on props (we'll add it to interface below) */}
+                            {mobileItem ? mobileItem(item) : (
+                                <div className="bg-card p-4 rounded-xl border border-border shadow-sm space-y-2">
+                                    {columns.map((col) => (
+                                        <div key={String(col.key)} className="flex justify-between items-center text-sm">
+                                            <span className="font-medium text-muted-foreground">{col.label}</span>
+                                            <span className="text-right">
+                                                {col.render ? col.render(item) : String(item[col.key as keyof T] || '-')}
+                                            </span>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    ))
+                ) : (
+                    <div className="w-full py-12 flex flex-col items-center justify-center text-muted-foreground gap-2 border border-border rounded-xl bg-card">
+                        <Search className="h-8 w-8 opacity-20" />
+                        <p>No se encontraron resultados</p>
+                    </div>
+                )}
+            </div>
+
+            {/* Desktop View (Table) */}
+            <div className="hidden md:block rounded-xl border border-border bg-card overflow-hidden shadow-sm">
                 <div className="overflow-x-auto">
                     <table className="w-full text-sm text-left">
                         <thead className="text-xs text-muted-foreground uppercase bg-muted/50 border-b border-border">
@@ -171,30 +207,32 @@ export function DataTable<T extends { id?: string }>({
                     </table>
                 </div>
 
-                {/* Pagination */}
-                <div className="flex items-center justify-between px-6 py-4 border-t border-border bg-muted/20">
-                    <div className="text-xs text-muted-foreground">
-                        Mostrando <span className="font-medium">{filteredData.length > 0 ? (currentPage - 1) * itemsPerPage + 1 : 0}</span> a <span className="font-medium">{Math.min(currentPage * itemsPerPage, filteredData.length)}</span> de <span className="font-medium">{filteredData.length}</span> resultados
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <button
-                            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                            disabled={currentPage === 1}
-                            className="p-1 rounded-md hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                        >
-                            <ChevronLeft className="h-5 w-5" />
-                        </button>
-                        <span className="text-sm font-medium px-2">
-                            {currentPage} / {Math.max(1, totalPages)}
-                        </span>
-                        <button
-                            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                            disabled={currentPage >= totalPages}
-                            className="p-1 rounded-md hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                        >
-                            <ChevronRight className="h-5 w-5" />
-                        </button>
-                    </div>
+                {/* Pagination (Desktop only here, mobile creates its own below or reused?) -> actually better to reuse pagination for both */}
+            </div>
+
+            {/* Pagination Controls (Shared) */}
+            <div className="flex items-center justify-between px-2 sm:px-0 pt-2">
+                <div className="text-xs text-muted-foreground">
+                    Mostrando <span className="font-medium">{filteredData.length > 0 ? (currentPage - 1) * itemsPerPage + 1 : 0}</span> a <span className="font-medium">{Math.min(currentPage * itemsPerPage, filteredData.length)}</span> de <span className="font-medium">{filteredData.length}</span> resultados
+                </div>
+                <div className="flex items-center gap-2">
+                    <button
+                        onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                        disabled={currentPage === 1}
+                        className="p-1 rounded-md hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    >
+                        <ChevronLeft className="h-5 w-5" />
+                    </button>
+                    <span className="text-sm font-medium px-2">
+                        {currentPage} / {Math.max(1, totalPages)}
+                    </span>
+                    <button
+                        onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                        disabled={currentPage >= totalPages}
+                        className="p-1 rounded-md hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    >
+                        <ChevronRight className="h-5 w-5" />
+                    </button>
                 </div>
             </div>
         </div>

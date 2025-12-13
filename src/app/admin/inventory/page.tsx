@@ -448,6 +448,90 @@ export default function InventoryPage() {
                 isLoading={loading}
                 title="Listado de Material"
                 searchPlaceholder="Buscar por nombre, SKU..."
+                mobileItem={(item) => (
+                    <div className="bg-card p-4 rounded-xl border border-border shadow-sm space-y-4">
+                        <div className="flex items-start justify-between">
+                            <div className="flex items-center gap-3">
+                                <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary shrink-0">
+                                    {getIcon(item.category)}
+                                </div>
+                                <div>
+                                    <h3 className="font-semibold text-foreground line-clamp-1">{item.name}</h3>
+                                    <div className="flex items-center gap-2 mt-1">
+                                        <span className="font-mono bg-muted px-1.5 py-0.5 rounded text-[10px] text-muted-foreground border border-border">
+                                            {item.sku}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            <StatusBadge status={item.status} />
+                        </div>
+
+                        <div className="grid grid-cols-3 gap-2 py-3 border-y border-border/50">
+                            <div className="space-y-1 text-center border-r border-border/50">
+                                <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Total</span>
+                                <p className="text-sm font-bold">{item.quantity}</p>
+                            </div>
+                            <div className="space-y-1 text-center border-r border-border/50">
+                                <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Asignado</span>
+                                <p className="text-sm font-medium text-blue-600">
+                                    {(item.locations || []).reduce((acc, l) => acc + l.quantity, 0)}
+                                </p>
+                            </div>
+                            <div className="space-y-1 text-center">
+                                <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Libre</span>
+                                <p className={`text-sm font-medium ${(item.quantity - (item.locations || []).reduce((acc, l) => acc + l.quantity, 0)) > 0 ? 'text-green-600' : 'text-gray-400'}`}>
+                                    {item.quantity - (item.locations || []).reduce((acc, l) => acc + l.quantity, 0)}
+                                </p>
+                            </div>
+                        </div>
+
+                        {/* Location Preview */}
+                        {(item.locations || []).length > 0 && (
+                            <div className="text-xs space-y-2">
+                                <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Ubicaciones</span>
+                                <div className="flex flex-wrap gap-1.5">
+                                    {(item.locations || []).slice(0, 3).map((loc, i) => (
+                                        <span key={i} className="inline-flex items-center gap-1.5 bg-muted/50 px-2 py-1 rounded border border-border/50 max-w-full">
+                                            {loc.type === 'warehouse' ? <WarehouseIcon className="w-3 h-3 text-blue-500" /> : <Car className="w-3 h-3 text-emerald-500" />}
+                                            <span className="truncate max-w-[120px]">
+                                                {loc.type === 'warehouse'
+                                                    ? warehouses.find(w => w.id === loc.id)?.name
+                                                    : vehicles.find(v => v.id === loc.id)?.plate
+                                                }
+                                            </span>
+                                            <span className="text-[10px] font-mono text-muted-foreground ml-0.5 px-1 bg-background rounded-sm border">
+                                                {loc.quantity}
+                                            </span>
+                                        </span>
+                                    ))}
+                                    {(item.locations || []).length > 3 && (
+                                        <span className="inline-flex items-center px-2 py-1 rounded bg-muted text-muted-foreground text-[10px] border border-border">
+                                            +{item.locations!.length - 3} más
+                                        </span>
+                                    )}
+                                </div>
+                            </div>
+                        )}
+
+                        <div className="flex justify-end gap-2 pt-2 border-t border-border/50">
+                            <button
+                                onClick={(e) => { e.stopPropagation(); handleOpenModal(item); }}
+                                className="p-2 hover:bg-muted rounded-lg text-muted-foreground hover:text-foreground transition-colors flex items-center gap-2 text-xs font-medium"
+                            >
+                                <Edit className="h-3.5 w-3.5" />
+                                <span>Editar</span>
+                            </button>
+                            <button
+                                onClick={(e) => { e.stopPropagation(); if (item.id) confirmDelete(item.id); }}
+                                className="p-2 hover:bg-red-50 hover:text-red-600 rounded-lg text-muted-foreground transition-colors flex items-center gap-2 text-xs font-medium dark:hover:bg-red-900/20"
+                            >
+                                <Trash2 className="h-3.5 w-3.5" />
+                                <span>Eliminar</span>
+                            </button>
+                        </div>
+                    </div>
+                )}
                 actionButton={
                     <button
                         onClick={() => handleOpenModal()}
