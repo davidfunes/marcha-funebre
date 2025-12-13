@@ -317,7 +317,7 @@ export default function AdminDashboard() {
             case 'incidents':
                 return (
                     <div className="space-y-3">
-                        {incidents.length > 0 ? incidents.map(i => {
+                        {incidents.filter(i => i.status !== 'resolved').length > 0 ? incidents.filter(i => i.status !== 'resolved').map(i => {
                             const relatedVehicle = vehicles.find(v => v.id === i.vehicleId);
                             const reporter = users.find(u => u.id === i.reportedByUserId);
 
