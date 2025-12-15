@@ -1,14 +1,15 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { getVehicles, updateItem } from '@/services/FirebaseService';
-import { Vehicle } from '@/types';
+import { getVehicles, getUsers, updateItem } from '@/services/FirebaseService';
+import { Vehicle, User } from '@/types';
 import { Wrench } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 
 export function DataIntegrityChecker() {
     const { user } = useAuth();
     const [invalidVehicles, setInvalidVehicles] = useState<Vehicle[]>([]);
+    const [invalidUsers, setInvalidUsers] = useState<User[]>([]);
     const [isFixing, setIsFixing] = useState(false);
     const [isVisible, setIsVisible] = useState(true);
 
@@ -17,26 +18,44 @@ export function DataIntegrityChecker() {
 
         const checkIntegrity = async () => {
             try {
-                const vehicles = await getVehicles();
-                // Check for vehicles with 'available' status (casting as any to bypass type check)
-                const invalid = vehicles.filter(v => (v.status as any) === 'available');
-                setInvalidVehicles(invalid);
+                const [vehicles, users] = await Promise.all([getVehicles(), getUsers()]);
+
+                // Check for vehicles with 'available' status
+                const invalidVeh = vehicles.filter(v => (v.status as any) === 'available');
+                setInvalidVehicles(invalidVeh);
+
+                // Check for users with invalid status (anything other than 'active' or 'inactive')
+                const invalidUsrs = users.filter(u => u.status !== 'active' && u.status !== 'inactive');
+                setInvalidUsers(invalidUsrs);
             } catch (error) {
                 console.error('Error checking data integrity:', error);
             }
         };
 
         checkIntegrity();
-    }, [user, isFixing]); // Re-run when fixing is done
+    }, [user, isFixing]);
 
     const handleFix = async () => {
         setIsFixing(true);
         try {
-            await Promise.all(invalidVehicles.map(v =>
-                v.id ? updateItem('vehicles', v.id, { status: 'active' }) : Promise.resolve()
-            ));
+            const promises = [];
+
+            if (invalidVehicles.length > 0) {
+                promises.push(...invalidVehicles.map(v =>
+                    v.id ? updateItem('vehicles', v.id, { status: 'active' }) : Promise.resolve()
+                ));
+            }
+
+            if (invalidUsers.length > 0) {
+                promises.push(...invalidUsers.map(u =>
+                    u.id ? updateItem('users', u.id, { status: 'active' }) : Promise.resolve()
+                ));
+            }
+
+            await Promise.all(promises);
             alert('Datos corregidos. Recarga la página para ver los cambios.');
             setInvalidVehicles([]);
+            setInvalidUsers([]);
         } catch (error) {
             console.error('Error fixing data:', error);
             alert('Error al corregir los datos.');
@@ -45,7 +64,7 @@ export function DataIntegrityChecker() {
         }
     };
 
-    if (invalidVehicles.length === 0 || !isVisible) return null;
+    if ((invalidVehicles.length === 0 && invalidUsers.length === 0) || !isVisible) return null;
 
     return (
         <div className="bg-amber-50 border-b border-amber-200 px-4 py-3 animate-in slide-in-from-top">
@@ -56,10 +75,13 @@ export function DataIntegrityChecker() {
                     </div>
                     <div>
                         <p className="text-sm font-medium text-amber-900">
-                            Detectados {invalidVehicles.length} vehículos con datos obsoletos.
+                            Detectadas inconsistencias:
+                            {invalidVehicles.length > 0 && ` ${invalidVehicles.length} vehículos`}
+                            {invalidVehicles.length > 0 && invalidUsers.length > 0 && ' y'}
+                            {invalidUsers.length > 0 && ` ${invalidUsers.length} usuarios`}.
                         </p>
                         <p className="text-xs text-amber-700">
-                            El estado "available" ya no se usa.
+                            Se corregirán a "active".
                         </p>
                     </div>
                 </div>
