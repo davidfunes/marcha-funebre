@@ -46,13 +46,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 console.log('DEBUG: Connected to Project ID:', auth.app.options.projectId);
 
 
-                // DEBUG: Verify collection contents
-                getDocs(collection(db, 'users')).then(snapshot => {
-                    console.log(`DEBUG: Collection 'users' contains ${snapshot.size} documents.`);
-                    snapshot.forEach(doc => {
-                        console.log(`DEBUG: Found doc ID: '${doc.id}'`);
-                    });
-                }).catch(err => console.error('DEBUG: Error querying users collection:', err));
+                // DEBUG: Verify collection contents (PROBE)
+                ['users', 'Users', 'user', 'User'].forEach(colName => {
+                    getDocs(collection(db, colName)).then(snapshot => {
+                        console.log(`DEBUG: Collection '${colName}' contains ${snapshot.size} documents.`);
+                        if (snapshot.size > 0) {
+                            console.log(`!!! FOUND DATA IN '${colName}' !!!`);
+                            snapshot.forEach(doc => console.log(`   - ID: ${doc.id}`));
+                        }
+                    }).catch(err => console.error(`DEBUG: Error querying ${colName}:`, err));
+                });
 
 
                 try {
