@@ -18,11 +18,17 @@ export default function LoginPage() {
     const router = useRouter();
 
     useEffect(() => {
+        console.log('Login Effect - User:', user);
         if (user) {
+            console.log('Login Effect - Role:', user.role);
             if (user.role === 'admin') {
+                console.log('Redirecting to admin dashboard...');
                 router.push('/admin/dashboard');
             } else if (user.role === 'conductor') {
+                console.log('Redirecting to driver dashboard...');
                 router.push('/driver/dashboard');
+            } else {
+                console.warn('Unknown role:', user.role);
             }
         }
     }, [user, router]);
