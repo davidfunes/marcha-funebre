@@ -409,7 +409,22 @@ export default function InventoryPage() {
             key: 'status',
             label: 'Estado',
             sortable: true,
-            render: (i) => <StatusBadge status={i.status} />
+            render: (i) => (
+                <StatusBadge
+                    status={i.status}
+                    options={[
+                        { label: 'Available', value: 'available' },
+                        { label: 'Assigned', value: 'assigned' },
+                        { label: 'Repair', value: 'repair' },
+                        { label: 'Lost', value: 'lost' }
+                    ]}
+                    onChange={(newStatus) => {
+                        if (i.id) {
+                            updateItem('inventory', i.id, { status: newStatus as any });
+                        }
+                    }}
+                />
+            )
         },
         {
             key: 'actions',
@@ -465,7 +480,20 @@ export default function InventoryPage() {
                                     </div>
                                 </div>
                             </div>
-                            <StatusBadge status={item.status} />
+                            <StatusBadge
+                                status={item.status}
+                                options={[
+                                    { label: 'Available', value: 'available' },
+                                    { label: 'Assigned', value: 'assigned' },
+                                    { label: 'Repair', value: 'repair' },
+                                    { label: 'Lost', value: 'lost' }
+                                ]}
+                                onChange={(newStatus) => {
+                                    if (item.id) {
+                                        updateItem('inventory', item.id, { status: newStatus as any });
+                                    }
+                                }}
+                            />
                         </div>
 
                         <div className="grid grid-cols-3 gap-2 py-3 border-y border-border/50">

@@ -217,7 +217,22 @@ export default function VehiclesPage() {
         {
             key: 'status',
             label: 'Estado',
-            render: (v) => <StatusBadge status={v.status} />,
+            render: (v) => (
+                <StatusBadge
+                    status={v.status}
+                    options={[
+                        { label: 'Active', value: 'active' },
+                        { label: 'Maintenance', value: 'maintenance' },
+                        { label: 'Rented', value: 'rented' },
+                        { label: 'Retired', value: 'retired' }
+                    ]}
+                    onChange={(newStatus) => {
+                        if (v.id) {
+                            updateItem('vehicles', v.id, { status: newStatus as any });
+                        }
+                    }}
+                />
+            ),
             sortable: true
         },
         { key: 'odometer', label: 'Odómetro', render: (v) => `${v.odometer.toLocaleString()} km`, sortable: true },
@@ -315,7 +330,20 @@ export default function VehiclesPage() {
                                     </div>
                                 </div>
                             </div>
-                            <StatusBadge status={vehicle.status} />
+                            <StatusBadge
+                                status={vehicle.status}
+                                options={[
+                                    { label: 'Active', value: 'active' },
+                                    { label: 'Maintenance', value: 'maintenance' },
+                                    { label: 'Rented', value: 'rented' },
+                                    { label: 'Retired', value: 'retired' }
+                                ]}
+                                onChange={(newStatus) => {
+                                    if (vehicle.id) {
+                                        updateItem('vehicles', vehicle.id, { status: newStatus as any });
+                                    }
+                                }}
+                            />
                         </div>
 
                         <div className="grid grid-cols-2 gap-3 pb-3 border-b border-border/50">
