@@ -8,7 +8,7 @@ import {
     signOut as firebaseSignOut,
     createUserWithEmailAndPassword,
 } from 'firebase/auth';
-import { doc, getDoc, setDoc, onSnapshot } from 'firebase/firestore';
+import { doc, getDoc, setDoc, onSnapshot, collection, getDocs } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase/firebase';
 import { User, UserRole } from '@/types';
 
@@ -43,6 +43,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             if (firebaseUser) {
                 // Subscribe to user data in real-time
                 console.log('Subscribing to user profile for:', firebaseUser.uid);
+
+                // DEBUG: Verify collection contents
+                getDocs(collection(db, 'users')).then(snapshot => {
+                    console.log(`DEBUG: Collection 'users' contains ${snapshot.size} documents.`);
+                    snapshot.forEach(doc => {
+                        console.log(`DEBUG: Found doc ID: '${doc.id}'`);
+                    });
+                }).catch(err => console.error('DEBUG: Error querying users collection:', err));
+
 
                 try {
                     userUnsubscribe = onSnapshot(doc(db, 'users', firebaseUser.uid),
