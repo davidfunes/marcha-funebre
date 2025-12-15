@@ -17,6 +17,7 @@ export default function LoginPage() {
     const [loading, setLoading] = useState(false);
     const { signIn, signUp, user, firebaseUser } = useAuth();
     const router = useRouter();
+    const [repairStatus, setRepairStatus] = useState<string>('');
 
     useEffect(() => {
         console.log('Login Effect - User:', user);
@@ -198,14 +199,35 @@ export default function LoginPage() {
 
                     {/* EMERGENCY REPAIR BUTTON */}
                     {firebaseUser && (
-                        <button
-                            onClick={() => repairAdminProfile(firebaseUser.uid).then(() => alert('Usuario Reparado! Recarga la web.')).catch(e => alert('Error: ' + e))}
-                            className="mt-4 px-2 py-1 bg-green-900/20 text-green-500 text-xs rounded hover:bg-green-900/40 transition-colors"
-                        >
-                            [DEBUG] CREAR MI USUARIO ({firebaseUser.uid.slice(0, 5)}...)
-                        </button>
+                        <div className="flex flex-col items-center gap-2 mt-4">
+                            <button
+                                onClick={async () => {
+                                    setRepairStatus('Reparando...');
+                                    try {
+                                        await repairAdminProfile(firebaseUser.uid);
+                                        setRepairStatus('¡ÉXITO! Usuario creado. Recargando en 3s...');
+                                        setTimeout(() => window.location.reload(), 3000);
+                                    } catch (e: any) {
+                                        setRepairStatus('ERROR: ' + e.message);
+                                        alert('Error detallado: ' + e.message);
+                                    }
+                                }}
+                                disabled={repairStatus === 'Reparando...'}
+                                className={`px-3 py-1 text-xs rounded transition-colors ${repairStatus.includes('ÉXITO')
+                                        ? 'bg-green-500 text-white'
+                                        : repairStatus.includes('ERROR')
+                                            ? 'bg-red-500 text-white'
+                                            : 'bg-green-900/20 text-green-500 hover:bg-green-900/40'
+                                    }`}
+                            >
+                                {repairStatus || `[DEBUG] CREAR MI USUARIO (${firebaseUser.uid.slice(0, 5)}...)`}
+                            </button>
+                            {repairStatus && <p className="text-xs text-foreground/70">{repairStatus}</p>}
+                        </div>
                     )}
-                </div>            </div>
+                </div>
+            </div>
         </div>
     );
 }
+```
