@@ -1,0 +1,36 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Users collection - CRITICAL FOR LOGIN
+    match /users/{userId} {
+      // Allow ANY authenticated user to read their OWN document
+      // This is essential for the login flow to work
+      allow read: if request.auth != null && request.auth.uid == userId;
+      
+      // Allow user creation during registration
+      allow create: if request.auth != null && request.auth.uid == userId;
+      
+      // Allow admins to read/write all users
+      // (checked AFTER the user can read their own doc)
+      allow read, write: if request.auth != null && 
+                            request.auth.uid != userId &&
+                            get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    // All other collections - require authentication and check role from user doc
+    match /{collection}/{document=**} {
+      // Helper to get current user's role
+      function getUserRole() {
+        return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role;
+      }
+      
+      // Allow read for all authenticated users
+      allow read: if request.auth != null;
+      
+      // Allow write for admins and managers
+      allow write: if request.auth != null && 
+                      (getUserRole() == 'admin' || getUserRole() == 'manager');
+    }
+  }
+}
