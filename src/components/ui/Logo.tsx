@@ -39,6 +39,7 @@ export function Logo({ className = '', showText = true, variant = 'default', siz
                     height={logoSize[size]}
                     className="object-contain w-full h-full drop-shadow-md"
                     priority
+                    unoptimized
                 />
             </div>
 
