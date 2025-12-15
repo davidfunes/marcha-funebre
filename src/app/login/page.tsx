@@ -82,7 +82,7 @@ export default function LoginPage() {
             <div className="w-full max-w-md">
                 {/* Logo and Title */}
                 <div className="text-center mb-8 flex flex-col items-center">
-                    <Logo size="xl" className="mb-4" />
+                    <Logo size="2xl" className="mb-4" />
                     <p className="text-muted-foreground mt-2">
                         Gestión de Flota y Material Musical
                     </p>
@@ -184,9 +184,11 @@ export default function LoginPage() {
                     </div>
                 </div>
 
-                <p className="text-center text-muted-foreground text-sm mt-6">
-                    © 2024 Marcha Fúnebre. Todos los derechos reservados.
-                </p>
+                <div className="text-center mt-6 text-sm text-muted-foreground space-y-1">
+                    <p>© 2025 Marcha Fúnebre. Todos los derechos reservados.</p>
+                    <p>Desarrollado por David Funes</p>
+                    <p className="text-xs opacity-70">Versión 0.1.0</p>
+                </div>
             </div>
         </div>
     );

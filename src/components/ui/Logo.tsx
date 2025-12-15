@@ -4,7 +4,7 @@ interface LogoProps {
     className?: string;
     showText?: boolean;
     variant?: 'default' | 'white' | 'icon-only';
-    size?: 'sm' | 'md' | 'lg' | 'xl';
+    size?: 'sm' | 'md' | 'lg' | 'xl' | '2xl';
 }
 
 export function Logo({ className = '', showText = true, variant = 'default', size = 'md' }: LogoProps) {
@@ -12,21 +12,24 @@ export function Logo({ className = '', showText = true, variant = 'default', siz
         sm: 'h-8',
         md: 'h-10',
         lg: 'h-16',
-        xl: 'h-24'
+        xl: 'h-24',
+        '2xl': 'h-32'
     };
 
     const textClasses = {
         sm: 'text-sm',
         md: 'text-lg',
         lg: 'text-2xl',
-        xl: 'text-4xl'
+        xl: 'text-4xl',
+        '2xl': 'text-5xl'
     };
 
     const logoSize = {
         sm: 32,
         md: 40,
         lg: 64,
-        xl: 96
+        xl: 96,
+        '2xl': 128
     };
 
     return (
