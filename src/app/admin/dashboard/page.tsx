@@ -65,7 +65,6 @@ export default function AdminDashboard() {
     const [warehouses, setWarehouses] = useState<Warehouse[]>([]);
     const [isLoadingData, setIsLoadingData] = useState(true);
     const [isSeeding, setIsSeeding] = useState(false);
-    const [isFixingData, setIsFixingData] = useState(false);
 
     // Modal State
     const [selectedStat, setSelectedStat] = useState<string | null>(null);
@@ -443,47 +442,6 @@ export default function AdminDashboard() {
                     >
                         {isSeeding ? 'Sembrando datos...' : 'Generar Datos de Prueba (Seed DB)'}
                     </button>
-                </div>
-            )}
-
-            {/* Data Migration Alert: Fix 'available' status */}
-            {vehicles.some(v => (v.status as any) === 'available') && (
-                <div className="rounded-xl border border-amber-200 bg-amber-50 p-6 animate-in fade-in slide-in-from-top-4 mb-6">
-                    <div className="flex items-center gap-4">
-                        <div className="p-3 bg-amber-100 rounded-full text-amber-600">
-                            <Wrench className="h-6 w-6" />
-                        </div>
-                        <div className="flex-1">
-                            <h3 className="text-lg font-bold text-amber-900">Inconsistencia de Datos Detectada</h3>
-                            <p className="text-sm text-amber-800 mt-1">
-                                Se han detectado <strong>{vehicles.filter(v => (v.status as any) === 'available').length}</strong> vehículos con el estado obsoleto "available".
-                                Esto puede causar errores en la visualización.
-                            </p>
-                        </div>
-                        <button
-                            onClick={async () => {
-                                setIsFixingData(true);
-                                try {
-                                    const invalidVehicles = vehicles.filter(v => (v.status as any) === 'available');
-                                    await Promise.all(invalidVehicles.map(v =>
-                                        v.id ? updateItem('vehicles', v.id, { status: 'active' }) : Promise.resolve()
-                                    ));
-                                    // Refresh local state
-                                    setVehicles(prev => prev.map(v => (v.status as any) === 'available' ? { ...v, status: 'active' } : v));
-                                    alert('Datos corregidos correctamente. Todos los vehículos "available" ahora son "active".');
-                                } catch (error) {
-                                    console.error('Error fixing data:', error);
-                                    alert('Error al corregir los datos.');
-                                } finally {
-                                    setIsFixingData(false);
-                                }
-                            }}
-                            disabled={isFixingData}
-                            className="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-md font-medium transition-colors shadow-sm disabled:opacity-50"
-                        >
-                            {isFixingData ? 'Corrigiendo...' : 'Corregir Estados Automáticamente'}
-                        </button>
-                    </div>
                 </div>
             )}
 

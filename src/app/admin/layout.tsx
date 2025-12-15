@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import { Logo } from '@/components/ui/Logo';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
+import { DataIntegrityChecker } from '@/components/admin/DataIntegrityChecker';
 
 function SidebarLink({ item, onClick }: { item: any; onClick?: () => void }) {
     const pathname = usePathname();
@@ -146,6 +147,9 @@ export default function AdminLayout({
 
             {/* Main Content Area */}
             <main className="flex-1 flex flex-col overflow-hidden w-full">
+                {/* Global Integrity Check */}
+                <DataIntegrityChecker />
+
                 {/* Header */}
                 <header className="flex h-16 items-center justify-between border-b border-border px-4 md:px-8 bg-card/50 backdrop-blur shrink-0 transition-opacity">
                     <div className="flex items-center gap-4">
