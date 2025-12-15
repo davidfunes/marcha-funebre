@@ -27,3 +27,5 @@ jobs:
           firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_FLEET_MANAGEMENT_7267C }}'
           channelId: live
           projectId: fleet-management-7267c
+        env:
+          FIREBASE_CLI_EXPERIMENTS: webframeworks
