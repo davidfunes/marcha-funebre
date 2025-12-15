@@ -32,7 +32,7 @@ export default function SnakeGame() {
     }, []);
 
     const spawnFood = useCallback(() => {
-        let newFood;
+        let newFood: { x: number; y: number };
         while (true) {
             newFood = {
                 x: Math.floor(Math.random() * GRID_SIZE),

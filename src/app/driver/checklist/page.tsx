@@ -11,7 +11,8 @@ import {
     ArrowLeft,
     CheckCircle,
     ThumbsUp,
-    ThumbsDown
+    ThumbsDown,
+    AlertTriangle
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -157,8 +158,8 @@ export default function ChecklistPage() {
                         <div
                             key={item.id}
                             className={`p-4 rounded-xl border transition-all ${answers[item.id]
-                                    ? 'bg-card border-primary/50 shadow-sm'
-                                    : 'bg-card border-border'
+                                ? 'bg-card border-primary/50 shadow-sm'
+                                : 'bg-card border-border'
                                 }`}
                         >
                             <div className="flex items-center justify-between mb-3">
@@ -171,8 +172,8 @@ export default function ChecklistPage() {
                                 <button
                                     onClick={() => handleAnswer(item.id, 'ok')}
                                     className={`py-2 px-3 rounded-lg flex items-center justify-center gap-2 text-sm font-medium transition-colors ${answers[item.id] === 'ok'
-                                            ? 'bg-green-500 text-white'
-                                            : 'bg-muted hover:bg-muted/80 text-muted-foreground'
+                                        ? 'bg-green-500 text-white'
+                                        : 'bg-muted hover:bg-muted/80 text-muted-foreground'
                                         }`}
                                 >
                                     <ThumbsUp className="w-4 h-4" /> Correcto
@@ -180,8 +181,8 @@ export default function ChecklistPage() {
                                 <button
                                     onClick={() => handleAnswer(item.id, 'issue')}
                                     className={`py-2 px-3 rounded-lg flex items-center justify-center gap-2 text-sm font-medium transition-colors ${answers[item.id] === 'issue'
-                                            ? 'bg-amber-500 text-white'
-                                            : 'bg-muted hover:bg-muted/80 text-muted-foreground'
+                                        ? 'bg-amber-500 text-white'
+                                        : 'bg-muted hover:bg-muted/80 text-muted-foreground'
                                         }`}
                                 >
                                     <ThumbsDown className="w-4 h-4" /> Problema

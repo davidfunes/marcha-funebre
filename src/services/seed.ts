@@ -53,9 +53,9 @@ export const seedDatabase = async () => {
 
     // 2. Warehouses
     const warehouses: Warehouse[] = [
-        { name: 'Nave central Madrid', location: 'Polígono Industrial Vallecas', capacity: 1000 },
-        { name: 'Almacén Barcelona', location: 'Zona Franca', capacity: 500 },
-        { name: 'Garaje Norte', location: 'San Sebastián de los Reyes', capacity: 200 }
+        { name: 'Nave central Madrid', location: 'Polígono Industrial Vallecas', capacity: 1000, currentStock: 0 },
+        { name: 'Almacén Barcelona', location: 'Zona Franca', capacity: 500, currentStock: 0 },
+        { name: 'Garaje Norte', location: 'San Sebastián de los Reyes', capacity: 200, currentStock: 0 }
     ];
 
     const warehouseIds: string[] = [];
@@ -78,11 +78,11 @@ export const seedDatabase = async () => {
 
     // 4. Vehicles
     const vehicles: Vehicle[] = [
-        { brand: 'Toyota', model: 'Corolla Hybrid', plate: '1234 LBB', status: 'active', odometer: 15400, year: 2023, fuelType: 'hybrid', transmission: 'automatic', image: 'https://images.unsplash.com/photo-1623869675785-654b8c1c3855?auto=format&fit=crop&q=80&w=400' },
-        { brand: 'Ford', model: 'Transit Custom', plate: '5678 KMR', status: 'active', odometer: 45000, year: 2022, fuelType: 'diesel', transmission: 'manual', image: 'https://images.unsplash.com/photo-1599908169199-0d500445d44c?auto=format&fit=crop&q=80&w=400' },
-        { brand: 'Peugeot', model: 'Partner', plate: '9012 JKL', status: 'maintenance', odometer: 67000, year: 2021, fuelType: 'diesel', transmission: 'manual', image: 'https://images.unsplash.com/photo-1630628373738-4225a072d627?auto=format&fit=crop&q=80&w=400' },
-        { brand: 'Tesla', model: 'Model 3', plate: '3456 MMC', status: 'rented', odometer: 12000, year: 2023, fuelType: 'electric', transmission: 'automatic', image: 'https://images.unsplash.com/photo-1560958089-b8a1929cea89?auto=format&fit=crop&q=80&w=400' },
-        { brand: 'Mercedes', model: 'Vito', plate: '7890 HGT', status: 'active', odometer: 125000, year: 2019, fuelType: 'diesel', transmission: 'manual', image: 'https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?auto=format&fit=crop&q=80&w=400' }
+        { brand: 'Toyota', model: 'Corolla Hybrid', plate: '1234 LBB', status: 'active', odometer: 15400, year: 2023, fuelType: 'hybrid', transmission: 'automatic', image: 'https://images.unsplash.com/photo-1623869675785-654b8c1c3855?auto=format&fit=crop&q=80&w=400', brandId: 'brand_toyota' },
+        { brand: 'Ford', model: 'Transit Custom', plate: '5678 KMR', status: 'active', odometer: 45000, year: 2022, fuelType: 'diesel', transmission: 'manual', image: 'https://images.unsplash.com/photo-1599908169199-0d500445d44c?auto=format&fit=crop&q=80&w=400', brandId: 'brand_ford' },
+        { brand: 'Peugeot', model: 'Partner', plate: '9012 JKL', status: 'maintenance', odometer: 67000, year: 2021, fuelType: 'diesel', transmission: 'manual', image: 'https://images.unsplash.com/photo-1630628373738-4225a072d627?auto=format&fit=crop&q=80&w=400', brandId: 'brand_peugeot' },
+        { brand: 'Tesla', model: 'Model 3', plate: '3456 MMC', status: 'rented', odometer: 12000, year: 2023, fuelType: 'electric', transmission: 'automatic', image: 'https://images.unsplash.com/photo-1560958089-b8a1929cea89?auto=format&fit=crop&q=80&w=400', brandId: 'brand_tesla' },
+        { brand: 'Mercedes', model: 'Vito', plate: '7890 HGT', status: 'active', odometer: 125000, year: 2019, fuelType: 'diesel', transmission: 'manual', image: 'https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?auto=format&fit=crop&q=80&w=400', brandId: 'brand_mercedes' }
     ];
 
     const vehicleIds: string[] = [];
