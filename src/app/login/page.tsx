@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
+import { seedDatabase } from '@/services/seed'; // Emergency Seed
 import { Logo } from '@/components/ui/Logo';
 import { Car } from 'lucide-react';
 
@@ -190,12 +191,19 @@ export default function LoginPage() {
                     </div>
                 </div>
 
-                <div className="text-center mt-6 text-sm text-muted-foreground space-y-1">
-                    <p>© 2025 Marcha Fúnebre. Todos los derechos reservados.</p>
+                <div className="text-center mt-8 text-gray-400 text-sm">
+                    <p className="mb-2">© 2025 Marcha Fúnebre. Todos los derechos reservados.</p>
                     <p>Desarrollado por David Funes</p>
-                    <p className="text-xs opacity-70">Versión 0.1.0</p>
-                </div>
-            </div>
+                    <p className="text-xs mt-1 opacity-50">Versión 0.1.0</p>
+
+                    {/* EMERGENCY SEED BUTTON */}
+                    <button
+                        onClick={() => seedDatabase().then(() => alert('Database Seeded! Reload page.')).catch(e => alert('Error seeding: ' + e))}
+                        className="mt-4 px-2 py-1 bg-red-900/20 text-red-500 text-xs rounded hover:bg-red-900/40 transition-colors"
+                    >
+                        [DEBUG] RE-SEED DATABASE
+                    </button>
+                </div>            </div>
         </div>
     );
 }
