@@ -43,6 +43,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             if (firebaseUser) {
                 // Subscribe to user data in real-time
                 console.log('Subscribing to user profile for:', firebaseUser.uid);
+                console.log('DEBUG: Connected to Project ID:', auth.app.options.projectId);
+
 
                 // DEBUG: Verify collection contents
                 getDocs(collection(db, 'users')).then(snapshot => {
