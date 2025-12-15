@@ -214,10 +214,10 @@ export default function LoginPage() {
                                 }}
                                 disabled={repairStatus === 'Reparando...'}
                                 className={`px-3 py-1 text-xs rounded transition-colors ${repairStatus.includes('ÉXITO')
-                                        ? 'bg-green-500 text-white'
-                                        : repairStatus.includes('ERROR')
-                                            ? 'bg-red-500 text-white'
-                                            : 'bg-green-900/20 text-green-500 hover:bg-green-900/40'
+                                    ? 'bg-green-500 text-white'
+                                    : repairStatus.includes('ERROR')
+                                        ? 'bg-red-500 text-white'
+                                        : 'bg-green-900/20 text-green-500 hover:bg-green-900/40'
                                     }`}
                             >
                                 {repairStatus || `[DEBUG] CREAR MI USUARIO (${firebaseUser.uid.slice(0, 5)}...)`}
@@ -230,4 +230,3 @@ export default function LoginPage() {
         </div>
     );
 }
-```
