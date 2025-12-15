@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
-import { seedDatabase } from '@/services/seed'; // Emergency Seed
+import { seedDatabase, repairAdminProfile } from '@/services/seed'; // Emergency Seed
 import { Logo } from '@/components/ui/Logo';
 import { Car } from 'lucide-react';
 
@@ -196,13 +196,15 @@ export default function LoginPage() {
                     <p>Desarrollado por David Funes</p>
                     <p className="text-xs mt-1 opacity-50">Versión 0.1.0</p>
 
-                    {/* EMERGENCY SEED BUTTON */}
-                    <button
-                        onClick={() => seedDatabase().then(() => alert('Database Seeded! Reload page.')).catch(e => alert('Error seeding: ' + e))}
-                        className="mt-4 px-2 py-1 bg-red-900/20 text-red-500 text-xs rounded hover:bg-red-900/40 transition-colors"
-                    >
-                        [DEBUG] RE-SEED DATABASE
-                    </button>
+                    {/* EMERGENCY REPAIR BUTTON */}
+                    {firebaseUser && (
+                        <button
+                            onClick={() => repairAdminProfile(firebaseUser.uid).then(() => alert('Usuario Reparado! Recarga la web.')).catch(e => alert('Error: ' + e))}
+                            className="mt-4 px-2 py-1 bg-green-900/20 text-green-500 text-xs rounded hover:bg-green-900/40 transition-colors"
+                        >
+                            [DEBUG] CREAR MI USUARIO ({firebaseUser.uid.slice(0, 5)}...)
+                        </button>
+                    )}
                 </div>            </div>
         </div>
     );

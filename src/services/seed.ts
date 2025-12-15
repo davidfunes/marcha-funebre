@@ -1,5 +1,5 @@
 import { db } from '@/lib/firebase/firebase';
-import { collection, doc, writeBatch, Timestamp } from 'firebase/firestore';
+import { collection, doc, writeBatch, Timestamp, setDoc } from 'firebase/firestore';
 import { User, Vehicle, Incident, InventoryItem, RentingCompany, Warehouse, MaintenanceRecord } from '@/types';
 
 // Helper to generate random date
@@ -124,4 +124,20 @@ export const seedDatabase = async () => {
 
     await batch.commit();
     console.log('Database seeded successfully with PREMIUM data.');
+};
+
+export const repairAdminProfile = async (uid: string) => {
+    console.log(`Reparing profile for ${uid}...`);
+    const ref = doc(db, 'users', uid);
+    await setDoc(ref, {
+        id: uid,
+        name: 'Admin Recuperado',
+        email: 'admin@repaired.com',
+        role: 'admin',
+        points: 1000,
+        badges: ['master_admin'],
+        status: 'active',
+        createdAt: Timestamp.now(),
+    });
+    console.log('Profile repaired!');
 };
