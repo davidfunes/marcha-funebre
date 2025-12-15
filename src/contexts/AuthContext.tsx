@@ -42,35 +42,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
             if (firebaseUser) {
                 // Subscribe to user data in real-time
-                console.log('Subscribing to user profile for:', firebaseUser.uid);
-                console.log('DEBUG: Connected to Project ID:', auth.app.options.projectId);
-
-
-                // DEBUG: Verify collection contents (PROBE)
-                ['users', 'Users', 'user', 'User'].forEach(colName => {
-                    getDocs(collection(db, colName)).then(snapshot => {
-                        console.log(`DEBUG: Collection '${colName}' contains ${snapshot.size} documents.`);
-                        if (snapshot.size > 0) {
-                            console.log(`!!! FOUND DATA IN '${colName}' !!!`);
-                            snapshot.forEach(doc => console.log(`   - ID: ${doc.id}`));
-                        }
-                    }).catch(err => console.error(`DEBUG: Error querying ${colName}:`, err));
-                });
-
-                // DEBUG: Write test document
-                const debugRef = doc(db, '_debug_connectivity', `test_${Date.now()}`);
-                setDoc(debugRef, {
-                    timestamp: new Date(),
-                    uid: firebaseUser.uid,
-                    environment: 'production'
-                }).then(() => console.log('DEBUG: Successfully wrote to _debug_connectivity'))
-                    .catch(e => console.error('DEBUG: Failed to write debug doc:', e));
 
                 try {
                     userUnsubscribe = onSnapshot(doc(db, 'users', firebaseUser.uid),
                         (docSnapshot) => {
                             if (docSnapshot.exists()) {
-                                console.log('User profile updated');
+
                                 setUser({ id: firebaseUser.uid, ...docSnapshot.data() } as User);
                             } else {
                                 console.error('User document does not exist for UID:', firebaseUser.uid);

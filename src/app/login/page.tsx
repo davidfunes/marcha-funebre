@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
-import { seedDatabase, repairAdminProfile } from '@/services/seed'; // Emergency Seed
 import { Logo } from '@/components/ui/Logo';
 import { Car } from 'lucide-react';
 
@@ -17,20 +16,13 @@ export default function LoginPage() {
     const [loading, setLoading] = useState(false);
     const { signIn, signUp, user, firebaseUser } = useAuth();
     const router = useRouter();
-    const [repairStatus, setRepairStatus] = useState<string>('');
 
     useEffect(() => {
-        console.log('Login Effect - User:', user);
         if (user) {
-            console.log('Login Effect - Role:', user.role);
             if (user.role === 'admin') {
-                console.log('Redirecting to admin dashboard...');
                 router.push('/admin/dashboard');
             } else if (user.role === 'conductor') {
-                console.log('Redirecting to driver dashboard...');
                 router.push('/driver/dashboard');
-            } else {
-                console.warn('Unknown role:', user.role);
             }
         }
     }, [user, router]);
@@ -197,34 +189,6 @@ export default function LoginPage() {
                     <p>Desarrollado por David Funes</p>
                     <p className="text-xs mt-1 opacity-50">Versión 0.1.0</p>
 
-                    {/* EMERGENCY REPAIR BUTTON */}
-                    {firebaseUser && (
-                        <div className="flex flex-col items-center gap-2 mt-4">
-                            <button
-                                onClick={async () => {
-                                    setRepairStatus('Reparando...');
-                                    try {
-                                        await repairAdminProfile(firebaseUser.uid);
-                                        setRepairStatus('¡ÉXITO! Usuario creado. Recargando en 3s...');
-                                        setTimeout(() => window.location.reload(), 3000);
-                                    } catch (e: any) {
-                                        setRepairStatus('ERROR: ' + e.message);
-                                        alert('Error detallado: ' + e.message);
-                                    }
-                                }}
-                                disabled={repairStatus === 'Reparando...'}
-                                className={`px-3 py-1 text-xs rounded transition-colors ${repairStatus.includes('ÉXITO')
-                                    ? 'bg-green-500 text-white'
-                                    : repairStatus.includes('ERROR')
-                                        ? 'bg-red-500 text-white'
-                                        : 'bg-green-900/20 text-green-500 hover:bg-green-900/40'
-                                    }`}
-                            >
-                                {repairStatus || `[DEBUG] CREAR MI USUARIO (${firebaseUser.uid.slice(0, 5)}...)`}
-                            </button>
-                            {repairStatus && <p className="text-xs text-foreground/70">{repairStatus}</p>}
-                        </div>
-                    )}
                 </div>
             </div>
         </div>
