@@ -173,7 +173,21 @@ export default function UsersPage() {
             key: 'status',
             label: 'Estado',
             sortable: true,
-            render: (u) => <StatusBadge status={u.status} />
+            render: (u) => (
+                <StatusBadge
+                    status={u.status}
+                    options={[
+                        { label: 'Active', value: 'active' },
+                        { label: 'Inactive', value: 'inactive' }
+                    ]}
+                    onChange={(newStatus) => {
+                        if (u.id) {
+                            // Optimistic update logic is handled by listener, but we call updateItem
+                            updateItem('users', u.id, { status: newStatus as any });
+                        }
+                    }}
+                />
+            )
         },
         {
             key: 'actions',
@@ -234,7 +248,18 @@ export default function UsersPage() {
                         <div className="grid grid-cols-2 gap-3 py-3 border-y border-border/50">
                             <div className="flex flex-col items-center justify-center space-y-1 border-r border-border/50">
                                 <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Estado</span>
-                                <StatusBadge status={user.status} />
+                                <StatusBadge
+                                    status={user.status}
+                                    options={[
+                                        { label: 'Active', value: 'active' },
+                                        { label: 'Inactive', value: 'inactive' }
+                                    ]}
+                                    onChange={(newStatus) => {
+                                        if (user.id) {
+                                            updateItem('users', user.id, { status: newStatus as any });
+                                        }
+                                    }}
+                                />
                             </div>
                             <div className="flex flex-col items-center justify-center space-y-1">
                                 <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Puntos</span>
