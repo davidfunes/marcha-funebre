@@ -15,7 +15,7 @@ export default function LoginPage() {
     const [confirmPassword, setConfirmPassword] = useState('');
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
-    const { signIn, signUp, user } = useAuth();
+    const { signIn, signUp, user, firebaseUser } = useAuth();
     const router = useRouter();
 
     useEffect(() => {
