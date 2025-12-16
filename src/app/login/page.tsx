@@ -78,7 +78,7 @@ export default function LoginPage() {
     // ... omitted
 
     return (
-    return (
+
         <div className="min-h-screen flex items-center justify-center bg-gray-50/50 p-4 relative overflow-hidden">
             {/* Background Decor */}
             <div className="absolute inset-0 z-0 opacity-40 pointer-events-none">
