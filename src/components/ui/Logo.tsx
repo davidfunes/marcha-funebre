@@ -5,9 +5,16 @@ interface LogoProps {
     showText?: boolean;
     variant?: 'default' | 'white' | 'icon-only';
     size?: 'sm' | 'md' | 'lg' | 'xl' | '2xl';
+    layout?: 'horizontal' | 'vertical';
 }
 
-export function Logo({ className = '', showText = true, variant = 'default', size = 'md' }: LogoProps) {
+export function Logo({
+    className = '',
+    showText = true,
+    variant = 'default',
+    size = 'md',
+    layout = 'horizontal'
+}: LogoProps) {
     const sizeClasses = {
         sm: 'h-8',
         md: 'h-10',
@@ -32,8 +39,12 @@ export function Logo({ className = '', showText = true, variant = 'default', siz
         '2xl': 128
     };
 
+    const containerClasses = layout === 'vertical'
+        ? 'flex-col justify-center text-center'
+        : 'flex-row items-center';
+
     return (
-        <div className={`flex items-center gap-3 ${className}`}>
+        <div className={`flex ${containerClasses} gap-3 ${className}`}>
             <div className={`relative aspect-square flex-shrink-0 ${sizeClasses[size]}`}>
                 <Image
                     src="/logo.png"

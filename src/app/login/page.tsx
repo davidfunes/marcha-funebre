@@ -78,22 +78,29 @@ export default function LoginPage() {
     // ... omitted
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-background p-4">
-            <div className="w-full max-w-md">
+    return (
+        <div className="min-h-screen flex items-center justify-center bg-gray-50/50 p-4 relative overflow-hidden">
+            {/* Background Decor */}
+            <div className="absolute inset-0 z-0 opacity-40 pointer-events-none">
+                <div className="absolute -top-24 -left-24 w-96 h-96 bg-primary/10 rounded-full blur-3xl"></div>
+                <div className="absolute -bottom-24 -right-24 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl"></div>
+            </div>
+
+            <div className="w-full max-w-md relative z-10 animate-in fade-in zoom-in duration-500">
                 {/* Logo and Title */}
                 <div className="text-center mb-8 flex flex-col items-center">
-                    <Logo size="2xl" className="mb-4" />
-                    <p className="text-muted-foreground mt-2">
+                    <Logo size="2xl" layout="vertical" className="mb-6 drop-shadow-sm" />
+                    <p className="text-muted-foreground mt-2 font-medium tracking-wide text-sm uppercase">
                         Gestión de Flota y Material Musical
                     </p>
                 </div>
 
                 {/* Auth Form */}
-                <div className="bg-card border border-border rounded-xl p-8 shadow-sm">
-                    <form onSubmit={handleSubmit} className="space-y-6">
+                <div className="bg-white/80 backdrop-blur-sm border border-white/20 rounded-2xl p-8 shadow-xl ring-1 ring-gray-900/5">
+                    <form onSubmit={handleSubmit} className="space-y-5">
                         {!isLogin && (
                             <div>
-                                <label htmlFor="name" className="block text-sm font-medium text-foreground mb-2">
+                                <label htmlFor="name" className="block text-sm font-semibold text-gray-700 mb-1.5 ml-1">
                                     Nombre Completo
                                 </label>
                                 <input
@@ -102,14 +109,14 @@ export default function LoginPage() {
                                     value={name}
                                     onChange={(e) => setName(e.target.value)}
                                     required={!isLogin}
-                                    className="w-full px-4 py-3 bg-background border border-input rounded-lg text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition"
-                                    placeholder="Tu Nombre"
+                                    className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm"
+                                    placeholder="Ej. Juan Pérez"
                                 />
                             </div>
                         )}
 
                         <div>
-                            <label htmlFor="email" className="block text-sm font-medium text-foreground mb-2">
+                            <label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-1.5 ml-1">
                                 Email
                             </label>
                             <input
@@ -118,13 +125,13 @@ export default function LoginPage() {
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                                 required
-                                className="w-full px-4 py-3 bg-background border border-input rounded-lg text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition"
+                                className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm"
                                 placeholder="tu@email.com"
                             />
                         </div>
 
                         <div>
-                            <label htmlFor="password" className="block text-sm font-medium text-foreground mb-2">
+                            <label htmlFor="password" className="block text-sm font-semibold text-gray-700 mb-1.5 ml-1">
                                 Contraseña
                             </label>
                             <input
@@ -133,14 +140,14 @@ export default function LoginPage() {
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
                                 required
-                                className="w-full px-4 py-3 bg-background border border-input rounded-lg text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition"
+                                className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm"
                                 placeholder="••••••••"
                             />
                         </div>
 
                         {!isLogin && (
                             <div>
-                                <label htmlFor="confirmPassword" className="block text-sm font-medium text-foreground mb-2">
+                                <label htmlFor="confirmPassword" className="block text-sm font-semibold text-gray-700 mb-1.5 ml-1">
                                     Confirmar Contraseña
                                 </label>
                                 <input
@@ -149,46 +156,64 @@ export default function LoginPage() {
                                     value={confirmPassword}
                                     onChange={(e) => setConfirmPassword(e.target.value)}
                                     required={!isLogin}
-                                    className="w-full px-4 py-3 bg-background border border-input rounded-lg text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition"
+                                    className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm"
                                     placeholder="••••••••"
                                 />
                             </div>
                         )}
 
                         {error && (
-                            <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-3 text-destructive text-sm font-medium">
-                                {error}
+                            <div className="bg-red-50 border border-red-100 rounded-xl p-4 flex items-start gap-3">
+                                <div className="text-red-500 mt-0.5">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
+                                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z" clipRule="evenodd" />
+                                    </svg>
+                                </div>
+                                <p className="text-red-600 text-sm font-medium">{error}</p>
                             </div>
                         )}
 
                         <button
                             type="submit"
                             disabled={loading}
-                            className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold py-3 px-4 rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold py-3.5 px-4 rounded-xl shadow-lg shadow-primary/25 hover:shadow-primary/40 transition-all duration-200 transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none disabled:shadow-none mt-2"
                         >
-                            {loading ? 'Procesando...' : (isLogin ? 'Iniciar Sesión' : 'Registrarse')}
+                            {loading ? (
+                                <span className="flex items-center justify-center gap-2">
+                                    <svg className="animate-spin h-5 w-5 text-current" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                    Procesando...
+                                </span>
+                            ) : (isLogin ? 'Iniciar Sesión' : 'Registrarse')}
                         </button>
                     </form>
 
-                    <div className="mt-6 text-center">
+                    <div className="mt-8 pt-6 border-t border-gray-100/80 text-center">
                         <button
                             type="button"
                             onClick={() => {
                                 setIsLogin(!isLogin);
                                 setError('');
                             }}
-                            className="text-sm text-primary hover:underline font-medium"
+                            className="text-sm text-primary font-medium hover:text-primary/80 transition-colors inline-flex items-center gap-1 group"
                         >
-                            {isLogin ? '¿No tienes cuenta? Regístrate' : '¿Ya tienes cuenta? Inicia sesión'}
+                            {isLogin ? (
+                                <>
+                                    ¿No tienes cuenta? <span className="underline decoration-2 underline-offset-2 decoration-transparent group-hover:decoration-primary/30 transition-all">Regístrate ahora</span>
+                                </>
+                            ) : (
+                                <>
+                                    ¿Ya tienes cuenta? <span className="underline decoration-2 underline-offset-2 decoration-transparent group-hover:decoration-primary/30 transition-all">Inicia sesión</span>
+                                </>
+                            )}
                         </button>
                     </div>
                 </div>
 
-                <div className="text-center mt-8 text-gray-400 text-sm">
-                    <p className="mb-2">© 2025 Marcha Fúnebre. Todos los derechos reservados.</p>
-                    <p>Desarrollado por David Funes</p>
-                    <p className="text-xs mt-1 opacity-50">Versión 0.1.0</p>
-
+                <div className="text-center mt-8 space-y-1">
+                    <p className="text-xs text-gray-400 font-medium">© 2025 Marcha Fúnebre. v0.1.0</p>
                 </div>
             </div>
         </div>
