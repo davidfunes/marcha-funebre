@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { db } from '@/lib/firebase/firebase';
-import { doc, updateDoc, increment } from 'firebase/firestore';
+import { logPoints } from '@/services/GamificationService';
 import { useAuth } from '@/contexts/AuthContext';
 
 /**
@@ -24,9 +24,7 @@ export function useGameTimer(isActive: boolean = true) {
         intervalRef.current = setInterval(async () => {
             if (user.id) {
                 try {
-                    await updateDoc(doc(db, 'users', user.id), {
-                        points: increment(1)
-                    });
+                    await logPoints(user.id, 1, 'game_time_1min');
                     console.log('Awarded 1 point for 1 minute of game time.');
                 } catch (error) {
                     console.error('Error awarding game point:', error);

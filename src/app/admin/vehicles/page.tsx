@@ -12,7 +12,7 @@ import { DataTable, Column } from '@/components/ui/DataTable';
 import { StatusBadge } from '@/components/ui/StatusBadge';
 import { Modal } from '@/components/ui/Modal';
 import { addItem, updateItem, deleteItem, subscribeToCollection, addVehicleTaxonomy, getInventory } from '@/services/FirebaseService';
-import { Vehicle, VehicleMake, Incident, InventoryItem, Workshop, VehicleBrand } from '@/types';
+import { Vehicle, VehicleMake, Incident, InventoryItem, Workshop, VehicleBrand, RentingCompany } from '@/types';
 import { Timestamp } from 'firebase/firestore';
 import { formatLicensePlate } from '@/lib/utils';
 import { AlertTriangle, ShieldAlert, MapPin } from 'lucide-react';
@@ -24,7 +24,8 @@ export default function VehiclesPage() {
     const [inventory, setInventory] = useState<InventoryItem[]>([]);
     const [workshops, setWorkshops] = useState<Workshop[]>([]);
     const [brands, setBrands] = useState<VehicleBrand[]>([]);
-    const [warehouses, setWarehouses] = useState<any[]>([]); // Using any[] temporarily until Warehouse type is fully imported if needed, but we have it in types
+    const [warehouses, setWarehouses] = useState<any[]>([]);
+    const [rentingCompanies, setRentingCompanies] = useState<RentingCompany[]>([]);
     const [loading, setLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingVehicle, setEditingVehicle] = useState<Vehicle | null>(null);
@@ -80,6 +81,10 @@ export default function VehiclesPage() {
             setWarehouses(data);
         });
 
+        const unsubscribeRenting = subscribeToCollection<RentingCompany>('renting_companies', (data) => {
+            setRentingCompanies(data);
+        });
+
         return () => {
             unsubscribeVehicles();
             unsubscribeMakes();
@@ -87,7 +92,9 @@ export default function VehiclesPage() {
             unsubscribeInventory();
             unsubscribeWorkshops();
             unsubscribeBrands();
+            unsubscribeBrands();
             unsubscribeWarehouses();
+            unsubscribeRenting();
         };
     }, []);
 
@@ -178,6 +185,15 @@ export default function VehiclesPage() {
             // Smart Taxonomy Learning (Fire and Forget)
             if (formData.brand && formData.model) {
                 addVehicleTaxonomy(formData.brand, formData.model);
+            }
+
+            // Clean up dates if empty
+            if (!formData.contractStartDate) delete (dataToSave as any).contractStartDate;
+            if (!formData.contractEndDate) delete (dataToSave as any).contractEndDate;
+            if (!formData.rentingCompanyId) {
+                delete (dataToSave as any).rentingCompanyId;
+                delete (dataToSave as any).contractStartDate;
+                delete (dataToSave as any).contractEndDate;
             }
 
             if (editingVehicle && editingVehicle.id) {
@@ -543,6 +559,50 @@ export default function VehiclesPage() {
                                 </option>
                             ))}
                         </select>
+                    </div>
+
+                    <div className="pt-4 border-t border-border">
+                        <h3 className="text-sm font-bold mb-3 text-muted-foreground uppercase tracking-wider">Datos de Renting</h3>
+                        <div className="space-y-4">
+                            <div className="space-y-2">
+                                <label className="text-sm font-medium">Empresa de Renting</label>
+                                <select
+                                    value={formData.rentingCompanyId || ''}
+                                    onChange={e => setFormData({ ...formData, rentingCompanyId: e.target.value || undefined })}
+                                    className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary outline-none"
+                                >
+                                    <option value="">Ninguna - Vehículo en Propiedad</option>
+                                    {rentingCompanies.map(rc => (
+                                        <option key={rc.id} value={rc.id}>
+                                            {rc.name}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            {formData.rentingCompanyId && (
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-medium">Inicio Contrato</label>
+                                        <input
+                                            type="date"
+                                            value={formData.contractStartDate || ''}
+                                            onChange={e => setFormData({ ...formData, contractStartDate: e.target.value })}
+                                            className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary outline-none"
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-medium">Fin Contrato</label>
+                                        <input
+                                            type="date"
+                                            value={formData.contractEndDate || ''}
+                                            onChange={e => setFormData({ ...formData, contractEndDate: e.target.value })}
+                                            className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary outline-none"
+                                        />
+                                    </div>
+                                </div>
+                            )}
+                        </div>
                     </div>
 
                     <div className="space-y-2">

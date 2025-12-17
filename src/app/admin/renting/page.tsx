@@ -6,7 +6,6 @@ import {
     Edit,
     Trash2,
     Building2,
-    Mail,
     Phone,
     FileText
 } from 'lucide-react';
@@ -29,10 +28,7 @@ export default function RentingPage() {
     const [editingCompany, setEditingCompany] = useState<RentingCompany | null>(null);
     const [formData, setFormData] = useState<Partial<RentingCompany>>({
         name: '',
-        contactPerson: '',
-        email: '',
         phone: '',
-        address: '',
         activeContracts: 0
     });
 
@@ -52,10 +48,7 @@ export default function RentingPage() {
             setEditingCompany(null);
             setFormData({
                 name: '',
-                contactPerson: '',
-                email: '',
                 phone: '',
-                address: '',
                 activeContracts: 0
             });
         }
@@ -103,7 +96,6 @@ export default function RentingPage() {
                     </div>
                     <div>
                         <p className="font-medium">{c.name}</p>
-                        <p className="text-xs text-muted-foreground">{c.contactPerson}</p>
                     </div>
                 </div>
             )
@@ -119,18 +111,12 @@ export default function RentingPage() {
             )
         },
         {
-            key: 'email',
-            label: 'Contacto',
+            key: 'phone',
+            label: 'Teléfono Asistencia',
             render: (c) => (
-                <div className="flex flex-col text-sm text-muted-foreground">
-                    <div className="flex items-center gap-1">
-                        <Mail className="h-3 w-3" />
-                        {c.email}
-                    </div>
-                    <div className="flex items-center gap-1">
-                        <Phone className="h-3 w-3" />
-                        {c.phone}
-                    </div>
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Phone className="h-3 w-3" />
+                    {c.phone}
                 </div>
             )
         },
@@ -191,10 +177,6 @@ export default function RentingPage() {
 
                         <div className="space-y-2 pt-2 border-t border-border/50">
                             <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                <Mail className="h-4 w-4" />
-                                <span className="truncate">{c.email}</span>
-                            </div>
-                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
                                 <Phone className="h-4 w-4" />
                                 <span>{c.phone}</span>
                             </div>
@@ -245,57 +227,17 @@ export default function RentingPage() {
                     </div>
 
                     <div className="space-y-2">
-                        <label className="text-sm font-medium">Persona de Contacto</label>
+                        <label className="text-sm font-medium">Teléfono de Asistencia</label>
                         <input
                             required
-                            value={formData.contactPerson}
-                            onChange={e => setFormData({ ...formData, contactPerson: e.target.value })}
+                            value={formData.phone}
+                            onChange={e => setFormData({ ...formData, phone: formatPhoneNumber(e.target.value) })}
                             className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary outline-none"
-                            placeholder="Nombre del gestor"
+                            placeholder="900 000 000"
                         />
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                            <label className="text-sm font-medium">Email</label>
-                            <input
-                                type="email"
-                                required
-                                value={formData.email}
-                                onChange={e => setFormData({ ...formData, email: e.target.value })}
-                                className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary outline-none"
-                            />
-                        </div>
-                        <div className="space-y-2">
-                            <label className="text-sm font-medium">Teléfono</label>
-                            <input
-                                required
-                                value={formData.phone}
-                                onChange={e => setFormData({ ...formData, phone: formatPhoneNumber(e.target.value) })}
-                                className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary outline-none"
-                            />
-                        </div>
-                    </div>
 
-                    <div className="space-y-2">
-                        <label className="text-sm font-medium">Dirección</label>
-                        <input
-                            value={formData.address}
-                            onChange={e => setFormData({ ...formData, address: e.target.value })}
-                            className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary outline-none"
-                        />
-                    </div>
-
-                    <div className="space-y-2">
-                        <label className="text-sm font-medium">Contratos Activos</label>
-                        <input
-                            type="number"
-                            min="0"
-                            value={formData.activeContracts}
-                            onChange={e => setFormData({ ...formData, activeContracts: parseInt(e.target.value) })}
-                            className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary outline-none"
-                        />
-                    </div>
 
                     <div className="pt-4 flex justify-end gap-2">
                         <button

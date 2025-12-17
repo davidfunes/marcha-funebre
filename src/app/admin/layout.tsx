@@ -19,7 +19,8 @@ import {
     Menu,
     X,
     Tag,
-    Play
+    Play,
+    Trophy
 } from 'lucide-react';
 import { Logo } from '@/components/ui/Logo';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
@@ -87,6 +88,7 @@ export default function AdminLayout({
         { label: 'Marcas', href: '/admin/brands', icon: Tag },
         { label: 'Incidencias', href: '/admin/incidents', icon: AlertTriangle },
         { label: 'Conductores', href: '/admin/users', icon: Users },
+        { label: 'Ranking', href: '/admin/ranking', icon: Trophy },
         { label: 'Mantenimiento', href: '/admin/maintenance', icon: Wrench },
     ];
 

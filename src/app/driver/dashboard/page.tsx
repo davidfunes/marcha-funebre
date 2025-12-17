@@ -17,7 +17,8 @@ import {
     Gamepad2,
     MapPin,
     X,
-    Users
+    Users,
+    Lock
 } from 'lucide-react';
 import Link from 'next/link';
 import { Logo } from '@/components/ui/Logo';
@@ -119,7 +120,8 @@ export default function DriverDashboard() {
             color: 'text-emerald-400',
             bg: 'bg-emerald-500/10',
             border: 'border-emerald-500/20',
-            isVehicleCard: true
+            isVehicleCard: true,
+            requiresVehicle: false
         },
         {
             label: 'Registrar KM y Combustible',
@@ -128,7 +130,8 @@ export default function DriverDashboard() {
             icon: Camera,
             color: 'text-blue-400',
             bg: 'bg-blue-500/10',
-            border: 'border-blue-500/20'
+            border: 'border-blue-500/20',
+            requiresVehicle: true
         },
         {
             label: 'Reportar Incidencia',
@@ -137,7 +140,8 @@ export default function DriverDashboard() {
             icon: AlertTriangle,
             color: 'text-amber-400',
             bg: 'bg-amber-500/10',
-            border: 'border-amber-500/20'
+            border: 'border-amber-500/20',
+            requiresVehicle: true
         },
         {
             label: 'Checklist Pre-Viaje',
@@ -146,7 +150,8 @@ export default function DriverDashboard() {
             icon: CheckSquare,
             color: 'text-purple-400',
             bg: 'bg-purple-500/10',
-            border: 'border-purple-500/20'
+            border: 'border-purple-500/20',
+            requiresVehicle: true
         },
         {
             label: 'Directorio de Flota',
@@ -155,7 +160,8 @@ export default function DriverDashboard() {
             icon: Users,
             color: 'text-indigo-400',
             bg: 'bg-indigo-500/10',
-            border: 'border-indigo-500/20'
+            border: 'border-indigo-500/20',
+            requiresVehicle: false
         },
         {
             label: 'Zona de Descanso',
@@ -164,7 +170,8 @@ export default function DriverDashboard() {
             icon: Gamepad2,
             color: 'text-pink-400',
             bg: 'bg-pink-500/10',
-            border: 'border-pink-500/20'
+            border: 'border-pink-500/20',
+            requiresVehicle: false
         },
     ];
 
@@ -233,42 +240,53 @@ export default function DriverDashboard() {
 
                 {/* Action Grid */}
                 <div className="grid grid-cols-1 gap-4">
-                    {quickActions.map((action) => (
-                        <Link
-                            key={action.href}
-                            href={action.href}
-                            className="group relative overflow-hidden bg-card border border-border p-4 rounded-xl hover:bg-muted/50 transition-all duration-200 shadow-sm"
-                        >
-                            <div className="flex items-center gap-4">
-                                <div className={`p-3 rounded-lg bg-muted border border-border group-hover:bg-background transition-colors`}>
-                                    <action.icon className={`w-6 h-6 text-foreground`} />
+                    {quickActions.map((action) => {
+                        const isLocked = action.requiresVehicle && !user?.assignedVehicleId;
+
+                        return (
+                            <Link
+                                key={action.href}
+                                href={isLocked ? '#' : action.href}
+                                onClick={(e) => {
+                                    if (isLocked) {
+                                        e.preventDefault();
+                                        alert('⚠️ Primero debes seleccionar un vehículo para realizar esta acción.');
+                                    }
+                                }}
+                                className={`group relative overflow-hidden bg-card border border-border p-4 rounded-xl transition-all duration-200 shadow-sm ${isLocked ? 'opacity-50 cursor-not-allowed grayscale' : 'hover:bg-muted/50'
+                                    }`}
+                            >
+                                <div className="flex items-center gap-4">
+                                    <div className={`p-3 rounded-lg bg-muted border border-border ${!isLocked && 'group-hover:bg-background'} transition-colors`}>
+                                        <action.icon className={`w-6 h-6 text-foreground`} />
+                                    </div>
+                                    <div className="flex-1">
+                                        <h3 className="text-lg font-bold text-foreground leading-tight mb-0.5">{action.label}</h3>
+                                        <p className="text-sm text-muted-foreground">{action.description}</p>
+                                    </div>
+                                    <div className="text-muted-foreground group-hover:text-primary transition-colors flex items-center gap-2">
+                                        {/* Return Button Logic */}
+                                        {/* @ts-ignore - Custom property */}
+                                        {action.isVehicleCard && user?.assignedVehicleId && assignedVehicle && (
+                                            <button
+                                                onClick={(e) => {
+                                                    e.preventDefault();
+                                                    e.stopPropagation();
+                                                    setShowReturnModal(true);
+                                                }}
+                                                className="p-2 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-lg transition-colors mr-2 flex items-center gap-2 text-xs font-bold"
+                                                title="Devolver Vehículo"
+                                            >
+                                                <LogOut className="w-4 h-4" />
+                                                <span className="hidden sm:inline">Devolver</span>
+                                            </button>
+                                        )}
+                                        {isLocked ? <Lock className="w-5 h-5 text-muted-foreground" /> : <ArrowRight className="w-5 h-5" />}
+                                    </div>
                                 </div>
-                                <div className="flex-1">
-                                    <h3 className="text-lg font-bold text-foreground leading-tight mb-0.5">{action.label}</h3>
-                                    <p className="text-sm text-muted-foreground">{action.description}</p>
-                                </div>
-                                <div className="text-muted-foreground group-hover:text-primary transition-colors flex items-center gap-2">
-                                    {/* Return Button Logic */}
-                                    {/* @ts-ignore - Custom property */}
-                                    {action.isVehicleCard && user?.assignedVehicleId && assignedVehicle && (
-                                        <button
-                                            onClick={(e) => {
-                                                e.preventDefault();
-                                                e.stopPropagation();
-                                                setShowReturnModal(true);
-                                            }}
-                                            className="p-2 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-lg transition-colors mr-2 flex items-center gap-2 text-xs font-bold"
-                                            title="Devolver Vehículo"
-                                        >
-                                            <LogOut className="w-4 h-4" />
-                                            <span className="hidden sm:inline">Devolver</span>
-                                        </button>
-                                    )}
-                                    <ArrowRight className="w-5 h-5" />
-                                </div>
-                            </div>
-                        </Link>
-                    ))}
+                            </Link>
+                        );
+                    })}
                 </div>
 
                 {/* Recent Activity Mini-Feed */}

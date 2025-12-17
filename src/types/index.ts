@@ -39,6 +39,8 @@ export interface Vehicle {
     nextMaintenanceDate?: any; // Firestore Timestamp
     insuranceExpiry?: any;
     rentingCompanyId?: string; // If rented
+    contractStartDate?: any;
+    contractEndDate?: any;
     workshopId?: string; // Assigned workshop
     assignedDriverId?: string;
     isManagement?: boolean; // If true, only admins/managers can assign

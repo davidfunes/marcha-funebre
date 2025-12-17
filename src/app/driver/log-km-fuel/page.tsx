@@ -20,6 +20,7 @@ import {
 import Link from 'next/link';
 import { Vehicle } from '@/types';
 import { createWorker } from 'tesseract.js';
+import { logPoints } from '@/services/GamificationService';
 
 type LogType = 'km' | 'fuel';
 
@@ -263,9 +264,7 @@ export default function LogKmFuelPage() {
 
             // 3. Gamification: Award 10 Points
             if (user!.id) {
-                await updateDoc(doc(db, 'users', user!.id), {
-                    points: increment(10)
-                });
+                await logPoints(user!.id, 10, `log_${activeTab}`);
             }
 
             setSuccess(true);

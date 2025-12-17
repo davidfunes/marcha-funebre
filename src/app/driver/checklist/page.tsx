@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { db } from '@/lib/firebase/firebase';
 import { collection, addDoc, doc, updateDoc, increment, serverTimestamp } from 'firebase/firestore';
+import { logPoints } from '@/services/GamificationService';
 import {
     CheckSquare,
     ArrowRight,
@@ -93,9 +94,7 @@ export default function ChecklistPage() {
 
             // 2. Gamification: Award 50 Points
             if (user.id) {
-                await updateDoc(doc(db, 'users', user.id), {
-                    points: increment(50)
-                });
+                await logPoints(user.id, 50, 'checklist_completed');
             }
 
             setSuccess(true);

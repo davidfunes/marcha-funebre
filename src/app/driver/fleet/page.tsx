@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { db } from '@/lib/firebase/firebase';
 import { doc, getDoc, collection, query, where, getDocs, updateDoc, increment } from 'firebase/firestore';
-import { Vehicle } from '@/types';
+import { Vehicle, RentingCompany } from '@/types';
 import {
     Car,
     Calendar,
@@ -17,7 +17,8 @@ import {
     LogOut,
     MapPin,
     X,
-    Check
+    Check,
+    Phone
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -25,6 +26,7 @@ export default function MyVehiclePage() {
     const { user } = useAuth();
     const router = useRouter();
     const [vehicle, setVehicle] = useState<Vehicle | null>(null);
+    const [rentingCompany, setRentingCompany] = useState<RentingCompany | null>(null);
     const [loading, setLoading] = useState(true);
     const [showReturnModal, setShowReturnModal] = useState(false);
     const [parkingLocation, setParkingLocation] = useState('');
@@ -66,8 +68,40 @@ export default function MyVehiclePage() {
             }
         };
 
+        const fetchRentingCompany = async (companyId: string) => {
+            try {
+                const docRef = doc(db, 'renting_companies', companyId);
+                const docSnap = await getDoc(docRef);
+                if (docSnap.exists()) {
+                    setRentingCompany({ id: docSnap.id, ...docSnap.data() } as RentingCompany);
+                }
+            } catch (error) {
+                console.error("Error fetching renting company:", error);
+            }
+        };
+
         fetchVehicle();
     }, [user]);
+
+    // Effect to fetch renting company when vehicle is loaded
+    useEffect(() => {
+        if (vehicle?.rentingCompanyId) {
+            const fetchRenting = async () => {
+                try {
+                    const docRef = doc(db, 'renting_companies', vehicle.rentingCompanyId!);
+                    const docSnap = await getDoc(docRef);
+                    if (docSnap.exists()) {
+                        setRentingCompany({ id: docSnap.id, ...docSnap.data() } as RentingCompany);
+                    }
+                } catch (error) {
+                    console.error("Error fetching renting company:", error);
+                }
+            };
+            fetchRenting();
+        } else {
+            setRentingCompany(null);
+        }
+    }, [vehicle]);
 
     const handleReturnVehicle = async () => {
         if (!vehicle || !user) return;
@@ -209,6 +243,20 @@ export default function MyVehiclePage() {
                             </p>
                         </div>
                     </div>
+
+                    {rentingCompany && (
+                        <div className="bg-card p-4 rounded-xl border border-border flex items-center gap-4">
+                            <div className="bg-green-500/10 p-3 rounded-lg text-green-500">
+                                <Phone className="w-6 h-6" />
+                            </div>
+                            <div>
+                                <p className="text-sm text-muted-foreground">Asistencia {rentingCompany.name}</p>
+                                <a href={`tel:${rentingCompany.phone}`} className="font-bold text-lg text-green-600 hover:underline">
+                                    {rentingCompany.phone}
+                                </a>
+                            </div>
+                        </div>
+                    )}
                 </div>
 
                 {/* Return Button */}
