@@ -413,7 +413,15 @@ export default function VehiclesPage() {
                             <select
                                 required
                                 value={formData.brandId}
-                                onChange={e => setFormData({ ...formData, brandId: e.target.value })}
+                                onChange={e => {
+                                    const selectedId = e.target.value;
+                                    const selectedBrand = brands.find(b => b.id === selectedId);
+                                    setFormData({
+                                        ...formData,
+                                        brandId: selectedId,
+                                        brand: selectedBrand ? selectedBrand.name : ''
+                                    });
+                                }}
                                 className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary outline-none"
                             >
                                 <option value="">Seleccionar marca</option>
