@@ -24,8 +24,9 @@ export function DataIntegrityChecker() {
                 const invalidVeh = vehicles.filter(v => (v.status as any) === 'available');
                 setInvalidVehicles(invalidVeh);
 
-                // Check for users with invalid status (anything other than 'active' or 'inactive')
-                const invalidUsrs = users.filter(u => u.status !== 'active' && u.status !== 'inactive');
+                // Check for users with invalid status
+                const validStatuses = ['active', 'inactive', 'pending', 'rejected', 'blocked'];
+                const invalidUsrs = users.filter(u => !validStatuses.includes(u.status));
                 setInvalidUsers(invalidUsrs);
             } catch (error) {
                 console.error('Error checking data integrity:', error);

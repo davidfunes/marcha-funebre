@@ -2,8 +2,9 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, RefreshCw, Trophy } from 'lucide-react';
+import { ArrowLeft, RefreshCw, Trophy, Volume2, VolumeX } from 'lucide-react';
 import { useGameTimer } from '@/hooks/useGameTimer';
+import { soundManager } from '@/utils/sound';
 
 const GRID_SIZE = 20;
 const CANVAS_SIZE = 400; // Mobile friendly
@@ -21,6 +22,7 @@ export default function SnakeGame() {
     const [score, setScore] = useState(0);
     const [isPlaying, setIsPlaying] = useState(false);
     const [highScore, setHighScore] = useState(0);
+    const [isSoundEnabled, setIsSoundEnabled] = useState(false);
 
     // Gamification: Earn points while playing
     useGameTimer(isPlaying && !gameOver);
@@ -30,6 +32,36 @@ export default function SnakeGame() {
         const savedHigh = localStorage.getItem('snake_highscore');
         if (savedHigh) setHighScore(parseInt(savedHigh));
     }, []);
+
+    useEffect(() => {
+        if (isPlaying && !gameOver) {
+            soundManager.playMusic('snake');
+        } else {
+            soundManager.stopMusic();
+        }
+        return () => soundManager.stopMusic();
+    }, [isPlaying, gameOver, isSoundEnabled]);
+
+    useEffect(() => {
+        soundManager.setMuted(!isSoundEnabled);
+        if (isPlaying && !gameOver && isSoundEnabled) {
+            soundManager.playMusic('snake');
+        } else if (!isSoundEnabled) {
+            soundManager.stopMusic();
+        }
+    }, [isSoundEnabled, isPlaying, gameOver]);
+
+    const toggleSound = () => {
+        setIsSoundEnabled(!isSoundEnabled);
+    };
+
+    // Dynamic Tempo Logic
+    useEffect(() => {
+        if (!isPlaying) return;
+        // Base 120 + 1 bpm per score point
+        const newTempo = 120 + score;
+        soundManager.setTempo(newTempo);
+    }, [score, isPlaying]);
 
     const spawnFood = useCallback(() => {
         let newFood: { x: number; y: number };
@@ -77,12 +109,14 @@ export default function SnakeGame() {
                     newHead.y < 0 ||
                     newHead.y >= GRID_SIZE
                 ) {
+                    soundManager.playGameOver();
                     setGameOver(true);
                     return prevSnake;
                 }
 
                 // 2. Self
                 if (prevSnake.some(segment => segment.x === newHead.x && segment.y === newHead.y)) {
+                    soundManager.playGameOver();
                     setGameOver(true);
                     return prevSnake;
                 }
@@ -91,6 +125,7 @@ export default function SnakeGame() {
 
                 // Check Food
                 if (newHead.x === food.x && newHead.y === food.y) {
+                    soundManager.playSnakeEat();
                     setScore(s => {
                         const newScore = s + 1;
                         if (newScore > highScore) {
@@ -149,28 +184,76 @@ export default function SnakeGame() {
         ctx.fillStyle = '#0b0c15';
         ctx.fillRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
 
+        // Draw faint grid
+        ctx.strokeStyle = '#1f2937';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        for (let i = 1; i < GRID_SIZE; i++) {
+            ctx.moveTo(i * CELL_SIZE, 0); ctx.lineTo(i * CELL_SIZE, CANVAS_SIZE);
+            ctx.moveTo(0, i * CELL_SIZE); ctx.lineTo(CANVAS_SIZE, i * CELL_SIZE);
+        }
+        ctx.stroke();
+
         // Draw Snake
         snake.forEach((segment, index) => {
+            const sx = segment.x * CELL_SIZE;
+            const sy = segment.y * CELL_SIZE;
+
             // Gradient or color logic
             ctx.fillStyle = index === 0 ? '#10b981' : '#34d399'; // Green head vs body
-            // Round rect manually or simple rect
-            ctx.fillRect(
-                segment.x * CELL_SIZE + 1,
-                segment.y * CELL_SIZE + 1,
-                CELL_SIZE - 2,
-                CELL_SIZE - 2
-            );
+            ctx.shadowBlur = index === 0 ? 15 : 5;
+            ctx.shadowColor = '#10b981';
+
+            // Rounded segments
+            ctx.beginPath();
+            ctx.roundRect(sx + 1, sy + 1, CELL_SIZE - 2, CELL_SIZE - 2, 6);
+            ctx.fill();
+
+            ctx.shadowBlur = 0;
+
+            // Eyes on head
+            if (index === 0) {
+                ctx.fillStyle = '#111827'; // Dark pupils
+                // Determine eye position based on direction
+                let eyeOffsetX1 = 0, eyeOffsetY1 = 0, eyeOffsetX2 = 0, eyeOffsetY2 = 0;
+
+                // Defaults for Up/Neutral
+                if (direction.y === -1 || (direction.x === 0 && direction.y === 0)) {
+                    eyeOffsetX1 = 5; eyeOffsetY1 = 5;
+                    eyeOffsetX2 = 13; eyeOffsetY2 = 5;
+                } else if (direction.y === 1) { // Down
+                    eyeOffsetX1 = 5; eyeOffsetY1 = 13;
+                    eyeOffsetX2 = 13; eyeOffsetY2 = 13;
+                } else if (direction.x === -1) { // Left
+                    eyeOffsetX1 = 5; eyeOffsetY1 = 5;
+                    eyeOffsetX2 = 5; eyeOffsetY2 = 13;
+                } else if (direction.x === 1) { // Right
+                    eyeOffsetX1 = 13; eyeOffsetY1 = 5;
+                    eyeOffsetX2 = 13; eyeOffsetY2 = 13;
+                }
+
+                // Map specific coordinates manually for better precision if needed, but relative works
+                const scale = CELL_SIZE / 20; // 20 is assumption of cell size in eye logic mapping
+
+                ctx.beginPath();
+                ctx.arc(sx + eyeOffsetX1 * scale, sy + eyeOffsetY1 * scale, 2, 0, Math.PI * 2);
+                ctx.arc(sx + eyeOffsetX2 * scale, sy + eyeOffsetY2 * scale, 2, 0, Math.PI * 2);
+                ctx.fill();
+            }
         });
 
         // Draw Food
         ctx.fillStyle = '#ef4444'; // Red
+        ctx.shadowBlur = 15;
+        ctx.shadowColor = '#ef4444';
         ctx.beginPath();
         const foodX = food.x * CELL_SIZE + CELL_SIZE / 2;
         const foodY = food.y * CELL_SIZE + CELL_SIZE / 2;
         ctx.arc(foodX, foodY, CELL_SIZE / 3, 0, Math.PI * 2);
         ctx.fill();
+        ctx.shadowBlur = 0;
 
-    }, [snake, food]);
+    }, [snake, food, direction]);
 
     // Mobile Controls
     const handleControl = (dir: 'UP' | 'DOWN' | 'LEFT' | 'RIGHT') => {
@@ -190,6 +273,12 @@ export default function SnakeGame() {
                     <ArrowLeft className="w-6 h-6" />
                 </Link>
                 <div className="flex items-center gap-4">
+                    <button
+                        onClick={toggleSound}
+                        className={`p-2 rounded-full transition-colors ${isSoundEnabled ? 'bg-primary/20 text-primary' : 'bg-gray-800 text-gray-400'}`}
+                    >
+                        {isSoundEnabled ? <Volume2 className="w-5 h-5" /> : <VolumeX className="w-5 h-5" />}
+                    </button>
                     <div className="flex items-center gap-1.5 px-3 py-1 bg-gray-800 rounded-full">
                         <span className="text-gray-400 text-xs uppercase">Score</span>
                         <span className="font-mono font-bold">{score}</span>
@@ -213,12 +302,12 @@ export default function SnakeGame() {
 
                     {/* Overlays */}
                     {(!isPlaying || gameOver) && (
-                        <div className="absolute inset-0 bg-black/70 backdrop-blur-sm flex flex-col items-center justify-center text-center p-6">
+                        <div className="absolute inset-0 bg-black/80 backdrop-blur-sm flex flex-col items-center justify-center text-center p-6">
                             {gameOver && (
-                                <h2 className="text-3xl font-bold text-red-500 mb-2">¡GAME OVER!</h2>
+                                <h2 className="text-3xl font-bold text-red-500 mb-2 drop-shadow-glow">¡GAME OVER!</h2>
                             )}
                             {!isPlaying && !gameOver && (
-                                <h2 className="text-3xl font-bold text-green-500 mb-2">SNAKE</h2>
+                                <h2 className="text-3xl font-bold text-green-500 mb-2 drop-shadow-glow">SNAKE</h2>
                             )}
 
                             <p className="text-gray-300 mb-6">
@@ -270,6 +359,14 @@ export default function SnakeGame() {
                             <ArrowLeft className="w-8 h-8 rotate-180" />
                         </button>
                     </div>
+                </div>
+
+                {/* Music Credits */}
+                <div className="mt-4 flex flex-col items-center gap-1">
+                    <span className="text-xs text-gray-500 font-mono text-center">Music: "Ride of the Valkyries"</span>
+                    <a href="https://www.youtube.com/watch?v=bbTN8dqs54g" target="_blank" rel="noreferrer" className="text-[10px] text-gray-600 hover:text-primary transition-colors font-mono">
+                        Source: Classical 8 Bit (YouTube)
+                    </a>
                 </div>
             </main>
         </div>

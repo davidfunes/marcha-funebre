@@ -15,27 +15,7 @@ export default function GamesMenuPage() {
 
     return (
         <div className="min-h-screen bg-background text-foreground">
-            {/* Header */}
-            <div className="bg-card/50 backdrop-blur-sm border-b border-border p-4 flex items-center gap-4 sticky top-0 z-10">
-                <Link href="/driver/dashboard" className="p-2 -ml-2 hover:bg-accent rounded-full transition-colors">
-                    <ArrowLeft className="w-6 h-6" />
-                </Link>
-                <div className="flex-1">
-                    <h1 className="text-xl font-bold font-display flex items-center gap-2">
-                        <Gamepad2 className="w-6 h-6 text-primary" />
-                        Zona de Descanso
-                    </h1>
-                </div>
-                <div className="flex items-center gap-3">
-                    <ThemeToggle />
-                    <div className="flex items-center gap-2 bg-yellow-500/20 px-3 py-1 rounded-full border border-yellow-500/30">
-                        <Trophy className="w-4 h-4 text-yellow-500" />
-                        <span className="font-bold text-yellow-500">{user?.points || 0}</span>
-                    </div>
-                </div>
-            </div>
-
-            <main className="p-4 max-w-lg mx-auto space-y-6 pt-8">
+            <main className="p-4 max-w-lg mx-auto space-y-6 pt-6">
                 <div className="text-center mb-8">
                     <h2 className="text-2xl font-bold mb-2">¡Tómate un respiro!</h2>
                     <p className="text-muted-foreground">Relájate unos minutos antes de volver a la ruta.</p>

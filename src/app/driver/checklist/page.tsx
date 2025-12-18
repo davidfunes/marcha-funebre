@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { db } from '@/lib/firebase/firebase';
 import { collection, addDoc, doc, updateDoc, increment, serverTimestamp } from 'firebase/firestore';
-import { logPoints } from '@/services/GamificationService';
+import { awardPointsForAction } from '@/services/GamificationService';
 import {
     CheckSquare,
     ArrowRight,
@@ -94,7 +94,8 @@ export default function ChecklistPage() {
 
             // 2. Gamification: Award 50 Points
             if (user.id) {
-                await logPoints(user.id, 50, 'checklist_completed');
+                // Dynamic points
+                await awardPointsForAction(user.id, 'checklist_completed');
             }
 
             setSuccess(true);
@@ -119,7 +120,7 @@ export default function ChecklistPage() {
                 <h1 className="text-3xl font-bold text-foreground mb-2">¡Inspección Completada!</h1>
                 <p className="text-muted-foreground mb-6">Gracias por mantener la seguridad de la flota.</p>
                 <div className="bg-yellow-500/10 px-6 py-3 rounded-full border border-yellow-500/20 text-yellow-600 font-bold text-lg animate-bounce">
-                    +50 Puntos
+                    Puntos añadidos
                 </div>
             </div>
         );

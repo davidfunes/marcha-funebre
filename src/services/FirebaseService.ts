@@ -128,6 +128,12 @@ export const subscribeToCollection = <T>(collectionName: string, callback: (data
     return onSnapshot(q, (snapshot) => {
         const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as T));
         callback(data);
+    }, (error) => {
+        if (error.code === 'permission-denied') {
+            console.log(`Permission denied for collection ${collectionName} (likely due to logout). Ignoring.`);
+        } else {
+            console.error(`Error subscribing to ${collectionName}:`, error);
+        }
     });
 };
 
@@ -140,3 +146,30 @@ export const getInventory = () => getCollection<InventoryItem>('inventory');
 export const getMaintenance = () => getCollection<MaintenanceRecord>('maintenance');
 export const getWarehouses = () => getCollection<Warehouse>('warehouses');
 export const getRentingCompanies = () => getCollection<RentingCompany>('renting_companies');
+
+// Firebase Storage Helpers
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { storage } from '@/lib/firebase/firebase';
+
+export const uploadFile = async (file: File, path: string): Promise<string> => {
+    try {
+        const storageRef = ref(storage, path);
+        const snapshot = await uploadBytes(storageRef, file);
+        const downloadURL = await getDownloadURL(snapshot.ref);
+        return downloadURL;
+    } catch (error) {
+        console.error("Error uploading file:", error);
+        throw error;
+    }
+};
+
+export const getAdminMessages = async (): Promise<any[]> => {
+    try {
+        const q = query(collection(db, 'admin_messages'), orderBy('timestamp', 'desc'));
+        const querySnapshot = await getDocs(q);
+        return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    } catch (error) {
+        console.error("Error getting admin messages:", error);
+        return [];
+    }
+};

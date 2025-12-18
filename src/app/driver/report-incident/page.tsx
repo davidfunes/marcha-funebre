@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { IncidentPriority, IncidentStatus } from '@/types';
+import { awardPointsForAction } from '@/services/GamificationService';
 
 import { Modal } from '@/components/ui/Modal';
 
@@ -71,9 +72,8 @@ export default function ReportIncidentPage() {
 
             // 2. Gamification: Award 25 Points
             if (user.id) {
-                await updateDoc(doc(db, 'users', user.id), {
-                    points: increment(25)
-                });
+                // Dynamic points
+                await awardPointsForAction(user.id, 'incident_reported');
             }
 
             setSuccess(true);
@@ -102,7 +102,7 @@ export default function ReportIncidentPage() {
                 <h1 className="text-3xl font-bold text-foreground mb-2">¡Reporte Enviado!</h1>
                 <p className="text-muted-foreground mb-6">El equipo de mantenimiento ha sido notificado.</p>
                 <div className="bg-yellow-500/10 px-6 py-3 rounded-full border border-yellow-500/20 text-yellow-600 font-bold text-lg animate-bounce">
-                    +25 Puntos
+                    Puntos añadidos
                 </div>
             </div>
         );

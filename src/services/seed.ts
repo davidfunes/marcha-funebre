@@ -15,7 +15,8 @@ export const seedDatabase = async () => {
     const users: User[] = [
         {
             id: 'admin_1',
-            name: 'David Funes',
+            name: 'David',
+            firstSurname: 'Funes',
             email: 'admin@fleet.com',
             role: 'admin',
             points: 1000,
@@ -25,7 +26,8 @@ export const seedDatabase = async () => {
         },
         {
             id: 'driver_1',
-            name: 'Carlos Sainz',
+            name: 'Carlos',
+            firstSurname: 'Sainz',
             email: 'carlos@fleet.com',
             role: 'conductor',
             points: 450,
@@ -35,7 +37,8 @@ export const seedDatabase = async () => {
         },
         {
             id: 'driver_2',
-            name: 'Fernando Alonso',
+            name: 'Fernando',
+            firstSurname: 'Alonso',
             email: 'fernando@fleet.com',
             role: 'conductor',
             points: 800,
@@ -131,7 +134,8 @@ export const repairAdminProfile = async (uid: string) => {
     const ref = doc(db, 'users', uid);
     await setDoc(ref, {
         id: uid,
-        name: 'Admin Recuperado',
+        name: 'Admin',
+        firstSurname: 'Recuperado',
         email: 'admin@repaired.com',
         role: 'admin',
         points: 1000,

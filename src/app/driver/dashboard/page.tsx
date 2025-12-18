@@ -12,17 +12,17 @@ import {
     CheckSquare,
     User,
     LogOut,
-    Award,
-    ArrowRight,
+    Gauge,
+    Fuel,
+    Users,
     Gamepad2,
+    Lock,
+    ArrowRight,
     MapPin,
     X,
-    Users,
-    Lock
+    Droplets
 } from 'lucide-react';
 import Link from 'next/link';
-import { Logo } from '@/components/ui/Logo';
-import { ThemeToggle } from '@/components/ui/ThemeToggle';
 import { Vehicle } from '@/types';
 
 export default function DriverDashboard() {
@@ -124,13 +124,33 @@ export default function DriverDashboard() {
             requiresVehicle: false
         },
         {
-            label: 'Registrar KM y Combustible',
+            label: 'Registrar Kilometraje',
             description: 'Foto del salpicadero',
-            href: '/driver/log-km-fuel',
-            icon: Camera,
+            href: '/driver/log-km',
+            icon: Gauge,
             color: 'text-blue-400',
             bg: 'bg-blue-500/10',
             border: 'border-blue-500/20',
+            requiresVehicle: true
+        },
+        {
+            label: 'Reportar Combustible',
+            description: 'Nivel actual',
+            href: '/driver/log-fuel',
+            icon: Fuel,
+            color: 'text-orange-400',
+            bg: 'bg-orange-500/10',
+            border: 'border-orange-500/20',
+            requiresVehicle: true
+        },
+        {
+            label: 'Registrar Lavado',
+            description: 'Reportar limpieza',
+            href: '/driver/log-wash',
+            icon: Droplets,
+            color: 'text-cyan-400',
+            bg: 'bg-cyan-500/10',
+            border: 'border-cyan-500/20',
             requiresVehicle: true
         },
         {
@@ -180,27 +200,8 @@ export default function DriverDashboard() {
 
     return (
         <div className="min-h-screen bg-background text-foreground font-sans selection:bg-primary-500/30">
-            {/* Mobile Header */}
-            <div className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-card/95 backdrop-blur border-b border-border px-4 py-3 flex items-center justify-between">
-                <Logo size="sm" />
-                <div className="flex items-center gap-3">
-                    <ThemeToggle />
-                    <div className="flex items-center gap-1 bg-yellow-500/10 px-2 py-1 rounded-full border border-yellow-500/20">
-                        <Award className="w-3 h-3 text-yellow-500" />
-                        <span className="text-xs font-bold text-yellow-500">{user.points || 0}</span>
-                    </div>
-                    <button
-                        onClick={() => signOut()}
-                        className="p-2 text-muted-foreground hover:text-foreground"
-                    >
-                        <LogOut className="w-5 h-5" />
-                    </button>
-                </div>
-            </div>
-
-            <main className="max-w-md mx-auto px-4 pb-20 pt-20 lg:pt-12 lg:max-w-4xl">
-                {/* Header Section */}
-                {/* Header Section */}
+            <main className="max-w-md mx-auto px-4 pb-20 pt-8 lg:pt-12 lg:max-w-4xl">
+                {/* Header Section (Greeting Only) */}
                 <div className="mb-8 flex items-center justify-between">
                     <div>
                         <h1 className="text-2xl font-display font-bold text-foreground mb-1">
@@ -209,18 +210,6 @@ export default function DriverDashboard() {
                         <p className="text-muted-foreground text-sm">
                             ¿Qué tarea vamos a realizar ahora?
                         </p>
-                    </div>
-
-                    <div className="hidden lg:flex items-center gap-4">
-                        <ThemeToggle />
-                        <button
-                            onClick={() => signOut()}
-                            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-red-50 text-red-600 font-medium hover:bg-red-100 transition-colors"
-                            title="Cerrar Sesión"
-                        >
-                            <LogOut className="w-5 h-5" />
-                            <span>Salir</span>
-                        </button>
                     </div>
                 </div>
 
@@ -353,6 +342,6 @@ export default function DriverDashboard() {
                     </div>
                 )}
             </main>
-        </div>
+        </div >
     );
 }

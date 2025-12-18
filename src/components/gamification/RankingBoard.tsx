@@ -5,7 +5,7 @@ import { getRanking, RankingPeriod, RankingUser } from '@/services/GamificationS
 import { Trophy, Medal, Crown } from 'lucide-react';
 
 export function RankingBoard() {
-    const [period, setPeriod] = useState<RankingPeriod>('month');
+    const [period, setPeriod] = useState<RankingPeriod>('all');
     const [ranking, setRanking] = useState<RankingUser[]>([]);
     const [loading, setLoading] = useState(true);
 
@@ -52,8 +52,8 @@ export function RankingBoard() {
                         key={p}
                         onClick={() => setPeriod(p)}
                         className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${period === p
-                                ? 'bg-background text-foreground shadow-sm'
-                                : 'text-muted-foreground hover:text-foreground'
+                            ? 'bg-background text-foreground shadow-sm'
+                            : 'text-muted-foreground hover:text-foreground'
                             }`}
                     >
                         {p === 'week' && 'Semana'}

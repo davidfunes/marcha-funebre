@@ -178,7 +178,10 @@ export default function UsersPage() {
                     status={u.status}
                     options={[
                         { label: 'Active', value: 'active' },
-                        { label: 'Inactive', value: 'inactive' }
+                        { label: 'Inactive', value: 'inactive' },
+                        { label: 'Pending', value: 'pending' },
+                        { label: 'Rejected', value: 'rejected' },
+                        { label: 'Blocked', value: 'blocked' }
                     ]}
                     onChange={(newStatus) => {
                         if (u.id) {
@@ -252,7 +255,10 @@ export default function UsersPage() {
                                     status={user.status}
                                     options={[
                                         { label: 'Active', value: 'active' },
-                                        { label: 'Inactive', value: 'inactive' }
+                                        { label: 'Inactive', value: 'inactive' },
+                                        { label: 'Pending', value: 'pending' },
+                                        { label: 'Rejected', value: 'rejected' },
+                                        { label: 'Blocked', value: 'blocked' }
                                     ]}
                                     onChange={(newStatus) => {
                                         if (user.id) {
@@ -351,6 +357,9 @@ export default function UsersPage() {
                             >
                                 <option value="active">Activo</option>
                                 <option value="inactive">Inactivo</option>
+                                <option value="pending">Pendiente</option>
+                                <option value="rejected">Rechazado</option>
+                                <option value="blocked">Bloqueado</option>
                             </select>
                         </div>
                     </div>

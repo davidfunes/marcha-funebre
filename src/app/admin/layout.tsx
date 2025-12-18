@@ -1,9 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { useAuth } from '@/contexts/AuthContext';
-import { usePathname } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import {
     LayoutDashboard,
@@ -22,9 +20,12 @@ import {
     Play,
     Trophy
 } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
 import { Logo } from '@/components/ui/Logo';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
 import { DataIntegrityChecker } from '@/components/admin/DataIntegrityChecker';
+import { isProfileComplete } from '@/utils/profileUtils';
+import { ProfileCompletionAlert } from '@/components/profile/ProfileCompletionAlert';
 
 function SidebarLink({ item, onClick }: { item: any; onClick?: () => void }) {
     const pathname = usePathname();
@@ -92,8 +93,6 @@ export default function AdminLayout({
         { label: 'Mantenimiento', href: '/admin/maintenance', icon: Wrench },
     ];
 
-    // ... parts omitted
-
     const SidebarContent = ({ isMobile = false }) => (
         <div className="flex flex-col h-full bg-card border-r border-border">
             <div className="flex h-16 items-center px-6 border-b border-border justify-between">
@@ -152,6 +151,12 @@ export default function AdminLayout({
                 {/* Global Integrity Check */}
                 <DataIntegrityChecker />
 
+                {user && !isProfileComplete(user) && (
+                    <div className="px-4 md:px-0">
+                        <ProfileCompletionAlert role="admin" />
+                    </div>
+                )}
+
                 {/* Header */}
                 <header className="flex h-16 items-center justify-between border-b border-border px-4 md:px-8 bg-card/50 backdrop-blur shrink-0 transition-opacity">
                     <div className="flex items-center gap-4">
@@ -170,13 +175,27 @@ export default function AdminLayout({
 
                         <div className="hidden md:block h-6 w-px bg-border"></div>
 
-                        <div className="text-right hidden sm:block">
-                            <p className="text-sm font-medium leading-none">{user?.name}</p>
-                            <p className="text-xs text-muted-foreground mt-1 capitalize">{user?.role}</p>
-                        </div>
-                        <div className="h-10 w-10 rounded-full bg-secondary flex items-center justify-center shrink-0">
-                            <span className="font-bold text-secondary-foreground">{user?.name?.charAt(0)}</span>
-                        </div>
+                        <Link href="/admin/profile" className="flex items-center gap-3 hover:bg-muted/50 p-1.5 rounded-lg transition-colors">
+                            <div className="text-right hidden sm:block">
+                                <p className="text-sm font-medium leading-none">{user?.name}</p>
+                                <p className="text-xs text-muted-foreground mt-1 capitalize">{user?.role}</p>
+                            </div>
+                            <div className="h-10 w-10 rounded-full bg-secondary flex items-center justify-center shrink-0 overflow-hidden">
+                                {user?.avatar ? (
+                                    <img src={user.avatar} alt="Avatar" className="w-full h-full object-cover" />
+                                ) : (
+                                    <span className="font-bold text-secondary-foreground">{user?.name?.charAt(0)}</span>
+                                )}
+                            </div>
+                        </Link>
+
+                        <button
+                            onClick={() => signOut()}
+                            className="p-2 text-destructive hover:bg-destructive/10 rounded-full transition-colors"
+                            title="Cerrar Sesión"
+                        >
+                            <LogOut className="h-5 w-5" />
+                        </button>
                     </div>
                 </header>
 

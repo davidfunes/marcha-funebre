@@ -4,29 +4,31 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { db } from '@/lib/firebase/firebase';
-import { doc, getDoc, collection, query, where, getDocs, updateDoc, increment } from 'firebase/firestore';
-import { Vehicle, RentingCompany } from '@/types';
+import { doc, getDoc, collection, query, where, getDocs, updateDoc, orderBy, limit, Timestamp } from 'firebase/firestore';
+import { Vehicle, RentingCompany, MaintenanceRecord } from '@/types';
 import {
     Car,
     Calendar,
     Fuel,
     Settings,
     AlertTriangle,
-    FileText,
     ArrowLeft,
     LogOut,
     MapPin,
     X,
-    Check,
-    Phone
+    Phone,
+    Map
 } from 'lucide-react';
 import Link from 'next/link';
+import { format } from 'date-fns';
+import { es } from 'date-fns/locale';
 
 export default function MyVehiclePage() {
     const { user } = useAuth();
     const router = useRouter();
     const [vehicle, setVehicle] = useState<Vehicle | null>(null);
     const [rentingCompany, setRentingCompany] = useState<RentingCompany | null>(null);
+    const [nextAppointment, setNextAppointment] = useState<MaintenanceRecord | null>(null); // New state
     const [loading, setLoading] = useState(true);
     const [showReturnModal, setShowReturnModal] = useState(false);
     const [parkingLocation, setParkingLocation] = useState('');
@@ -83,23 +85,50 @@ export default function MyVehiclePage() {
         fetchVehicle();
     }, [user]);
 
-    // Effect to fetch renting company when vehicle is loaded
+    // Effect to fetch renting company and next appointment when vehicle is loaded
     useEffect(() => {
-        if (vehicle?.rentingCompanyId) {
-            const fetchRenting = async () => {
+        if (vehicle) {
+            if (vehicle.rentingCompanyId) {
+                const fetchRenting = async () => {
+                    try {
+                        const docRef = doc(db, 'renting_companies', vehicle.rentingCompanyId!);
+                        const docSnap = await getDoc(docRef);
+                        if (docSnap.exists()) {
+                            setRentingCompany({ id: docSnap.id, ...docSnap.data() } as RentingCompany);
+                        }
+                    } catch (error) {
+                        console.error("Error fetching renting company:", error);
+                    }
+                };
+                fetchRenting();
+            } else {
+                setRentingCompany(null);
+            }
+
+            // Fetch Next Appointment
+            const fetchNextAppointment = async () => {
                 try {
-                    const docRef = doc(db, 'renting_companies', vehicle.rentingCompanyId!);
-                    const docSnap = await getDoc(docRef);
-                    if (docSnap.exists()) {
-                        setRentingCompany({ id: docSnap.id, ...docSnap.data() } as RentingCompany);
+                    const now = Timestamp.now();
+                    const q = query(
+                        collection(db, 'maintenance'),
+                        where('vehicleId', '==', vehicle.id),
+                        where('status', '==', 'scheduled'),
+                        where('date', '>=', now),
+                        orderBy('date', 'asc'),
+                        limit(1)
+                    );
+                    const snapshot = await getDocs(q);
+                    if (!snapshot.empty) {
+                        const data = snapshot.docs[0].data() as MaintenanceRecord;
+                        setNextAppointment({ id: snapshot.docs[0].id, ...data });
+                    } else {
+                        setNextAppointment(null);
                     }
                 } catch (error) {
-                    console.error("Error fetching renting company:", error);
+                    console.error("Error fetching appointments:", error);
                 }
             };
-            fetchRenting();
-        } else {
-            setRentingCompany(null);
+            fetchNextAppointment();
         }
     }, [vehicle]);
 
@@ -136,6 +165,11 @@ export default function MyVehiclePage() {
         } finally {
             setReturning(false);
         }
+    };
+
+    const getAppointmentDate = (date: any) => {
+        if (!date) return null;
+        return date.seconds ? new Date(date.seconds * 1000) : new Date(date);
     };
 
     if (loading) {
@@ -230,17 +264,35 @@ export default function MyVehiclePage() {
 
                 {/* Info Cards */}
                 <div className="grid grid-cols-1 gap-4">
-                    <div className="bg-card p-4 rounded-xl border border-border flex items-center gap-4">
-                        <div className="bg-blue-500/10 p-3 rounded-lg text-blue-500">
+                    {/* Next Appointment Card - DYNAMIC */}
+                    <div className={`
+                        p-4 rounded-xl border flex items-center gap-4 transition-colors
+                        ${nextAppointment
+                            ? 'bg-primary/5 border-primary/20'
+                            : 'bg-card border-border'}
+                    `}>
+                        <div className={`
+                            p-3 rounded-lg flex items-center justify-center
+                            ${nextAppointment ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}
+                        `}>
                             <Calendar className="w-6 h-6" />
                         </div>
-                        <div>
-                            <p className="text-sm text-muted-foreground">Próximo Mantenimiento</p>
-                            <p className="font-semibold">
-                                {vehicle.nextMaintenanceDate
-                                    ? new Date(vehicle.nextMaintenanceDate.seconds * 1000).toLocaleDateString()
-                                    : 'No programado'}
-                            </p>
+                        <div className="flex-1">
+                            <p className="text-sm font-medium text-muted-foreground">Próxima Cita Taller</p>
+                            {nextAppointment ? (
+                                <div>
+                                    <p className="font-bold text-primary text-lg">
+                                        {format(getAppointmentDate(nextAppointment.date)!, 'd MMM, HH:mm', { locale: es })}
+                                    </p>
+                                    <p className="text-sm text-foreground/80 truncate max-w-[200px]">
+                                        {nextAppointment.garageName || 'Taller Asignado'}
+                                    </p>
+                                </div>
+                            ) : (
+                                <p className="font-semibold text-foreground/50 italic">
+                                    No hay citas programadas
+                                </p>
+                            )}
                         </div>
                     </div>
 

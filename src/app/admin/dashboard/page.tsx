@@ -21,11 +21,12 @@ import {
     Percent,
     ArrowUpRight,
     ArrowDownRight,
-    Check
+    Check,
+    ShieldAlert
 } from 'lucide-react';
 import Link from 'next/link';
 import { Modal } from '@/components/ui/Modal';
-import { getVehicles, getIncidents, getInventory, getUsers, getWarehouses, updateItem, addItem } from '@/services/FirebaseService';
+import { getVehicles, getIncidents, getInventory, getUsers, getWarehouses, updateItem, addItem, deleteItem, getAdminMessages } from '@/services/FirebaseService';
 import { seedDatabase } from '@/services/seed';
 import { Vehicle, Incident, InventoryItem, User, Warehouse } from '@/types';
 import { Timestamp } from 'firebase/firestore';
@@ -63,6 +64,7 @@ export default function AdminDashboard() {
     const [inventory, setInventory] = useState<InventoryItem[]>([]);
     const [users, setUsers] = useState<User[]>([]);
     const [warehouses, setWarehouses] = useState<Warehouse[]>([]);
+    const [adminMessages, setAdminMessages] = useState<any[]>([]);
     const [isLoadingData, setIsLoadingData] = useState(true);
     const [isSeeding, setIsSeeding] = useState(false);
 
@@ -90,24 +92,35 @@ export default function AdminDashboard() {
         reportedByUserId: ''
     });
 
+    // Pending Users State
+    const [pendingUsers, setPendingUsers] = useState<User[]>([]);
+    const [isPendingModalOpen, setIsPendingModalOpen] = useState(false);
+    const [userToReview, setUserToReview] = useState<User | null>(null);
+    const [isReviewConfirmOpen, setIsReviewConfirmOpen] = useState(false);
+    const [reviewAction, setReviewAction] = useState<'accept' | 'reject' | 'block' | null>(null);
+
+
 
     // Fetch Data
     useEffect(() => {
         if (user && user.role === 'admin') {
             const fetchData = async () => {
                 try {
-                    const [vData, iData, invData, uData, wData] = await Promise.all([
+                    const [vData, iData, invData, uData, wData, msgData] = await Promise.all([
                         getVehicles(),
                         getIncidents(),
                         getInventory(),
                         getUsers(),
-                        getWarehouses()
+                        getWarehouses(),
+                        getAdminMessages()
                     ]);
                     setVehicles(vData);
                     setIncidents(iData);
                     setInventory(invData);
                     setUsers(uData);
+                    setPendingUsers(uData.filter(u => u.status === 'pending'));
                     setWarehouses(wData);
+                    setAdminMessages(Array.isArray(msgData) ? msgData : []);
                 } catch (error) {
                     console.error("Error fetching dashboard data:", error);
                 } finally {
@@ -163,6 +176,48 @@ export default function AdminDashboard() {
         }
     };
 
+    const handleUserReview = async () => {
+        if (!userToReview || !reviewAction) return;
+
+        try {
+            if (reviewAction === 'accept') {
+                const newStatus = 'active';
+                await updateItem('users', userToReview.id!, { status: newStatus });
+
+                setUsers(prev => prev.map(u =>
+                    u.id === userToReview.id ? { ...u, status: newStatus } : u
+                ));
+            } else if (reviewAction === 'block') {
+                const newStatus = 'blocked';
+                await updateItem('users', userToReview.id!, { status: newStatus });
+
+                setUsers(prev => prev.map(u =>
+                    u.id === userToReview.id ? { ...u, status: newStatus } : u
+                ));
+            } else {
+                // Reject Action -> Set User Status to 'rejected' (Allow Reactivation via Signup)
+                const newStatus = 'rejected';
+                await updateItem('users', userToReview.id!, { status: newStatus });
+
+                setUsers(prev => prev.map(u =>
+                    u.id === userToReview.id ? { ...u, status: newStatus } : u
+                ));
+            }
+
+            setPendingUsers(prev => prev.filter(u => u.id !== userToReview.id));
+
+            setIsReviewConfirmOpen(false);
+            setUserToReview(null);
+            setReviewAction(null);
+            if (pendingUsers.length <= 1) setIsPendingModalOpen(false);
+
+        } catch (error) {
+            console.error('Error reviewing user:', error);
+            alert('Error al gestionar el usuario');
+        }
+    };
+
+
     // --- Operational KPIs Calculations ---
     const calculateOperationalKPIs = () => {
         let totalItems = 0;
@@ -208,6 +263,8 @@ export default function AdminDashboard() {
         { id: 'incidents', label: 'Incidencias', value: incidents.filter(i => i.status !== 'resolved').length.toString(), icon: AlertTriangle, trend: 'Pendientes de revisión' },
         { id: 'inventory', label: 'Inventario Musical', value: inventory.length.toString(), icon: Music, trend: 'En almacén' },
         { id: 'maintenance', label: 'Mantenimiento', value: vehicles.filter(v => v.status === 'maintenance').length.toString(), icon: Wrench, trend: 'En taller' },
+        { id: 'pending_users', label: 'Usuarios Pendientes', value: pendingUsers.length.toString(), icon: Users, trend: 'Esperando aprobación', active: pendingUsers.length > 0 },
+        { id: 'security', label: 'Alertas Seguridad', value: adminMessages.filter(m => m.type === 'lockout' && !m.read).length.toString(), icon: ShieldAlert, trend: 'Bloqueos de cuenta', active: adminMessages.some(m => m.type === 'lockout' && !m.read) },
     ];
 
     const menuItems = [
@@ -223,8 +280,12 @@ export default function AdminDashboard() {
     ];
 
     const handleStatClick = (statId: string) => {
-        setSelectedStat(statId);
-        setIsModalOpen(true);
+        if (statId === 'pending_users') {
+            setIsPendingModalOpen(true);
+        } else {
+            setSelectedStat(statId);
+            setIsModalOpen(true);
+        }
     };
 
     const handleResolveIncident = async () => {
@@ -408,6 +469,66 @@ export default function AdminDashboard() {
                         )) : <p className="text-muted-foreground text-center py-4">No hay vehículos en mantenimiento</p>}
                     </div>
                 );
+            case 'security':
+                return (
+                    <div className="space-y-4">
+                        {adminMessages.length > 0 ? adminMessages.map(msg => (
+                            <div key={msg.id} className="p-4 bg-red-50 border border-red-100 rounded-lg space-y-2">
+                                <div className="flex items-center justify-between">
+                                    <h4 className="font-bold text-red-900 flex items-center gap-2">
+                                        <ShieldAlert className="h-4 w-4" />
+                                        Bloqueo de Cuenta
+                                    </h4>
+                                    <span className="text-xs text-red-600 font-mono">
+                                        {msg.timestamp?.seconds ? new Date(msg.timestamp.seconds * 1000).toLocaleString() : 'Reciente'}
+                                    </span>
+                                </div>
+                                <p className="text-sm font-medium">Usuario: <span className="font-mono bg-white px-1 rounded border">{msg.email}</span></p>
+                                <div className="bg-white p-3 rounded border border-red-100 text-sm text-gray-700 italic">
+                                    "{msg.content}"
+                                </div>
+                                <div className="flex justify-end gap-2 pt-2">
+                                    <button
+                                        className="text-xs px-3 py-1.5 bg-white border border-gray-200 hover:bg-gray-50 rounded font-medium text-gray-600 transition-colors"
+                                        onClick={async () => {
+                                            await deleteItem('admin_messages', msg.id);
+                                            setAdminMessages(prev => prev.filter(m => m.id !== msg.id));
+                                        }}
+                                    >
+                                        Ignorar
+                                    </button>
+                                    <button
+                                        className="text-xs px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded font-medium transition-colors"
+                                        onClick={async () => {
+                                            try {
+                                                // Find user by email
+                                                const targetUser = users.find(u => u.email === msg.email);
+                                                if (targetUser && targetUser.id) {
+                                                    // Block the user
+                                                    await updateItem('users', targetUser.id, { status: 'blocked' });
+                                                    // Update local state
+                                                    setUsers(prev => prev.map(u =>
+                                                        u.id === targetUser.id ? { ...u, status: 'blocked' } : u
+                                                    ));
+                                                }
+                                                // Delete the message
+                                                await deleteItem('admin_messages', msg.id);
+                                                setAdminMessages(prev => prev.filter(m => m.id !== msg.id));
+                                            } catch (error) {
+                                                console.error('Error blocking user:', error);
+                                                alert('Error al bloquear usuario');
+                                            }
+                                        }}
+                                    >
+                                        Bloquear Usuario
+                                    </button>
+                                </div>
+                            </div>
+                        )) : (
+                            <p className="text-muted-foreground text-center py-6">No hay alertas de seguridad.</p>
+                        )}
+                    </div>
+                );
             default:
                 return null;
         }
@@ -456,13 +577,121 @@ export default function AdminDashboard() {
                     >
                         <div className="flex flex-row items-center justify-between space-y-0 pb-2">
                             <span className="text-sm font-medium text-muted-foreground group-hover:text-primary transition-colors">{stat.label}</span>
-                            <stat.icon className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
+                            <stat.icon className={`h-4 w-4 transition-colors ${stat.active ? 'text-primary animate-pulse' : 'text-muted-foreground group-hover:text-primary'}`} />
                         </div>
                         <div className="text-2xl font-bold">{stat.value}</div>
-                        <p className="text-xs text-muted-foreground mt-1">{stat.trend}</p>
+                        <p className={`text-xs mt-1 ${stat.active ? 'text-primary font-medium' : 'text-muted-foreground'}`}>{stat.trend}</p>
                     </div>
                 ))}
             </div>
+
+            {/* Pending Users Modal */}
+            <Modal
+                isOpen={isPendingModalOpen}
+                onClose={() => setIsPendingModalOpen(false)}
+                title="Usuarios Pendientes de Aprobación"
+            >
+                <div className="space-y-4 max-h-[60vh] overflow-y-auto">
+                    {pendingUsers.length === 0 ? (
+                        <p className="text-center text-muted-foreground py-8">No hay usuarios pendientes.</p>
+                    ) : (
+                        pendingUsers.map(u => (
+                            <div key={u.id} className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 bg-muted/30 rounded-lg border border-border gap-4">
+                                <div className="flex items-center gap-3">
+                                    <div className="h-10 w-10 rounded-full bg-secondary flex items-center justify-center shrink-0 text-secondary-foreground font-bold">
+                                        {u.name.charAt(0)}
+                                    </div>
+                                    <div>
+                                        <p className="font-medium text-foreground">{u.name}</p>
+                                        <p className="text-sm text-muted-foreground">{u.email}</p>
+                                        <p className="text-xs text-muted-foreground capitalize mt-0.5">{u.role}</p>
+                                    </div>
+                                </div>
+                                <div className="flex gap-2 w-full sm:w-auto">
+                                    <button
+                                        onClick={() => {
+                                            setUserToReview(u);
+                                            setReviewAction('reject');
+                                            setIsReviewConfirmOpen(true);
+                                        }}
+                                        className="flex-1 sm:flex-none px-3 py-2 text-xs font-medium text-destructive bg-destructive/10 hover:bg-destructive/20 rounded-md transition-colors"
+                                    >
+                                        Rechazar
+                                    </button>
+                                    <button
+                                        onClick={() => {
+                                            setUserToReview(u);
+                                            setReviewAction('block');
+                                            setIsReviewConfirmOpen(true);
+                                        }}
+                                        className="flex-1 sm:flex-none px-3 py-2 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
+                                    >
+                                        Bloquear
+                                    </button>
+                                    <button
+                                        onClick={() => {
+                                            setUserToReview(u);
+                                            setReviewAction('accept');
+                                            setIsReviewConfirmOpen(true);
+                                        }}
+                                        className="flex-1 sm:flex-none px-3 py-2 text-xs font-medium text-emerald-700 bg-emerald-100 hover:bg-emerald-200 rounded-md transition-colors"
+                                    >
+                                        Aprobar
+                                    </button>
+                                </div>
+                            </div>
+                        ))
+                    )}
+                </div>
+            </Modal>
+
+            {/* Confirm Review Modal */}
+            <Modal
+                isOpen={isReviewConfirmOpen}
+                onClose={() => setIsReviewConfirmOpen(false)}
+                title={reviewAction === 'accept' ? 'Aprobar Usuario' : reviewAction === 'block' ? 'Bloquear Usuario' : 'Rechazar Usuario'}
+            >
+                <div className="space-y-4">
+                    <p>
+                        ¿Estás seguro de que quieres{" "}
+                        {reviewAction === 'accept' && <span className="font-bold text-emerald-600">APROBAR</span>}
+                        {reviewAction === 'reject' && <span className="font-bold text-destructive">RECHAZAR</span>}
+                        {reviewAction === 'block' && <span className="font-bold text-gray-800">BLOQUEAR</span>}
+                        {" "}a
+                        <span className="font-medium"> {userToReview?.name}</span>?
+                    </p>
+
+                    {reviewAction === 'accept' && (
+                        <p className="text-sm text-muted-foreground">El usuario podrá iniciar sesión inmediatamente.</p>
+                    )}
+                    {reviewAction === 'reject' && (
+                        <p className="text-sm text-muted-foreground">El perfil será borrado. El usuario podrá volver a solicitar el registro.</p>
+                    )}
+                    {reviewAction === 'block' && (
+                        <p className="text-sm text-muted-foreground text-red-600 font-medium">
+                            El usuario será marcado como bloqueado y NO podrá volver a utilizar este email.
+                        </p>
+                    )}
+
+                    <div className="flex justify-end gap-3 mt-6">
+                        <button
+                            onClick={() => setIsReviewConfirmOpen(false)}
+                            className="px-4 py-2 text-sm font-medium text-muted-foreground hover:bg-muted rounded-md transition-colors"
+                        >
+                            Cancelar
+                        </button>
+                        <button
+                            onClick={handleUserReview}
+                            className={`px-4 py-2 text-sm font-medium text-white rounded-md shadow-sm transition-colors ${reviewAction === 'accept' ? 'bg-emerald-600 hover:bg-emerald-700' :
+                                reviewAction === 'block' ? 'bg-gray-800 hover:bg-black' :
+                                    'bg-destructive hover:bg-destructive/90'
+                                }`}
+                        >
+                            Confirmar
+                        </button>
+                    </div>
+                </div>
+            </Modal>
 
             {/* Operational Metrics */}
             <div className="space-y-6">

@@ -4,15 +4,16 @@ export interface User {
     id?: string;
     email: string;
     name: string;
+    firstSurname: string;
+    secondSurname?: string;
     role: UserRole;
     points: number;
     badges: string[];
     createdAt: any;
-    phone?: string;
     avatar?: string;
     assignedVehicleId?: string;
     licenseNumber?: string;
-    status: 'active' | 'inactive';
+    status: 'active' | 'inactive' | 'pending' | 'rejected' | 'blocked';
 }
 
 export type VehicleStatus = 'active' | 'maintenance' | 'rented' | 'retired';
@@ -136,7 +137,8 @@ export interface MaintenanceRecord {
     date: any;
     type: 'preventive' | 'corrective' | 'inspection' | 'tire_change';
     cost: number;
-    garageName: string;
+    garageName: string; // Keep for backward compatibility or custom text
+    workshopId?: string; // Link to official Workshop
     description: string;
     odometerAtService: number;
     nextServiceOdometer?: number;

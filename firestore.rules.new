@@ -1,0 +1,134 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // --- Helper Functions ---
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    
+    function getUserData() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+    
+    function hasRole(role) {
+      return isSignedIn() && getUserData().role == role;
+    }
+    
+    function isAdmin() {
+      return hasRole('admin');
+    }
+    
+    function isManager() {
+      return hasRole('manager');
+    }
+
+    // --- Users Collection ---
+    match /users/{userId} {
+      // Allow any authenticated user to read any user profile (needed for ranking)
+      allow read: if isSignedIn();
+      
+      // Allow creation ONLY if the user is creating their own document
+      // AND they are NOT setting themselves as admin (security check)
+      allow create: if isSignedIn() && request.auth.uid == userId &&
+                    (!request.resource.data.keys().hasAll(['role']) || request.resource.data.role != 'admin');
+      
+      // Allow updates:
+      // - Users can update their own profile
+      // - Admins can update any user
+      allow update: if isSignedIn() && (request.auth.uid == userId || isAdmin());
+      
+      // Only admins can delete users
+      allow delete: if isSignedIn() && isAdmin();
+    }
+    
+    // --- Gamification Collections ---
+    match /point_logs/{logId} {
+      // Allow authenticated users to read and create point logs
+      allow read, list: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update, delete: if isAdmin();
+    }
+    
+    match /settings/{settingId} {
+      // Allow all authenticated users to read settings (for gamification config)
+      allow read: if isSignedIn();
+      // Only admins can update settings
+      allow write: if isAdmin();
+    }
+    
+    match /logs/{logId} {
+      // Driver logs (km, fuel, wash, etc.)
+      allow read: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update, delete: if isAdmin() || isManager();
+    }
+    
+    match /checklists/{checklistId} {
+      // Driver checklists
+      allow read: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update, delete: if isAdmin() || isManager();
+    }
+    
+    // --- Sensitive Collections (Admin/Manager Only) ---
+    match /vehicles/{document=**} {
+      allow read: if isSignedIn(); // Drivers need to see vehicles
+      allow write: if isAdmin() || isManager();
+    }
+    
+    match /incidents/{document=**} {
+      allow read: if isSignedIn(); // Drivers need to see incidents
+      allow create: if isSignedIn(); // Drivers define incidents
+      allow update, delete: if isAdmin() || isManager();
+    }
+
+    match /inventory/{document=**} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin() || isManager();
+    }
+    
+    match /warehouses/{document=**} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin() || isManager();
+    }
+    
+    match /maintenance/{document=**} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin() || isManager();
+    }
+    
+    match /renting_companies/{document=**} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin() || isManager();
+    }
+    
+    
+    match /admin_messages/{document=**} {
+      allow read, update, delete: if isAdmin(); // Only admins can read/manage messages
+      // Allow creation if user is signed in OR if it's a lockout request (for unauthenticated users)
+      allow create: if isSignedIn() || (request.resource.data.type == 'lockout' && request.resource.data.keys().hasAll(['email', 'content', 'type']));
+    }
+    
+    match /vehicle_makes/{document=**} {
+      allow read: if isSignedIn();
+      allow write: if isSignedIn(); // Allow taxonomy updates from any auth user
+    }
+
+    // --- Missing Collections Fixed ---
+    match /brands/{document=**} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin() || isManager();
+    }
+
+    match /workshops/{document=**} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin() || isManager();
+    }
+
+    // Default deny for anything else
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
