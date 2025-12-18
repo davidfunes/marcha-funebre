@@ -7,7 +7,7 @@ import { Logo } from '@/components/ui/Logo';
 import { ShieldAlert, Send, X, Eye, EyeOff, CheckCircle2 } from 'lucide-react';
 import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase/firebase';
-import { blockUserByEmailAction } from '@/app/actions/authActions';
+
 export default function LoginPage() {
     const { signIn, signUp, user } = useAuth();
     const router = useRouter();
@@ -168,8 +168,10 @@ export default function LoginPage() {
                     if (newAttempts >= 3) {
                         setShowLockoutModal(true);
                         setError('Has superado el límite de intentos. Cuenta bloqueada temporalmente.');
-                        // Attempt to block user in DB server-side
-                        blockUserByEmailAction(email).catch(err => console.error('Failed to auto-block user:', err));
+                        // Show lockout modal without calling server action
+                        // The administrator will handle the unlock request from the messages
+                        console.log('Account lockout reached for:', email);
+
                     } else {
                         const remaining = 3 - newAttempts;
                         setError(`Credenciales incorrectas. Te quedan ${remaining} intento${remaining !== 1 ? 's' : ''} antes del bloqueo.`);
