@@ -1,5 +1,5 @@
 import { db } from '@/lib/firebase/firebase';
-import { collection, addDoc, updateDoc, doc, increment, serverTimestamp, query, where, getDocs, Timestamp, getDoc } from 'firebase/firestore';
+import { collection, addDoc, updateDoc, doc, increment, serverTimestamp, query, where, getDocs, Timestamp, getDoc, setDoc } from 'firebase/firestore';
 import { User } from '@/types';
 
 export type RankingPeriod = 'week' | 'month' | 'year' | 'all';
@@ -9,6 +9,89 @@ export interface RankingUser {
     points: number;
     user?: User; // Hydrated user data
 }
+
+export interface GamificationConfig {
+    actions: {
+        checklist_completed: number;
+        log_km: number;
+        log_fuel: number;
+        game_time_1min: number;
+        incident_reported: number;
+        vehicle_wash: number;
+    };
+    updatedAt: any;
+    updatedBy?: string;
+}
+
+const DEFAULT_CONFIG: GamificationConfig = {
+    actions: {
+        checklist_completed: 50,
+        log_km: 10,
+        log_fuel: 5,
+        game_time_1min: 1,
+        incident_reported: 25,
+        vehicle_wash: 15 // Default value for new feature
+    },
+    updatedAt: null
+};
+
+export const getGamificationConfig = async (): Promise<GamificationConfig> => {
+    try {
+        const docRef = doc(db, 'settings', 'gamification');
+        const docSnap = await getDoc(docRef);
+
+        if (docSnap.exists()) {
+            return docSnap.data() as GamificationConfig;
+        } else {
+            // Seed default if not exists
+            await setDoc(docRef, {
+                ...DEFAULT_CONFIG,
+                updatedAt: serverTimestamp()
+            });
+            return DEFAULT_CONFIG;
+        }
+    } catch (error) {
+        console.error('[Gamification] Error getting config:', error);
+        return DEFAULT_CONFIG; // Fallback
+    }
+};
+
+export const updateGamificationConfig = async (newConfig: Partial<GamificationConfig['actions']>, userId: string) => {
+    try {
+        const docRef = doc(db, 'settings', 'gamification');
+        await setDoc(docRef, {
+            actions: newConfig,
+            updatedAt: serverTimestamp(),
+            updatedBy: userId
+        }, { merge: true });
+        console.log('[Gamification] Config updated');
+    } catch (error) {
+        console.error('[Gamification] Error updating config:', error);
+        throw error;
+    }
+};
+
+export const awardPointsForAction = async (userId: string, actionKey: keyof GamificationConfig['actions'], customReason?: string) => {
+    try {
+        const config = await getGamificationConfig();
+        const points = config.actions[actionKey] || 0;
+
+        if (points > 0) {
+            await logPoints(userId, points, customReason || actionKey);
+            return points;
+        }
+        return 0;
+    } catch (error) {
+        console.error(`[Gamification] Error awarding points for ${actionKey}:`, error);
+        // Fallback to defaults if config fails completely?
+        // Better to fail safe and maybe log 0 or retry. Using default const for now.
+        const fallbackPoints = DEFAULT_CONFIG.actions[actionKey] || 0;
+        if (fallbackPoints > 0) {
+            await logPoints(userId, fallbackPoints, customReason || actionKey);
+            return fallbackPoints;
+        }
+    }
+};
 
 export const logPoints = async (userId: string, points: number, reason: string) => {
     try {
@@ -39,11 +122,8 @@ export const getRanking = async (period: RankingPeriod): Promise<RankingUser[]> 
 
         switch (period) {
             case 'week':
-                // Starts last Monday or 7 days ago? Usually "Current Week" implies Monday
-                // Let's do simple "Last 7 days" for rolling window or "Start of Week"
-                // Let's use Start of Week (Monday)
-                const day = now.getDay(); // 0 (Sun) - 6 (Sat)
-                const diff = now.getDate() - day + (day === 0 ? -6 : 1); // adjust when day is sunday
+                const day = now.getDay();
+                const diff = now.getDate() - day + (day === 0 ? -6 : 1);
                 startTime = new Date(now.setDate(diff));
                 startTime.setHours(0, 0, 0, 0);
                 break;
@@ -54,16 +134,12 @@ export const getRanking = async (period: RankingPeriod): Promise<RankingUser[]> 
                 startTime = new Date(now.getFullYear(), 0, 1);
                 break;
             case 'all':
-                // Query users collection directly for total points (more efficient)
-                const usersSnap = await getDocs(query(collection(db, 'users'), where('role', '==', 'conductor')));
+                const usersSnap = await getDocs(collection(db, 'users'));
                 return usersSnap.docs
                     .map(d => ({ userId: d.id, points: d.data().points || 0, user: { id: d.id, ...d.data() } as User }))
+                    .filter(u => u.points > 0 && u.user.role !== 'admin') // Filter out admins
                     .sort((a, b) => b.points - a.points);
         }
-
-        // For time periods, we must aggregate logs
-        // Note: In a large scale app, we would use Cloud Functions to maintain counters.
-        // For this scale, client-side aggregation of logs is acceptable but could be heavy.
 
         let q = query(collection(db, 'point_logs'));
 
@@ -81,22 +157,19 @@ export const getRanking = async (period: RankingPeriod): Promise<RankingUser[]> 
             pointsMap[uid] = (pointsMap[uid] || 0) + points;
         });
 
-        // Convert to array
         const ranking: RankingUser[] = Object.entries(pointsMap).map(([userId, points]) => ({
             userId,
             points
         }));
 
-        // Hydrate user data (could be optimized with a batch get or existing users list)
-        // For now, let's fetch only the top 50 to avoid hammering
         const top50 = ranking.sort((a, b) => b.points - a.points).slice(0, 50);
 
         const hydratedRanking = await Promise.all(top50.map(async (item) => {
             const userDoc = await getDoc(doc(db, 'users', item.userId));
             if (userDoc.exists()) {
                 const userData = userDoc.data() as User;
-                // Double check role
-                if (userData.role === 'conductor') {
+                // Exclude admins from temporal ranking as well
+                if (userData.role !== 'admin') {
                     return { ...item, user: { id: userDoc.id, ...userData } };
                 }
             }
