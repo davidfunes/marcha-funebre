@@ -80,7 +80,13 @@ export const ProfileForm = ({ user, onUpdate }: ProfileFormProps) => {
         }
 
         try {
+            if (uploading) {
+                alert('Espera a que termine de subirse la imagen');
+                return;
+            }
+
             setSaving(true);
+            console.log('Updating profile for user:', user.id);
 
             await updateItem('users', user.id!, {
                 name: formData.name.trim(),
@@ -89,14 +95,15 @@ export const ProfileForm = ({ user, onUpdate }: ProfileFormProps) => {
                 avatar: formData.avatar,
             });
 
+            console.log('Profile updated successfully');
             if (onUpdate) {
                 onUpdate();
             }
 
             alert('Perfil actualizado correctamente');
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error updating profile:', error);
-            alert('Error al actualizar el perfil. Por favor intenta de nuevo.');
+            alert(`Error al actualizar el perfil: ${error.message || 'Error desconocido'}`);
         } finally {
             setSaving(false);
         }

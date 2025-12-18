@@ -404,9 +404,9 @@ export default function PacmanPage() {
     };
 
     return (
-        <div className="min-h-screen bg-[#0b0c15] text-white flex flex-col items-center">
+        <div className="min-h-screen bg-background text-foreground flex flex-col items-center">
             {/* Header */}
-            <div className="w-full bg-[#151621] border-b border-gray-800 p-4 flex items-center justify-between sticky top-0 z-10">
+            <div className="w-full bg-card border-b border-border p-4 flex items-center justify-between sticky top-0 z-10">
                 <Link href="/driver/games" className="p-2 -ml-2 hover:bg-gray-800 rounded-full transition-colors">
                     <ArrowLeft className="w-6 h-6" />
                 </Link>

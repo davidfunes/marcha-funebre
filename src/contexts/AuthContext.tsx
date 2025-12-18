@@ -87,7 +87,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Session Inactivity Timeout
     useEffect(() => {
         if (!user || !firebaseUser) return;
-        const INACTIVITY_TIMEOUT = 10 * 60 * 1000;
+        const INACTIVITY_TIMEOUT = 30 * 60 * 1000;
         const STORAGE_KEY = 'auth_last_activity';
         let timeoutId: NodeJS.Timeout;
         const lastActiveStr = localStorage.getItem(STORAGE_KEY);
