@@ -44,6 +44,7 @@ export const ProfileForm = ({ user, onUpdate }: ProfileFormProps) => {
 
         try {
             setUploading(true);
+            console.log('Avatar change detected. Starting local preview...');
 
             // Create preview
             const reader = new FileReader();
@@ -54,12 +55,16 @@ export const ProfileForm = ({ user, onUpdate }: ProfileFormProps) => {
 
             // Upload to Firebase Storage
             const path = `avatars/${user.id}/${Date.now()}_${file.name}`;
+            console.log('Uploading to path:', path);
             const downloadURL = await uploadFile(file, path);
 
             setFormData(prev => ({ ...prev, avatar: downloadURL }));
-        } catch (error) {
-            console.error('Error uploading avatar:', error);
-            alert('Error al subir la imagen. Por favor intenta de nuevo.');
+            console.log('Avatar upload complete. URL set to formData.');
+        } catch (error: any) {
+            console.error('Error handling avatar change:', error);
+            alert(`Error al subir la imagen: ${error.message || 'Error desconocido'}`);
+            // Reset preview to current avatar if failed
+            setPreviewUrl(user.avatar || '');
         } finally {
             setUploading(false);
         }
@@ -244,24 +249,37 @@ export const ProfileForm = ({ user, onUpdate }: ProfileFormProps) => {
                 </div>
 
                 {/* Submit Button */}
-                <div className="flex justify-end pt-4 border-t border-border">
-                    <button
-                        type="submit"
-                        disabled={saving || uploading}
-                        className="flex items-center gap-2 px-6 py-3 bg-primary text-primary-foreground rounded-lg font-semibold hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-primary/20"
-                    >
-                        {saving ? (
-                            <>
-                                <Loader2 className="w-5 h-5 animate-spin" />
-                                Guardando...
-                            </>
-                        ) : (
-                            <>
-                                <Save className="w-5 h-5" />
-                                Guardar Cambios
-                            </>
-                        )}
-                    </button>
+                <div className="flex flex-col gap-3 pt-4 border-t border-border">
+                    {uploading && (
+                        <p className="text-sm text-amber-500 font-medium animate-pulse flex items-center gap-2 self-end">
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                            Subiendo imagen... Por favor espera para guardar.
+                        </p>
+                    )}
+                    <div className="flex justify-end">
+                        <button
+                            type="submit"
+                            disabled={saving || uploading}
+                            className="flex items-center gap-2 px-6 py-3 bg-primary text-primary-foreground rounded-lg font-semibold hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-primary/20"
+                        >
+                            {saving ? (
+                                <>
+                                    <Loader2 className="w-5 h-5 animate-spin" />
+                                    Guardando...
+                                </>
+                            ) : uploading ? (
+                                <>
+                                    <Loader2 className="w-5 h-5 animate-spin" />
+                                    Subiendo Foto...
+                                </>
+                            ) : (
+                                <>
+                                    <Save className="w-5 h-5" />
+                                    Guardar Cambios
+                                </>
+                            )}
+                        </button>
+                    </div>
                 </div>
             </form>
         </div>

@@ -152,13 +152,23 @@ import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { storage } from '@/lib/firebase/firebase';
 
 export const uploadFile = async (file: File, path: string): Promise<string> => {
+    if (!file) throw new Error("No se ha proporcionado ningún archivo");
+    if (!path) throw new Error("No se ha proporcionado una ruta de destino");
+
     try {
+        console.log(`Starting upload of ${file.name} to ${path}`);
         const storageRef = ref(storage, path);
         const snapshot = await uploadBytes(storageRef, file);
         const downloadURL = await getDownloadURL(snapshot.ref);
+        console.log("Upload successful. Download URL:", downloadURL);
         return downloadURL;
-    } catch (error) {
-        console.error("Error uploading file:", error);
+    } catch (error: any) {
+        console.error("Error uploading file to Firebase Storage:", error);
+        if (error.code === 'storage/unauthorized') {
+            throw new Error("No tienes permiso para subir archivos. Verifica las reglas de Storage.");
+        } else if (error.code === 'storage/canceled') {
+            throw new Error("La subida fue cancelada.");
+        }
         throw error;
     }
 };
