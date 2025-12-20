@@ -11,6 +11,7 @@
         "rules": "firestore.rules"
     },
     "storage": {
+        "bucket": "fleet-management-7267c.firebasestorage.app",
         "rules": "storage.rules"
     }
 }
