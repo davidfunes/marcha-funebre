@@ -72,9 +72,16 @@ service cloud.firestore {
     }
     
     // --- Sensitive Collections (Admin/Manager Only) ---
-    match /vehicles/{document=**} {
-      allow read: if isSignedIn(); // Drivers need to see vehicles
-      allow write: if isAdmin() || isManager();
+    match /vehicles/{vehicleId} {
+      allow read: if isSignedIn();
+      allow create, delete: if isAdmin() || isManager();
+      allow update: if isAdmin() || isManager() || 
+                    (isSignedIn() && (
+                      // Case 1: Assignment (was free, now mine)
+                      (resource.data.assignedDriverId == null && request.resource.data.assignedDriverId == request.auth.uid) ||
+                      // Case 2: Return (was mine, now free)
+                      (resource.data.assignedDriverId == request.auth.uid && (request.resource.data.assignedDriverId == null || !request.resource.data.keys().hasAll(['assignedDriverId'])))
+                    ));
     }
     
     match /incidents/{document=**} {
