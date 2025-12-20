@@ -73,30 +73,25 @@ export default function DriverDashboard() {
 
         setReturning(true);
         try {
-            const { updateDoc, doc, increment } = await import('firebase/firestore');
-
-            // AUDIT LOGS (v6 - Debugging Users & Vehicles)
-            console.log('--- AUDIT RETURN VEHICLE (STEP 1: VEHICLE) ---');
-            console.log('User UID (auth):', user.id);
-            console.log('Vehicle ID:', assignedVehicle.id);
+            const batch = writeBatch(db);
 
             // 1. Update Vehicle Reference
             const vehicleRef = doc(db, 'vehicles', assignedVehicle.id!);
-            await updateDoc(vehicleRef, {
+            batch.update(vehicleRef, {
                 assignedDriverId: null,
                 status: 'active' as any,
                 parkingLocation: assignedVehicle.requiresParkingSpot ? parkingLocation : null
             });
-            console.log('Step 1 (Vehicle) Success!');
 
-            console.log('--- AUDIT RETURN VEHICLE (STEP 2: USER) ---');
             // 2. Update User Reference
             const userRef = doc(db, 'users', user.id!);
-            await updateDoc(userRef, {
+            batch.update(userRef, {
                 assignedVehicleId: null,
                 points: increment(15)
             });
-            console.log('Step 2 (User) Success!');
+
+            // Commit atomic batch
+            await batch.commit();
 
             // 3. Reset Local State
             setAssignedVehicle(null);
