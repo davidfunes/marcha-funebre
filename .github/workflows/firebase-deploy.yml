@@ -31,9 +31,11 @@ jobs:
           NEXT_PUBLIC_FIREBASE_APP_ID=${{ secrets.NEXT_PUBLIC_FIREBASE_APP_ID }}
           EOF
       - run: npm run build
-      - uses: FirebaseExtended/action-hosting-deploy@v0
-        with:
-          repoToken: '${{ secrets.GITHUB_TOKEN }}'
-          firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_FLEET_MANAGEMENT_7267C }}'
-          channelId: live
-          projectId: fleet-management-7267c
+      - name: Deploy Rules and Hosting
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_FLEET_MANAGEMENT_7267C }}
+        run: |
+          echo "$FIREBASE_SERVICE_ACCOUNT" > service-account.json
+          export GOOGLE_APPLICATION_CREDENTIALS=$(pwd)/service-account.json
+          npx firebase-tools deploy --only firestore:rules,storage,hosting --project fleet-management-7267c
+          rm service-account.json
