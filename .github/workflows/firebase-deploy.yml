@@ -37,8 +37,12 @@ jobs:
         run: |
           echo "$FIREBASE_SERVICE_ACCOUNT" > service-account.json
           export GOOGLE_APPLICATION_CREDENTIALS=$(pwd)/service-account.json
-          # Deploy rules (might fail if permissions are still being updated)
-          npx firebase-tools deploy --only firestore:rules,storage:rules --project fleet-management-7267c || echo "Rules deployment failed, but continuing with hosting..."
+          # Deploy Firestore rules (Critical for vehicle returns and app logic)
+          npx firebase-tools deploy --only firestore:rules --project fleet-management-7267c || echo "Firestore rules deployment failed!"
+          
+          # Deploy Storage rules (Separated as this often fails due to IAM bucket permissions)
+          npx firebase-tools deploy --only storage:rules --project fleet-management-7267c || echo "Storage rules deployment failed, but continuing..."
+          
           # Deploy hosting (crucial for fixing 404s)
           npx firebase-tools deploy --only hosting --project fleet-management-7267c
           rm service-account.json
