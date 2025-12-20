@@ -77,9 +77,9 @@ service cloud.firestore {
       allow create, delete: if isAdmin() || isManager();
       allow update: if isAdmin() || isManager() || 
                     (isSignedIn() && (
-                      // Permitir si el vehículo está libre y el usuario se lo está asignando a sí mismo
-                      (resource.data.assignedDriverId == null && request.resource.data.assignedDriverId == request.auth.uid) ||
-                      // Permitir si el usuario es el conductor actualmente asignado (para logs y devolución)
+                      // Permitir actualización si el vehículo no tiene conductor asignado (o el campo no existe)
+                      (!resource.data.keys().hasAll(['assignedDriverId']) || resource.data.assignedDriverId == null) ||
+                      // O si el usuario es el conductor actualmente asignado
                       (resource.data.assignedDriverId == request.auth.uid)
                     ));
     }

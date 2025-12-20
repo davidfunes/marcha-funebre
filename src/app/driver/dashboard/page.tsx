@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { db } from '@/lib/firebase/firebase';
-import { doc, getDoc, updateDoc, increment } from 'firebase/firestore';
+import { doc, getDoc, writeBatch, increment } from 'firebase/firestore';
 import {
     Camera,
     AlertTriangle,
@@ -73,27 +73,36 @@ export default function DriverDashboard() {
 
         setReturning(true);
         try {
-            // 1. Update Vehicle
-            await updateDoc(doc(db, 'vehicles', assignedVehicle.id!), {
+            const batch = writeBatch(db);
+
+            // 1. Update Vehicle Reference
+            const vehicleRef = doc(db, 'vehicles', assignedVehicle.id!);
+            batch.update(vehicleRef, {
                 assignedDriverId: null,
                 status: 'active' as any,
                 parkingLocation: assignedVehicle.requiresParkingSpot ? parkingLocation : null
             });
 
-            // 2. Update User
-            await updateDoc(doc(db, 'users', user.id!), {
+            // 2. Update User Reference
+            const userRef = doc(db, 'users', user.id!);
+            batch.update(userRef, {
                 assignedVehicleId: null,
-                points: increment(15) // Gamification: +15 points
+                points: increment(15)
             });
 
-            // 3. Reset State
+            // Commit atomic batch
+            await batch.commit();
+
+            // 3. Reset Local State
             setAssignedVehicle(null);
             setShowReturnModal(false);
             setParkingLocation('');
 
-        } catch (error) {
-            console.error('Error returning vehicle:', error);
-            alert('Error al devolver el vehículo');
+        } catch (error: any) {
+            console.error('Error returning vehicle (Technical Details):', error);
+            const errorMsg = error.message || String(error);
+            const errorCode = error.code || 'unknown';
+            alert(`Error al devolver el vehículo.\n\nDetalles: ${errorMsg}\nCódigo: ${errorCode}`);
         } finally {
             setReturning(false);
         }
