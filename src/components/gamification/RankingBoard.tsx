@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { getRanking, RankingPeriod, RankingUser } from '@/services/GamificationService';
 import { Trophy, Medal, Crown } from 'lucide-react';
+import { getFullName, getUserInitials } from '@/utils/userUtils';
 
 export function RankingBoard() {
     const [period, setPeriod] = useState<RankingPeriod>('all');
@@ -89,12 +90,12 @@ export function RankingBoard() {
                                 {item.user?.avatar ? (
                                     <img src={item.user.avatar} className="w-10 h-10 rounded-full bg-muted object-cover" />
                                 ) : (
-                                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">
-                                        {item.user?.name?.charAt(0) || '?'}
+                                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs">
+                                        {getUserInitials(item.user)}
                                     </div>
                                 )}
                                 <div>
-                                    <p className="font-bold text-foreground line-clamp-1">{item.user?.name || 'Conductor'}</p>
+                                    <p className="font-bold text-foreground line-clamp-1">{getFullName(item.user)}</p>
                                     <p className="text-xs text-muted-foreground">Nivel {Math.floor((item.user?.points || 0) / 1000) + 1}</p>
                                 </div>
                             </div>

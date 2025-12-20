@@ -30,6 +30,7 @@ import { getVehicles, getIncidents, getInventory, getUsers, getWarehouses, updat
 import { seedDatabase } from '@/services/seed';
 import { Vehicle, Incident, InventoryItem, User, Warehouse } from '@/types';
 import { Timestamp } from 'firebase/firestore';
+import { getFullName, getUserInitials } from '@/utils/userUtils';
 import {
     Chart as ChartJS,
     ArcElement,
@@ -405,7 +406,7 @@ export default function AdminDashboard() {
                                         {reporter && (
                                             <p className="flex items-center gap-1">
                                                 <Users className="h-3 w-3" />
-                                                Reportado por: <span className="font-medium text-foreground">{reporter.name}</span>
+                                                Reportado por: <span className="font-medium text-foreground">{getFullName(reporter)}</span>
                                             </p>
                                         )}
                                     </div>
@@ -539,7 +540,7 @@ export default function AdminDashboard() {
             <div className="flex items-center justify-between">
                 <div>
                     <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
-                    <p className="text-muted-foreground mt-2">Bienvenido de nuevo, {user?.name}</p>
+                    <p className="text-muted-foreground mt-2">Bienvenido de nuevo, {getFullName(user)}</p>
                 </div>
                 <div className="flex items-center gap-2">
                     {/* Actions can go here */}
@@ -598,11 +599,11 @@ export default function AdminDashboard() {
                         pendingUsers.map(u => (
                             <div key={u.id} className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 bg-muted/30 rounded-lg border border-border gap-4">
                                 <div className="flex items-center gap-3">
-                                    <div className="h-10 w-10 rounded-full bg-secondary flex items-center justify-center shrink-0 text-secondary-foreground font-bold">
-                                        {u.name.charAt(0)}
+                                    <div className="h-10 w-10 rounded-full bg-secondary flex items-center justify-center shrink-0 text-secondary-foreground font-bold text-xs">
+                                        {getUserInitials(u)}
                                     </div>
                                     <div>
-                                        <p className="font-medium text-foreground">{u.name}</p>
+                                        <p className="font-medium text-foreground">{getFullName(u)}</p>
                                         <p className="text-sm text-muted-foreground">{u.email}</p>
                                         <p className="text-xs text-muted-foreground capitalize mt-0.5">{u.role}</p>
                                     </div>
@@ -658,7 +659,7 @@ export default function AdminDashboard() {
                         {reviewAction === 'reject' && <span className="font-bold text-destructive">RECHAZAR</span>}
                         {reviewAction === 'block' && <span className="font-bold text-gray-800">BLOQUEAR</span>}
                         {" "}a
-                        <span className="font-medium"> {userToReview?.name}</span>?
+                        <span className="font-medium"> {getFullName(userToReview)}</span>?
                     </p>
 
                     {reviewAction === 'accept' && (

@@ -15,6 +15,7 @@ import { Modal } from '@/components/ui/Modal';
 import { addItem, updateItem, deleteItem, subscribeToCollection, registerUser } from '@/services/FirebaseService';
 import { User, UserRole } from '@/types';
 import { Timestamp } from 'firebase/firestore';
+import { getFullName, getUserInitials } from '@/utils/userUtils';
 
 export default function UsersPage() {
     const [users, setUsers] = useState<User[]>([]);
@@ -29,6 +30,8 @@ export default function UsersPage() {
     // Form State
     const [formData, setFormData] = useState<Partial<User> & { password?: string, confirmPassword?: string }>({
         name: '',
+        firstSurname: '',
+        secondSurname: '',
         email: '',
         role: 'conductor',
         status: 'active',
@@ -54,6 +57,8 @@ export default function UsersPage() {
             setEditingUser(null);
             setFormData({
                 name: '',
+                firstSurname: '',
+                secondSurname: '',
                 email: '',
                 role: 'conductor',
                 status: 'active',
@@ -135,13 +140,13 @@ export default function UsersPage() {
             key: 'name',
             label: 'Nombre',
             sortable: true,
-            render: (u) => (
+            render: (u: User) => (
                 <div className="flex items-center gap-3">
-                    <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">
-                        {u.name.charAt(0)}
+                    <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs">
+                        {getUserInitials(u)}
                     </div>
                     <div>
-                        <p className="font-medium">{u.name}</p>
+                        <p className="font-medium">{getFullName(u)}</p>
                         <p className="text-xs text-muted-foreground">{u.email}</p>
                     </div>
                 </div>
@@ -235,10 +240,10 @@ export default function UsersPage() {
                         <div className="flex items-start justify-between">
                             <div className="flex items-center gap-3">
                                 <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold shrink-0">
-                                    {user.name.charAt(0)}
+                                    {getUserInitials(user)}
                                 </div>
                                 <div>
-                                    <h3 className="font-semibold text-foreground">{user.name}</h3>
+                                    <h3 className="font-semibold text-foreground">{getFullName(user)}</h3>
                                     <p className="text-xs text-muted-foreground">{user.email}</p>
                                 </div>
                             </div>
@@ -311,14 +316,36 @@ export default function UsersPage() {
                 title={editingUser ? 'Editar Usuario' : 'Nuevo Usuario'}
             >
                 <form onSubmit={handleSubmit} className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium">Nombre</label>
+                            <input
+                                required
+                                value={formData.name}
+                                onChange={e => setFormData({ ...formData, name: e.target.value })}
+                                className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary outline-none"
+                                placeholder="Juan"
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium">Primer Apellido</label>
+                            <input
+                                required
+                                value={formData.firstSurname}
+                                onChange={e => setFormData({ ...formData, firstSurname: e.target.value })}
+                                className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary outline-none"
+                                placeholder="Pérez"
+                            />
+                        </div>
+                    </div>
+
                     <div className="space-y-2">
-                        <label className="text-sm font-medium">Nombre Completo</label>
+                        <label className="text-sm font-medium">Segundo Apellido</label>
                         <input
-                            required
-                            value={formData.name}
-                            onChange={e => setFormData({ ...formData, name: e.target.value })}
+                            value={formData.secondSurname || ''}
+                            onChange={e => setFormData({ ...formData, secondSurname: e.target.value })}
                             className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary outline-none"
-                            placeholder="Juan Pérez"
+                            placeholder="García"
                         />
                     </div>
 
@@ -428,7 +455,7 @@ export default function UsersPage() {
             >
                 <div>
                     <p className="text-muted-foreground mb-6">
-                        ¿Estás seguro de que quieres eliminar al usuario <strong>{userToDelete?.name}</strong>? Esta acción no se puede deshacer.
+                        ¿Estás seguro de que quieres eliminar al usuario <strong>{getFullName(userToDelete)}</strong>? Esta acción no se puede deshacer.
                     </p>
                     <div className="flex justify-end gap-2">
                         <button
