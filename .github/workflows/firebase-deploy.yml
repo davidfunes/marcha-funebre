@@ -37,5 +37,5 @@ jobs:
         run: |
           echo "$FIREBASE_SERVICE_ACCOUNT" > service-account.json
           export GOOGLE_APPLICATION_CREDENTIALS=$(pwd)/service-account.json
-          npx firebase-tools deploy --only firestore:rules,storage,hosting --project fleet-management-7267c
+          npx firebase-tools deploy --only firestore:rules,storage:rules,hosting --project fleet-management-7267c
           rm service-account.json
