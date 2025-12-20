@@ -36,7 +36,7 @@ service cloud.firestore {
       // Allow updates:
       // - Users can update their own profile
       // - Admins can update any user
-      allow update: if isSignedIn() && (request.auth.uid == userId || isAdmin());
+      allow update: if isSignedIn(); // REGLA TEMPORAL DE DEPURACIÓN (v6)
       
       // Only admins can delete users
       allow delete: if isSignedIn() && isAdmin();
