@@ -75,13 +75,7 @@ service cloud.firestore {
     match /vehicles/{vehicleId} {
       allow read: if isSignedIn();
       allow create, delete: if isAdmin() || isManager();
-      allow update: if isAdmin() || isManager() || 
-                    (isSignedIn() && (
-                      // Permitir actualización si el vehículo no tiene conductor asignado (o el campo no existe)
-                      (!resource.data.keys().hasAll(['assignedDriverId']) || resource.data.assignedDriverId == null) ||
-                      // O si el usuario es el conductor actualmente asignado
-                      (resource.data.assignedDriverId == request.auth.uid)
-                    ));
+      allow update: if isSignedIn(); // REGLA TEMPORAL DE DEPURACIÓN (v5)
     }
     
     match /incidents/{document=**} {

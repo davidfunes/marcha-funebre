@@ -75,6 +75,14 @@ export default function DriverDashboard() {
         try {
             const batch = writeBatch(db);
 
+            // AUDIT LOGS (v5 - Debugging)
+            console.log('--- AUDIT RETURN VEHICLE ---');
+            console.log('User UID (auth):', user.id);
+            console.log('Vehicle ID:', assignedVehicle.id);
+            console.log('Assigned Driver ID on vehicle:', assignedVehicle.assignedDriverId);
+            console.log('Requires Parking Spot:', assignedVehicle.requiresParkingSpot);
+            console.log('Parking Location input:', parkingLocation);
+
             // 1. Update Vehicle Reference
             const vehicleRef = doc(db, 'vehicles', assignedVehicle.id!);
             batch.update(vehicleRef, {
@@ -90,8 +98,10 @@ export default function DriverDashboard() {
                 points: increment(15)
             });
 
+            console.log('Committing batch...');
             // Commit atomic batch
             await batch.commit();
+            console.log('Batch committed successfully!');
 
             // 3. Reset Local State
             setAssignedVehicle(null);
