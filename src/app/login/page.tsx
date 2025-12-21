@@ -9,7 +9,7 @@ import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase/firebase';
 
 export default function LoginPage() {
-    const { signIn, signUp, user } = useAuth();
+    const { signIn, signUp, resetPassword, user } = useAuth();
     const router = useRouter();
 
     // Form State
@@ -37,6 +37,12 @@ export default function LoginPage() {
     const [contactMessage, setContactMessage] = useState('');
     const [messageSent, setMessageSent] = useState(false);
     const [sendingMessage, setSendingMessage] = useState(false);
+
+    // Password Recovery State
+    const [showRecoveryModal, setShowRecoveryModal] = useState(false);
+    const [recoveryEmail, setRecoveryEmail] = useState('');
+    const [recoveryLoading, setRecoveryLoading] = useState(false);
+    const [recoverySent, setRecoverySent] = useState(false);
 
     const handleSendContactMessage = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -203,6 +209,21 @@ export default function LoginPage() {
         }
     };
 
+    const handlePasswordReset = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setRecoveryLoading(true);
+        setError('');
+        try {
+            await resetPassword(recoveryEmail.trim());
+            setRecoverySent(true);
+        } catch (err: any) {
+            console.error("Error sending reset email:", err);
+            setError(err.message || 'Error al enviar el correo de recuperación');
+        } finally {
+            setRecoveryLoading(false);
+        }
+    };
+
     return (
         <div className="min-h-screen flex items-center justify-center bg-gray-50/50 p-4 relative overflow-hidden">
             {/* Background Decor */}
@@ -346,6 +367,21 @@ export default function LoginPage() {
                                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                                 </button>
                             </div>
+                            {isLogin && (
+                                <div className="flex justify-end mt-1.5">
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setShowRecoveryModal(true);
+                                            setRecoveryEmail(email);
+                                            setError('');
+                                        }}
+                                        className="text-xs text-primary font-medium hover:text-primary/80 transition-colors"
+                                    >
+                                        ¿Has olvidado tu contraseña?
+                                    </button>
+                                </div>
+                            )}
                         </div>
 
                         {!isLogin && (
@@ -492,6 +528,85 @@ export default function LoginPage() {
                                             className="bg-gray-900 text-white font-medium py-2.5 px-6 rounded-xl hover:bg-gray-800 transition-colors"
                                         >
                                             Cerrar
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* Password Recovery Modal */}
+                {showRecoveryModal && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+                        <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden animate-in zoom-in-95 duration-200">
+                            <div className="p-6">
+                                <div className="flex items-center justify-between mb-6">
+                                    <h3 className="font-bold text-xl text-gray-900">Recuperar Contraseña</h3>
+                                    <button
+                                        onClick={() => {
+                                            setShowRecoveryModal(false);
+                                            setRecoverySent(false);
+                                        }}
+                                        className="text-gray-400 hover:text-gray-600 p-1 hover:bg-gray-100 rounded-full transition-colors"
+                                    >
+                                        <X className="w-5 h-5" />
+                                    </button>
+                                </div>
+
+                                {!recoverySent ? (
+                                    <>
+                                        <p className="text-gray-600 text-sm mb-6 leading-relaxed">
+                                            Introduce tu email y te enviaremos las instrucciones para restablecer tu contraseña.
+                                        </p>
+
+                                        <form onSubmit={handlePasswordReset} className="space-y-4">
+                                            <div>
+                                                <label htmlFor="recoveryEmail" className="block text-sm font-semibold text-gray-700 mb-1.5 ml-1">
+                                                    Email registrado
+                                                </label>
+                                                <input
+                                                    id="recoveryEmail"
+                                                    type="email"
+                                                    value={recoveryEmail}
+                                                    onChange={(e) => setRecoveryEmail(e.target.value)}
+                                                    required
+                                                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all shadow-sm"
+                                                    placeholder="tu@email.com"
+                                                />
+                                            </div>
+
+                                            <button
+                                                type="submit"
+                                                disabled={recoveryLoading}
+                                                className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold py-3.5 rounded-xl shadow-lg shadow-primary/20 transition-all flex items-center justify-center gap-2"
+                                            >
+                                                {recoveryLoading ? (
+                                                    <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                    </svg>
+                                                ) : 'Enviar Instrucciones'}
+                                            </button>
+                                        </form>
+                                    </>
+                                ) : (
+                                    <div className="text-center py-4">
+                                        <div className="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                                            <CheckCircle2 className="w-8 h-8" />
+                                        </div>
+                                        <h4 className="text-lg font-bold text-gray-900 mb-2">¡Correo Enviado!</h4>
+                                        <p className="text-gray-600 text-sm mb-6 leading-relaxed">
+                                            Hemos enviado un enlace de recuperación a <strong>{recoveryEmail}</strong>. Revisa tu bandeja de entrada y sigue las instrucciones.
+                                        </p>
+                                        <button
+                                            onClick={() => {
+                                                setShowRecoveryModal(false);
+                                                setRecoverySent(false);
+                                            }}
+                                            className="w-full bg-gray-900 text-white font-bold py-3 rounded-xl hover:bg-gray-800 transition-colors"
+                                        >
+                                            Entendido
                                         </button>
                                     </div>
                                 )}

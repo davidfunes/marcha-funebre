@@ -7,6 +7,9 @@ import {
     signInWithEmailAndPassword,
     signOut as firebaseSignOut,
     createUserWithEmailAndPassword,
+    sendPasswordResetEmail,
+    confirmPasswordReset,
+    verifyPasswordResetCode
 } from 'firebase/auth';
 import { doc, getDoc, setDoc, onSnapshot, collection, getDocs } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase/firebase';
@@ -19,6 +22,9 @@ interface AuthContextType {
     signIn: (email: string, password: string) => Promise<void>;
     signUp: (email: string, password: string, name: string, firstSurname: string, secondSurname: string, role: UserRole) => Promise<void>;
     signOut: () => Promise<void>;
+    resetPassword: (email: string) => Promise<void>;
+    confirmNewPassword: (code: string, password: string) => Promise<void>;
+    verifyPasswordCode: (code: string) => Promise<string>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -210,13 +216,39 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         });
     };
 
+    const resetPassword = async (email: string) => {
+        const actionCodeSettings = {
+            url: `${window.location.origin}/auth/reset-password`,
+            handleCodeInApp: true,
+        };
+        await sendPasswordResetEmail(auth, email, actionCodeSettings);
+    };
+
+    const confirmNewPassword = async (code: string, password: string) => {
+        await confirmPasswordReset(auth, code, password);
+    };
+
+    const verifyPasswordCode = async (code: string) => {
+        return await verifyPasswordResetCode(auth, code);
+    };
+
     const signOut = async () => {
         localStorage.removeItem('auth_last_activity');
         await firebaseSignOut(auth);
     };
 
     return (
-        <AuthContext.Provider value={{ user, firebaseUser, loading, signIn, signUp, signOut }}>
+        <AuthContext.Provider value={{ 
+            user, 
+            firebaseUser, 
+            loading, 
+            signIn, 
+            signUp, 
+            signOut, 
+            resetPassword,
+            confirmNewPassword,
+            verifyPasswordCode
+        }}>
             {children}
         </AuthContext.Provider>
     );
