@@ -11,9 +11,10 @@ import {
     confirmPasswordReset,
     verifyPasswordResetCode
 } from 'firebase/auth';
-import { doc, getDoc, setDoc, onSnapshot, collection, getDocs } from 'firebase/firestore';
+import { doc, getDoc, setDoc, onSnapshot } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase/firebase';
 import { User, UserRole } from '@/types';
+import { sendResetPasswordEmailAction } from '@/app/actions/auth';
 
 interface AuthContextType {
     user: User | null;
@@ -217,11 +218,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
 
     const resetPassword = async (email: string) => {
-        const actionCodeSettings = {
-            url: `${window.location.origin}/auth/reset-password`,
-            handleCodeInApp: true,
-        };
-        await sendPasswordResetEmail(auth, email, actionCodeSettings);
+        await sendResetPasswordEmailAction(email);
     };
 
     const confirmNewPassword = async (code: string, password: string) => {
@@ -238,13 +235,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
 
     return (
-        <AuthContext.Provider value={{ 
-            user, 
-            firebaseUser, 
-            loading, 
-            signIn, 
-            signUp, 
-            signOut, 
+        <AuthContext.Provider value={{
+            user,
+            firebaseUser,
+            loading,
+            signIn,
+            signUp,
+            signOut,
             resetPassword,
             confirmNewPassword,
             verifyPasswordCode
