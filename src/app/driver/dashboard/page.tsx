@@ -133,6 +133,16 @@ export default function DriverDashboard() {
             requiresVehicle: false
         },
         {
+            label: 'Checklist Pre-Viaje',
+            description: 'Gana puntos extra',
+            href: '/driver/checklist',
+            icon: CheckSquare,
+            color: 'text-purple-400',
+            bg: 'bg-purple-500/10',
+            border: 'border-purple-500/20',
+            requiresVehicle: true
+        },
+        {
             label: 'Registrar Kilometraje',
             description: 'Foto del salpicadero',
             href: '/driver/log-km',
@@ -140,6 +150,16 @@ export default function DriverDashboard() {
             color: 'text-blue-400',
             bg: 'bg-blue-500/10',
             border: 'border-blue-500/20',
+            requiresVehicle: true
+        },
+        {
+            label: 'Reportar Incidencia',
+            description: 'Informe de daños/averías',
+            href: '/driver/report-incident',
+            icon: AlertTriangle,
+            color: 'text-amber-400',
+            bg: 'bg-amber-500/10',
+            border: 'border-amber-500/20',
             requiresVehicle: true
         },
         {
@@ -160,26 +180,6 @@ export default function DriverDashboard() {
             color: 'text-cyan-400',
             bg: 'bg-cyan-500/10',
             border: 'border-cyan-500/20',
-            requiresVehicle: true
-        },
-        {
-            label: 'Reportar Incidencia',
-            description: 'Informe de daños/averías',
-            href: '/driver/report-incident',
-            icon: AlertTriangle,
-            color: 'text-amber-400',
-            bg: 'bg-amber-500/10',
-            border: 'border-amber-500/20',
-            requiresVehicle: true
-        },
-        {
-            label: 'Checklist Pre-Viaje',
-            description: 'Gana puntos extra',
-            href: '/driver/checklist',
-            icon: CheckSquare,
-            color: 'text-purple-400',
-            bg: 'bg-purple-500/10',
-            border: 'border-purple-500/20',
             requiresVehicle: true
         },
         {
