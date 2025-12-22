@@ -35,6 +35,7 @@ import { seedDatabase } from '@/services/seed';
 import { Vehicle, Incident, InventoryItem, User, Warehouse, MaterialCondition } from '@/types';
 import { Timestamp } from 'firebase/firestore';
 import { getFullName, getUserInitials } from '@/utils/userUtils';
+import { getFuelLevelLabel } from '@/lib/utils';
 import {
     Chart as ChartJS,
     ArcElement,
@@ -418,7 +419,7 @@ export default function AdminDashboard() {
                                             <span className="text-[10px] text-muted-foreground">•</span>
                                             <p className="text-xs font-medium text-primary flex items-center gap-1">
                                                 <Fuel className="h-3 w-3" />
-                                                {v.fuelLevel ? `${v.fuelLevel}%` : '-'}
+                                                {getFuelLevelLabel(v.fuelLevel)}
                                             </p>
                                         </div>
                                     </div>

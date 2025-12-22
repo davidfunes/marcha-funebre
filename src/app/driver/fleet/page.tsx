@@ -33,6 +33,7 @@ import { getInventory, getVehicles, reportMaterialIncident } from '@/services/Fi
 import { InventoryItem, Incident, MaterialCondition } from '@/types';
 import { Modal } from '@/components/ui/Modal';
 import { updateItem } from '@/services/FirebaseService';
+import { getFuelLevelLabel } from '@/lib/utils';
 
 export default function MyVehiclePage() {
     const { user } = useAuth();
@@ -366,7 +367,7 @@ export default function MyVehiclePage() {
                                 <div className="flex items-center gap-2">
                                     <Fuel className="w-4 h-4 text-primary" />
                                     <span className="font-semibold capitalize">
-                                        {vehicle.fuelType} {vehicle.fuelLevel ? `(${vehicle.fuelLevel}%)` : ''}
+                                        {vehicle.fuelType} {vehicle.fuelLevel ? `(${getFuelLevelLabel(vehicle.fuelLevel)})` : ''}
                                     </span>
                                 </div>
                             </div>

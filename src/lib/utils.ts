@@ -47,3 +47,16 @@ export function formatPhoneNumber(input: string): string {
 
     return formatted.trim();
 }
+
+export function getFuelLevelLabel(level: string | undefined): string {
+    if (!level) return 'No reportado';
+    const mapping: Record<string, string> = {
+        '100': 'Lleno (100%)',
+        '75': '3/4',
+        '50': 'Medio (50%)',
+        '25': '1/4',
+        '10': 'Casi Reserva',
+        '0': 'Reserva (!)'
+    };
+    return mapping[level] || 'Desconocido';
+}

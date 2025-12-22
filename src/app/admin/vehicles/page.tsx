@@ -15,7 +15,7 @@ import { Modal } from '@/components/ui/Modal';
 import { addItem, updateItem, deleteItem, subscribeToCollection, addVehicleTaxonomy, getInventory } from '@/services/FirebaseService';
 import { Vehicle, VehicleMake, Incident, InventoryItem, Workshop, VehicleBrand, RentingCompany } from '@/types';
 import { Timestamp } from 'firebase/firestore';
-import { formatLicensePlate } from '@/lib/utils';
+import { formatLicensePlate, getFuelLevelLabel } from '@/lib/utils';
 import { AlertTriangle, ShieldAlert, MapPin } from 'lucide-react';
 
 export default function VehiclesPage() {
@@ -370,12 +370,8 @@ export default function VehiclesPage() {
                             </div>
                             <div className="space-y-1">
                                 <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Combustible</span>
-                                <p className="text-sm font-medium">
-                                    {vehicle.fuelLevel ? `${vehicle.fuelLevel}%` : (
-                                        <span className="text-muted-foreground italic flex items-center gap-1">
-                                            -
-                                        </span>
-                                    )}
+                                <p className="text-sm font-medium truncate">
+                                    {getFuelLevelLabel(vehicle.fuelLevel)}
                                 </p>
                             </div>
                         </div>
@@ -419,19 +415,20 @@ export default function VehiclesPage() {
                             </div>
                         </div>
                     </div>
-                )}
+                )
+                }
                 actionButton={
-                    <button
+                    < button
                         onClick={() => handleOpenModal()}
                         className="inline-flex items-center justify-center rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow transition-colors hover:bg-primary/90"
                     >
                         <Plus className="mr-2 h-4 w-4" />
                         Nuevo Vehículo
-                    </button>
+                    </button >
                 }
             />
 
-            <Modal
+            < Modal
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
                 title={editingVehicle ? 'Editar Vehículo' : 'Nuevo Vehículo'}
@@ -699,7 +696,7 @@ export default function VehiclesPage() {
                         </button>
                     </div>
                 </form>
-            </Modal>
+            </Modal >
 
             <Modal
                 isOpen={isDeleteModalOpen}
@@ -828,13 +825,7 @@ export default function VehiclesPage() {
                                                         viewingVehicle.fuelLevel === '0' ? 'bg-red-200 text-red-800 animate-pulse' :
                                                             'bg-muted text-muted-foreground'
                                         }`}>
-                                        {viewingVehicle.fuelLevel === '100' ? 'Lleno (100%)' :
-                                            viewingVehicle.fuelLevel === '75' ? '3/4' :
-                                                viewingVehicle.fuelLevel === '50' ? 'Medio (50%)' :
-                                                    viewingVehicle.fuelLevel === '25' ? '1/4' :
-                                                        viewingVehicle.fuelLevel === '10' ? 'Casi Reserva' :
-                                                            viewingVehicle.fuelLevel === '0' ? 'En Reserva (!)' :
-                                                                'No reportado'}
+                                        {getFuelLevelLabel(viewingVehicle.fuelLevel)}
                                     </span>
                                 </div>
                                 <div className="w-full bg-muted h-3 rounded-full overflow-hidden border border-border shadow-inner">
@@ -997,6 +988,6 @@ export default function VehiclesPage() {
                     </div>
                 </div>
             </Modal>
-        </div>
+        </div >
     );
 }
