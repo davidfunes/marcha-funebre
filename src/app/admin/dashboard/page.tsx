@@ -30,6 +30,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { Modal } from '@/components/ui/Modal';
+import { IncidentDetailsModal } from '@/components/admin/incidents/IncidentDetailsModal';
 import { getVehicles, getIncidents, getInventory, getUsers, getWarehouses, updateItem, addItem, deleteItem, getAdminMessages, restoreMaterial } from '@/services/FirebaseService';
 import { seedDatabase } from '@/services/seed';
 import { Vehicle, Incident, InventoryItem, User, Warehouse, MaterialCondition } from '@/types';
@@ -77,6 +78,10 @@ export default function AdminDashboard() {
     // Modal State
     const [selectedStat, setSelectedStat] = useState<string | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
+
+    // View Incident Modal State
+    const [isViewIncidentModalOpen, setIsViewIncidentModalOpen] = useState(false);
+    const [viewingIncident, setViewingIncident] = useState<Incident | null>(null);
 
     // Resolve Incident Modal State
     const [isResolveModalOpen, setIsResolveModalOpen] = useState(false);
@@ -339,6 +344,11 @@ export default function AdminDashboard() {
         }
     };
 
+    const handleViewIncident = (incident: Incident) => {
+        setViewingIncident(incident);
+        setIsViewIncidentModalOpen(true);
+    };
+
     const handleResolveIncident = async () => {
         if (incidentToResolve?.id) {
             // Optimistic update: remove from local state immediately
@@ -441,7 +451,11 @@ export default function AdminDashboard() {
                             const reporter = users.find(u => u.id === i.reportedByUserId);
 
                             return (
-                                <div key={i.id} className="p-3 bg-muted/20 rounded-lg space-y-2">
+                                <div
+                                    key={i.id}
+                                    className="p-3 bg-muted/20 rounded-lg space-y-2 cursor-pointer hover:bg-muted/30 transition-colors"
+                                    onClick={() => handleViewIncident(i)}
+                                >
                                     <div className="flex items-center justify-between">
                                         <div className="flex items-center gap-3">
                                             <AlertTriangle className="h-4 w-4 text-amber-500" />
@@ -865,7 +879,11 @@ export default function AdminDashboard() {
                             const reporter = linkedIncident ? users.find(u => u.id === linkedIncident.reportedByUserId) : null;
 
                             return (
-                                <div key={`${item.id}-${idx}`} className="bg-white dark:bg-zinc-900 p-4 rounded-lg border border-red-100 dark:border-red-900/20 shadow-sm flex flex-col justify-between gap-3">
+                                <div
+                                    key={`${item.id}-${idx}`}
+                                    className={`bg-white dark:bg-zinc-900 p-4 rounded-lg border border-red-100 dark:border-red-900/20 shadow-sm flex flex-col justify-between gap-3 ${linkedIncident ? 'cursor-pointer hover:border-red-300 transition-colors' : ''}`}
+                                    onClick={() => linkedIncident && handleViewIncident(linkedIncident)}
+                                >
                                     <div>
                                         <div className="flex justify-between items-start">
                                             <h4 className="font-semibold text-red-900 dark:text-red-100">{item.name}</h4>
@@ -933,7 +951,11 @@ export default function AdminDashboard() {
                                     {incidents.filter(inc => inc.status !== 'resolved').slice(0, 5).map((inc) => {
                                         const affectedVehicle = vehicles.find(v => v.id === inc.vehicleId);
                                         return (
-                                            <div key={inc.id} className="flex items-center justify-between p-4 hover:bg-muted/50 transition-colors">
+                                            <div
+                                                key={inc.id}
+                                                className="flex items-center justify-between p-4 hover:bg-muted/50 transition-colors cursor-pointer"
+                                                onClick={() => handleViewIncident(inc)}
+                                            >
                                                 <div className="flex items-center gap-4">
                                                     <div className={`h-8 w-8 rounded-full flex items-center justify-center ${inc.priority === 'high' ? 'bg-red-100 text-red-600' :
                                                         inc.priority === 'medium' ? 'bg-amber-100 text-amber-600' : 'bg-blue-100 text-blue-600'
@@ -1438,6 +1460,19 @@ export default function AdminDashboard() {
                     </div>
                 </form>
             </Modal>
-        </div >
+
+            <IncidentDetailsModal
+                isOpen={isViewIncidentModalOpen}
+                onClose={() => setIsViewIncidentModalOpen(false)}
+                incident={viewingIncident}
+                vehicles={vehicles}
+                users={users}
+                inventory={inventory}
+                onEdit={(inc) => {
+                    setIsViewIncidentModalOpen(false);
+                    router.push('/admin/incidents');
+                }}
+            />
+        </div>
     );
 }

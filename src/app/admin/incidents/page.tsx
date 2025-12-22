@@ -21,6 +21,7 @@ import {
 import { DataTable, Column } from '@/components/ui/DataTable';
 import { StatusBadge } from '@/components/ui/StatusBadge';
 import { Modal } from '@/components/ui/Modal';
+import { IncidentDetailsModal } from '@/components/admin/incidents/IncidentDetailsModal';
 import { addItem, updateItem, deleteItem, subscribeToCollection, getVehicles, getUsers, getInventory } from '@/services/FirebaseService';
 import { Incident, Vehicle, User, IncidentPriority, IncidentStatus, InventoryItem } from '@/types';
 import { Timestamp } from 'firebase/firestore';
@@ -223,148 +224,15 @@ export default function IncidentsPage() {
                 </div>
             </div>
 
-            {/* Modal de Detalles de Incidencia */}
-            <Modal
+            <IncidentDetailsModal
                 isOpen={isViewModalOpen}
                 onClose={() => setIsViewModalOpen(false)}
-                title="Detalles de la Incidencia"
-                className="max-w-2xl px-0 sm:px-0" // Quitar padding lateral para controlar mejor el diseño
-            >
-                <div className="flex flex-col max-h-[85vh]">
-                    {/* Header con Estado y Prioridad */}
-                    <div className="px-6 pb-6 border-b border-border/50">
-                        <div className="flex flex-wrap items-center gap-3 mb-4">
-                            <StatusBadge status={viewingIncident?.status || 'open'} />
-                            <StatusBadge status={viewingIncident?.priority || 'medium'} />
-                        </div>
-                        <h2 className="text-2xl font-bold text-foreground leading-tight">
-                            {viewingIncident?.title}
-                        </h2>
-                    </div>
-
-                    <div className="flex-1 overflow-y-auto px-6 py-6 space-y-8">
-                        {/* Descripción */}
-                        <section className="space-y-3">
-                            <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-                                <AlertCircle className="h-4 w-4" />
-                                Descripción del Problema
-                            </h3>
-                            <div className="bg-muted/30 p-4 rounded-xl border border-border/50">
-                                <p className="text-foreground leading-relaxed">
-                                    {viewingIncident?.description || 'Sin descripción detallada.'}
-                                </p>
-                            </div>
-                        </section>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                            {/* Información del Vehículo */}
-                            <section className="space-y-3">
-                                <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-                                    <MapPin className="h-4 w-4" />
-                                    Vehículo Relacionado
-                                </h3>
-                                <div className="space-y-1">
-                                    <p className="font-semibold text-lg">{getVehicleName(viewingIncident?.vehicleId || '')}</p>
-                                    <p className="text-sm text-muted-foreground">ID: {viewingIncident?.vehicleId}</p>
-                                </div>
-                            </section>
-
-                            {/* Información del Usuario */}
-                            <section className="space-y-3">
-                                <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-                                    <UserIcon className="h-4 w-4" />
-                                    Reportado Por
-                                </h3>
-                                <div className="flex items-center gap-3">
-                                    <div className="h-10 w-10 rounded-full bg-secondary flex items-center justify-center text-secondary-foreground font-bold text-sm">
-                                        {getUserInitials(users.find(u => u.id === viewingIncident?.reportedByUserId))}
-                                    </div>
-                                    <div>
-                                        <p className="font-semibold">{getFullName(users.find(u => u.id === viewingIncident?.reportedByUserId))}</p>
-                                        <p className="text-xs text-muted-foreground">Colaborador</p>
-                                    </div>
-                                </div>
-                            </section>
-                        </div>
-
-                        {/* Material (Si aplica) */}
-                        {viewingIncident?.inventoryItemId && (
-                            <section className="space-y-3">
-                                <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-                                    <Package className="h-4 w-4" />
-                                    Material / Equipaje Afectado
-                                </h3>
-                                <div className="p-4 bg-purple-50 dark:bg-purple-900/10 border border-purple-100 dark:border-purple-800/50 rounded-xl flex items-center gap-4">
-                                    <div className="h-12 w-12 rounded-lg bg-white dark:bg-purple-900/20 flex items-center justify-center text-purple-600 dark:text-purple-400 border border-purple-200 dark:border-purple-800">
-                                        <Music className="h-7 w-7" />
-                                    </div>
-                                    <div>
-                                        <p className="font-bold text-purple-700 dark:text-purple-300">
-                                            {inventory.find(inv => inv.id === viewingIncident?.inventoryItemId)?.name || 'Cargando...'}
-                                        </p>
-                                        <p className="text-sm text-purple-600/70 dark:text-purple-400/70">
-                                            Estado reportado: {viewingIncident?.status === 'resolved' ? 'Reparado' : 'Averiado'}
-                                        </p>
-                                    </div>
-                                </div>
-                            </section>
-                        )}
-
-                        {/* Imágenes (Si hay) */}
-                        {viewingIncident?.images && viewingIncident.images.length > 0 && (
-                            <section className="space-y-3">
-                                <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-                                    <Camera className="h-4 w-4" />
-                                    Evidencias Fotográficas
-                                </h3>
-                                <div className="grid grid-cols-2 gap-3">
-                                    {viewingIncident.images.map((img, idx) => (
-                                        <div key={idx} className="relative aspect-video rounded-xl overflow-hidden border border-border group">
-                                            <img
-                                                src={img}
-                                                alt={`Evidencia ${idx + 1}`}
-                                                className="object-cover w-full h-full transition-transform group-hover:scale-105"
-                                            />
-                                        </div>
-                                    ))}
-                                </div>
-                            </section>
-                        )}
-
-                        {/* Fechas */}
-                        <section className="pt-4 grid grid-cols-2 gap-4 border-t border-border/50 text-xs text-muted-foreground">
-                            <div className="flex items-center gap-2">
-                                <Calendar className="h-3 w-3" />
-                                <span>Creado: {viewingIncident?.createdAt instanceof Timestamp ? viewingIncident.createdAt.toDate().toLocaleString() : 'Recientemente'}</span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <Clock className="h-3 w-3" />
-                                <span>Actualizado: {viewingIncident?.updatedAt instanceof Timestamp ? viewingIncident.updatedAt.toDate().toLocaleString() : 'Recientemente'}</span>
-                            </div>
-                        </section>
-                    </div>
-
-                    {/* Footer con Botones de Acción */}
-                    <div className="p-6 bg-muted/20 border-t border-border/50 flex flex-wrap justify-end gap-3">
-                        <button
-                            onClick={() => setIsViewModalOpen(false)}
-                            className="px-6 py-2.5 rounded-xl bg-background border border-border font-bold text-sm hover:bg-muted transition-colors"
-                        >
-                            Cerrar
-                        </button>
-                        <button
-                            onClick={() => {
-                                setIsViewModalOpen(false);
-                                if (viewingIncident) handleOpenModal(viewingIncident);
-                            }}
-                            className="px-6 py-2.5 rounded-xl bg-primary text-primary-foreground font-bold text-sm hover:bg-primary/90 transition-all shadow-sm flex items-center gap-2"
-                        >
-                            <Edit className="h-4 w-4" />
-                            Editar Incidencia
-                        </button>
-                    </div>
-                </div>
-            </Modal>
+                incident={viewingIncident}
+                vehicles={vehicles}
+                users={users}
+                inventory={inventory}
+                onEdit={handleOpenModal}
+            />
 
             <DataTable
                 columns={columns}

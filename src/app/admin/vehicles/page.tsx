@@ -12,8 +12,9 @@ import {
 import { DataTable, Column } from '@/components/ui/DataTable';
 import { StatusBadge } from '@/components/ui/StatusBadge';
 import { Modal } from '@/components/ui/Modal';
-import { addItem, updateItem, deleteItem, subscribeToCollection, addVehicleTaxonomy, getInventory } from '@/services/FirebaseService';
-import { Vehicle, VehicleMake, Incident, InventoryItem, Workshop, VehicleBrand, RentingCompany } from '@/types';
+import { IncidentDetailsModal } from '@/components/admin/incidents/IncidentDetailsModal';
+import { addItem, updateItem, deleteItem, subscribeToCollection, addVehicleTaxonomy, getInventory, getUsers } from '@/services/FirebaseService';
+import { Vehicle, VehicleMake, Incident, InventoryItem, Workshop, VehicleBrand, RentingCompany, User } from '@/types';
 import { Timestamp } from 'firebase/firestore';
 import { formatLicensePlate, getFuelLevelLabel } from '@/lib/utils';
 import { AlertTriangle, ShieldAlert, MapPin } from 'lucide-react';
@@ -27,6 +28,7 @@ export default function VehiclesPage() {
     const [brands, setBrands] = useState<VehicleBrand[]>([]);
     const [warehouses, setWarehouses] = useState<any[]>([]);
     const [rentingCompanies, setRentingCompanies] = useState<RentingCompany[]>([]);
+    const [users, setUsers] = useState<User[]>([]);
     const [loading, setLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingVehicle, setEditingVehicle] = useState<Vehicle | null>(null);
@@ -34,6 +36,10 @@ export default function VehiclesPage() {
     // Detail View State
     const [viewingVehicle, setViewingVehicle] = useState<Vehicle | null>(null);
     const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+
+    // Incident View State
+    const [isIncidentModalOpen, setIsIncidentModalOpen] = useState(false);
+    const [viewingIncident, setViewingIncident] = useState<Incident | null>(null);
 
     // Form State
     const [formData, setFormData] = useState<Partial<Vehicle>>({
@@ -86,6 +92,10 @@ export default function VehiclesPage() {
             setRentingCompanies(data);
         });
 
+        const unsubscribeUsers = subscribeToCollection<User>('users', (data) => {
+            setUsers(data);
+        });
+
         return () => {
             unsubscribeVehicles();
             unsubscribeMakes();
@@ -96,6 +106,7 @@ export default function VehiclesPage() {
             unsubscribeBrands();
             unsubscribeWarehouses();
             unsubscribeRenting();
+            unsubscribeUsers();
         };
     }, []);
 
@@ -136,6 +147,11 @@ export default function VehiclesPage() {
             setIsDeleteModalOpen(false);
             setVehicleToDelete(null);
         }
+    };
+
+    const handleViewIncident = (incident: Incident) => {
+        setViewingIncident(incident);
+        setIsIncidentModalOpen(true);
     };
 
     // Broken Report Modal State
@@ -857,7 +873,11 @@ export default function VehiclesPage() {
                                         .filter(i => i.vehicleId === viewingVehicle.id)
                                         .sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0))
                                         .map(incident => (
-                                            <div key={incident.id} className="flex items-center justify-between p-3 rounded-lg border border-border bg-muted/30">
+                                            <div
+                                                key={incident.id}
+                                                className="flex items-center justify-between p-3 rounded-lg border border-border bg-muted/30 cursor-pointer hover:bg-muted transition-colors"
+                                                onClick={() => handleViewIncident(incident)}
+                                            >
                                                 <div className="flex flex-col">
                                                     <span className="font-medium text-sm">{incident.title}</span>
                                                     <span className="text-xs text-muted-foreground">
@@ -988,6 +1008,15 @@ export default function VehiclesPage() {
                     </div>
                 </div>
             </Modal>
+
+            <IncidentDetailsModal
+                isOpen={isIncidentModalOpen}
+                onClose={() => setIsIncidentModalOpen(false)}
+                incident={viewingIncident}
+                vehicles={vehicles}
+                users={users}
+                inventory={inventory}
+            />
         </div >
     );
 }
