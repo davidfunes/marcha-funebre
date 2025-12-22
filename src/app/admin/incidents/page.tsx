@@ -18,6 +18,7 @@ import { Modal } from '@/components/ui/Modal';
 import { addItem, updateItem, deleteItem, subscribeToCollection, getVehicles, getUsers, getInventory } from '@/services/FirebaseService';
 import { Incident, Vehicle, User, IncidentPriority, IncidentStatus, InventoryItem } from '@/types';
 import { Timestamp } from 'firebase/firestore';
+import { getFullName, getUserInitials } from '@/utils/userUtils';
 
 export default function IncidentsPage() {
     const [incidents, setIncidents] = useState<Incident[]>([]);
@@ -149,7 +150,17 @@ export default function IncidentsPage() {
         {
             key: 'reportedByUserId',
             label: 'Reportado Por',
-            render: (i) => <span className="text-sm text-muted-foreground">{getUserName(i.reportedByUserId)}</span>
+            render: (i) => {
+                const u = users.find(user => user.id === i.reportedByUserId);
+                return (
+                    <div className="flex items-center gap-2">
+                        <div className="h-6 w-6 rounded-full bg-secondary flex items-center justify-center shrink-0 text-secondary-foreground font-bold text-[10px]">
+                            {getUserInitials(u)}
+                        </div>
+                        <span className="text-sm font-medium">{getFullName(u)}</span>
+                    </div>
+                );
+            }
         },
         {
             key: 'status',
@@ -227,7 +238,12 @@ export default function IncidentsPage() {
                             </div>
                             <div className="flex justify-between items-center">
                                 <span className="text-xs text-muted-foreground">Reportado por</span>
-                                <span className="font-medium">{getUserName(incident.reportedByUserId)}</span>
+                                <div className="flex items-center gap-2">
+                                    <div className="h-5 w-5 rounded-full bg-secondary flex items-center justify-center shrink-0 text-secondary-foreground font-bold text-[8px]">
+                                        {getUserInitials(users.find(u => u.id === incident.reportedByUserId))}
+                                    </div>
+                                    <span className="font-medium">{getUserName(incident.reportedByUserId)}</span>
+                                </div>
                             </div>
                         </div>
 

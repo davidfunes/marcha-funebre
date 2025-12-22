@@ -452,10 +452,14 @@ export default function AdminDashboard() {
                                             </p>
                                         )}
                                         {reporter && (
-                                            <p className="flex items-center gap-1">
-                                                <Users className="h-3 w-3" />
-                                                Reportado por: <span className="font-medium text-foreground">{getFullName(reporter)}</span>
-                                            </p>
+                                            <div className="flex items-center gap-2 pt-1 border-t border-border/50">
+                                                <div className="h-5 w-5 rounded-full bg-secondary flex items-center justify-center shrink-0 text-secondary-foreground font-bold text-[8px]">
+                                                    {getUserInitials(reporter)}
+                                                </div>
+                                                <p className="text-[10px] text-muted-foreground">
+                                                    Reportado por: <span className="font-medium text-foreground">{getFullName(reporter)}</span>
+                                                </p>
+                                            </div>
                                         )}
                                     </div>
                                 </div>
@@ -923,6 +927,17 @@ export default function AdminDashboard() {
                                                             </p>
                                                         )}
                                                         <p className="text-xs text-muted-foreground">{inc.status}</p>
+                                                        {(() => {
+                                                            const reporter = users.find(u => u.id === inc.reportedByUserId);
+                                                            return reporter ? (
+                                                                <div className="flex items-center gap-1.5 mt-1.5">
+                                                                    <div className="h-4 w-4 rounded-full bg-secondary flex items-center justify-center shrink-0 text-secondary-foreground font-bold text-[7px]">
+                                                                        {getUserInitials(reporter)}
+                                                                    </div>
+                                                                    <span className="text-[10px] text-indigo-600 font-medium">{getFullName(reporter)}</span>
+                                                                </div>
+                                                            ) : null;
+                                                        })()}
                                                     </div>
                                                 </div>
                                                 <div className="flex items-center gap-2">
