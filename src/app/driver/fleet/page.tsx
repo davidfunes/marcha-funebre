@@ -365,7 +365,9 @@ export default function MyVehiclePage() {
                                 <p className="text-xs text-muted-foreground mb-1 uppercase tracking-wider">Combustible</p>
                                 <div className="flex items-center gap-2">
                                     <Fuel className="w-4 h-4 text-primary" />
-                                    <span className="font-semibold capitalize">{vehicle.fuelType}</span>
+                                    <span className="font-semibold capitalize">
+                                        {vehicle.fuelType} {vehicle.fuelLevel ? `(${vehicle.fuelLevel}%)` : ''}
+                                    </span>
                                 </div>
                             </div>
                         </div>

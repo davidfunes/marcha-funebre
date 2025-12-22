@@ -25,7 +25,8 @@ import {
     ShieldAlert,
     Loader2,
     Search,
-    Clock
+    Clock,
+    Fuel
 } from 'lucide-react';
 import Link from 'next/link';
 import { Modal } from '@/components/ui/Modal';
@@ -412,7 +413,14 @@ export default function AdminDashboard() {
                                     <Car className="h-4 w-4 text-primary" />
                                     <div>
                                         <p className="text-sm font-medium">{v.brand} {v.model}</p>
-                                        <p className="text-xs text-muted-foreground">{v.plate}</p>
+                                        <div className="flex items-center gap-2">
+                                            <p className="text-xs text-muted-foreground">{v.plate}</p>
+                                            <span className="text-[10px] text-muted-foreground">•</span>
+                                            <p className="text-xs font-medium text-primary flex items-center gap-1">
+                                                <Fuel className="h-3 w-3" />
+                                                {v.fuelLevel ? `${v.fuelLevel}%` : '-'}
+                                            </p>
+                                        </div>
                                     </div>
                                 </div>
                                 <span className={`text-xs px-2 py-1 rounded-full ${v.status === 'active' ? 'bg-green-100 text-green-700' :

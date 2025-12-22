@@ -363,11 +363,24 @@ export default function VehiclesPage() {
                             />
                         </div>
 
-                        <div className="grid grid-cols-2 gap-3 pb-3 border-b border-border/50">
+                        <div className="grid grid-cols-2 gap-3 py-3 border-b border-border/50">
                             <div className="space-y-1">
                                 <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Odómetro</span>
                                 <p className="text-sm font-medium">{vehicle.odometer.toLocaleString()} km</p>
                             </div>
+                            <div className="space-y-1">
+                                <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Combustible</span>
+                                <p className="text-sm font-medium">
+                                    {vehicle.fuelLevel ? `${vehicle.fuelLevel}%` : (
+                                        <span className="text-muted-foreground italic flex items-center gap-1">
+                                            -
+                                        </span>
+                                    )}
+                                </p>
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 gap-3 pb-3 border-b border-border/50">
                             <div className="space-y-1">
                                 <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Sede</span>
                                 <p className="text-sm font-medium truncate">
