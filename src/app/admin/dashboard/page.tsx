@@ -22,13 +22,16 @@ import {
     ArrowUpRight,
     ArrowDownRight,
     Check,
-    ShieldAlert
+    ShieldAlert,
+    Loader2,
+    Search,
+    Clock
 } from 'lucide-react';
 import Link from 'next/link';
 import { Modal } from '@/components/ui/Modal';
-import { getVehicles, getIncidents, getInventory, getUsers, getWarehouses, updateItem, addItem, deleteItem, getAdminMessages } from '@/services/FirebaseService';
+import { getVehicles, getIncidents, getInventory, getUsers, getWarehouses, updateItem, addItem, deleteItem, getAdminMessages, restoreMaterial } from '@/services/FirebaseService';
 import { seedDatabase } from '@/services/seed';
-import { Vehicle, Incident, InventoryItem, User, Warehouse } from '@/types';
+import { Vehicle, Incident, InventoryItem, User, Warehouse, MaterialCondition } from '@/types';
 import { Timestamp } from 'firebase/firestore';
 import { getFullName, getUserInitials } from '@/utils/userUtils';
 import {
@@ -138,43 +141,88 @@ export default function AdminDashboard() {
         window.location.reload();
     };
 
-    // Broken Resolution Modal State
+    const [isRestoring, setIsRestoring] = useState(false);
+    const [targetType, setTargetType] = useState<'warehouse' | 'vehicle'>('warehouse');
+    const [targetId, setTargetId] = useState<string>('');
     const [isResolveConfirmOpen, setIsResolveConfirmOpen] = useState(false);
     const [itemToResolve, setItemToResolve] = useState<{ item: InventoryItem, locIndex: number } | null>(null);
 
-    const handleResolveBroken = (item: InventoryItem, locIndex: number) => {
-        setItemToResolve({ item, locIndex });
-        setIsResolveConfirmOpen(true);
-    };
-
     const confirmResolution = async () => {
-        if (!itemToResolve) return;
-        const { item, locIndex } = itemToResolve;
+        if (!itemToResolve || !targetId) return;
+        const { item } = itemToResolve;
 
-
+        setIsRestoring(true);
         try {
-            const locations = [...(item.locations || [])];
-            // Remove the broken entry
-            locations.splice(locIndex, 1);
+            // Find incident linked to this item
+            const incident = incidents.find(i => i.inventoryItemId === item.id && i.status !== 'resolved');
 
-            // Update total quantity
-            const newTotalQty = item.quantity - 1;
+            if (incident?.id) {
+                // Delegate everything to restored service
+                await restoreMaterial(incident.id, item.id!, targetId, targetType);
+            } else {
+                // Fallback: If no incident found, update inventory manually
+                const locations = [...(item.locations || [])];
 
-            if (item.id) {
-                await updateItem('inventory', item.id, {
-                    locations,
-                    quantity: newTotalQty
-                });
+                // Find and remove the broken unit
+                const brokenIdx = locations.findIndex(l =>
+                    l.status === 'totally_broken' ||
+                    l.status === 'working_urgent_change' ||
+                    l.status === 'ordered'
+                );
 
-                // Refresh local state
-                setInventory(prev => prev.map(i => i.id === item.id ? { ...i, locations, quantity: newTotalQty } : i));
+                if (brokenIdx !== -1) {
+                    if (locations[brokenIdx].quantity > 1) {
+                        locations[brokenIdx].quantity -= 1;
+                    } else {
+                        locations.splice(brokenIdx, 1);
+                    }
+                }
+
+                // Add to new destination
+                const destIdx = locations.findIndex(l => l.id === targetId && l.type === targetType && l.status === 'new');
+                if (destIdx !== -1) {
+                    locations[destIdx].quantity += 1;
+                } else {
+                    locations.push({ id: targetId, type: targetType, quantity: 1, status: 'new' });
+                }
+
+                await updateItem('inventory', item.id!, { locations });
             }
+
+            // Refresh data
+            const [vData, iData, invData] = await Promise.all([getVehicles(), getIncidents(), getInventory()]);
+            setVehicles(vData);
+            setIncidents(iData);
+            setInventory(invData);
+
             setIsResolveConfirmOpen(false);
             setItemToResolve(null);
         } catch (error) {
-            console.error('Error resolving broken item:', error);
-            alert('Error al resolver');
+            console.error('Error restoring material:', error);
+            alert('Error al restaurar el material');
+        } finally {
+            setIsRestoring(false);
         }
+    };
+
+    const handleMarkAsOrdered = async (item: InventoryItem, locIndex: number) => {
+        try {
+            const locations = [...(item.locations || [])];
+            locations[locIndex].status = 'ordered';
+            await updateItem('inventory', item.id!, { locations });
+            const invData = await getInventory();
+            setInventory(invData);
+        } catch (error) {
+            console.error('Error marking as ordered:', error);
+            alert('Error al marcar como pedido');
+        }
+    };
+
+    const handleResolveBroken = (item: InventoryItem, locIndex: number) => {
+        setItemToResolve({ item, locIndex });
+        setTargetType('warehouse');
+        setTargetId(warehouses[0]?.id || '');
+        setIsResolveConfirmOpen(true);
     };
 
     const handleUserReview = async () => {
@@ -233,9 +281,9 @@ export default function AdminDashboard() {
             const itemAssigned = (item.locations || []).reduce((acc, loc) => acc + loc.quantity, 0);
             assignedItems += itemAssigned;
 
-            // Health
-            const itemBroken = (item.locations || []).filter(l => l.status === 'broken').reduce((acc, l) => acc + l.quantity, 0);
-            brokenItems += itemBroken;
+            // Health (everything except new/functional)
+            const itemHealthIssue = (item.locations || []).filter(l => l.status && l.status !== 'new').reduce((acc, l) => acc + l.quantity, 0);
+            brokenItems += itemHealthIssue;
         });
 
         const utilizationRate = totalItems > 0 ? (assignedItems / totalItems) * 100 : 0;
@@ -763,8 +811,8 @@ export default function AdminDashboard() {
                 </div>
             </div>
 
-            {/* Broken Items Alert Section */}
-            {inventory.some(i => (i.locations || []).some(l => l.status === 'broken')) && (
+            {/* Material Alerts Section (anything not 'new') */}
+            {inventory.some(i => (i.locations || []).some(l => l.status && l.status !== 'new')) && (
                 <div className="rounded-xl border border-red-200 bg-red-50 p-6 animate-in fade-in slide-in-from-top-4">
                     <div className="flex items-center gap-3 mb-4">
                         <div className="p-2 bg-red-100 rounded-full text-red-600">
@@ -780,12 +828,21 @@ export default function AdminDashboard() {
                         {inventory.flatMap(item =>
                             (item.locations || [])
                                 .map((loc, idx) => ({ item, loc, idx }))
-                                .filter(({ loc }) => loc.status === 'broken')
+                                .filter(({ loc }) => loc.status && loc.status !== 'new')
                         ).map(({ item, loc, idx }) => {
                             let locationName = 'Desconocido';
-                            if (loc.type === 'vehicle') {
+                            if (loc.id === 'REPAIR_POOL') {
+                                // Find linked incident to know origin
+                                const linkedIncident = incidents.find(inc => inc.inventoryItemId === item.id && inc.status !== 'resolved');
+                                if (linkedIncident) {
+                                    const v = vehicles.find(v => v.id === linkedIncident.vehicleId);
+                                    locationName = v ? `🛠️ Origen: ${v.plate}` : '🛠️ Reparación (Origen desc.)';
+                                } else {
+                                    locationName = '🛠️ En Reparación';
+                                }
+                            } else if (loc.type === 'vehicle') {
                                 const v = vehicles.find(v => v.id === loc.id);
-                                locationName = v ? `🚗 ${v.brand} ${v.model} (${v.plate})` : 'Vehículo no encontrado';
+                                locationName = v ? `🚗 ${v.plate}` : 'Vehículo no encontrado';
                             } else if (loc.type === 'warehouse') {
                                 const w = warehouses.find(w => w.id === loc.id);
                                 locationName = w ? `🏭 ${w.name}` : 'Almacén no encontrado';
@@ -798,14 +855,34 @@ export default function AdminDashboard() {
                                             <h4 className="font-semibold text-red-900">{item.name}</h4>
                                             <span className="text-xs font-mono bg-red-100 text-red-700 px-2 py-1 rounded">{item.sku}</span>
                                         </div>
-                                        <p className="text-sm text-red-600 mt-1">{locationName}</p>
+                                        <div className="flex items-center gap-2 mt-1">
+                                            <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold uppercase ${loc.status === 'totally_broken' ? 'bg-red-200 text-red-800' :
+                                                loc.status === 'ordered' ? 'bg-blue-200 text-blue-800' :
+                                                    'bg-amber-200 text-amber-800'
+                                                }`}>
+                                                {loc.status === 'totally_broken' ? 'Roto Total' :
+                                                    loc.status === 'ordered' ? 'Pedido' :
+                                                        'Urge Cambio'}
+                                            </span>
+                                            <p className="text-sm text-red-600">{locationName}</p>
+                                        </div>
+                                        <div className="flex flex-wrap gap-2 mt-4">
+                                            {loc.status !== 'ordered' && (
+                                                <button
+                                                    onClick={() => handleMarkAsOrdered(item, idx)}
+                                                    className="flex-1 bg-blue-50 text-blue-600 hover:bg-blue-100 font-bold py-2.5 px-3 rounded-lg text-[10px] uppercase tracking-tight transition-colors border border-blue-200 text-center leading-tight"
+                                                >
+                                                    Marcar Pedido
+                                                </button>
+                                            )}
+                                            <button
+                                                onClick={() => handleResolveBroken(item, idx)}
+                                                className="flex-[1.5] bg-red-600 hover:bg-red-700 text-white font-bold py-2.5 px-3 rounded-lg text-[10px] uppercase tracking-tight transition-all shadow-sm shadow-red-200 active:scale-[0.98] text-center leading-tight"
+                                            >
+                                                Marcar Reemplazado
+                                            </button>
+                                        </div>
                                     </div>
-                                    <button
-                                        onClick={() => handleResolveBroken(item, idx)}
-                                        className="text-xs w-full py-2 bg-red-600 hover:bg-red-700 text-white rounded font-medium transition-colors"
-                                    >
-                                        Marcar como Reemplazado
-                                    </button>
                                 </div>
                             );
                         })}
@@ -1057,16 +1134,54 @@ export default function AdminDashboard() {
                 className="max-w-sm"
             >
                 <div className="space-y-4">
-                    <div className="flex items-center gap-4 bg-red-50 p-4 rounded-lg text-red-800">
-                        <AlertTriangle className="h-6 w-6" />
-                        <p className="text-sm font-medium">Resolviendo incidencia</p>
+                    <div className="flex items-center gap-4 bg-amber-50 p-4 rounded-lg text-amber-800">
+                        <Wrench className="h-6 w-6" />
+                        <p className="text-sm font-medium">Reparar y Restaurar Material</p>
                     </div>
                     <p className="text-gray-600 text-sm">
-                        ¿Confirmas que este item ha sido <strong>reemplazado o descartado</strong>?
-                        <span className="block mt-2 text-xs bg-gray-100 p-2 rounded">
-                            Esta acción eliminará el item de la lista de rotos y actualizará el stock total del inventario.
-                        </span>
+                        Selecciona el almacén donde se guardará el material una vez reparado:
                     </p>
+
+                    <div className="grid grid-cols-2 gap-2 bg-gray-50 p-1 rounded-lg">
+                        <button
+                            onClick={() => {
+                                setTargetType('warehouse');
+                                setTargetId(warehouses[0]?.id || '');
+                            }}
+                            className={`py-1.5 rounded-md text-xs font-bold transition-all ${targetType === 'warehouse' ? 'bg-white shadow-sm text-primary' : 'text-gray-500 hover:text-gray-700'}`}
+                        >
+                            Almacén
+                        </button>
+                        <button
+                            onClick={() => {
+                                setTargetType('vehicle');
+                                setTargetId(vehicles[0]?.id || '');
+                            }}
+                            className={`py-1.5 rounded-md text-xs font-bold transition-all ${targetType === 'vehicle' ? 'bg-white shadow-sm text-primary' : 'text-gray-500 hover:text-gray-700'}`}
+                        >
+                            Vehículo
+                        </button>
+                    </div>
+
+                    <div className="space-y-2">
+                        <label className="text-xs font-bold text-gray-400 uppercase tracking-wider">Destino del material</label>
+                        <select
+                            value={targetId}
+                            onChange={(e) => setTargetId(e.target.value)}
+                            className="w-full p-2 border rounded-lg bg-background text-sm"
+                        >
+                            {targetType === 'warehouse' ? (
+                                warehouses.map(w => (
+                                    <option key={w.id} value={w.id}>{w.name}</option>
+                                ))
+                            ) : (
+                                vehicles.map(v => (
+                                    <option key={v.id} value={v.id}>{v.plate} - {v.model}</option>
+                                ))
+                            )}
+                        </select>
+                    </div>
+
                     <div className="flex justify-end gap-2 pt-2">
                         <button
                             onClick={() => setIsResolveConfirmOpen(false)}
@@ -1076,9 +1191,11 @@ export default function AdminDashboard() {
                         </button>
                         <button
                             onClick={confirmResolution}
-                            className="px-4 py-2 rounded-lg bg-red-600 font-medium hover:bg-red-700 text-white transition-colors"
+                            disabled={isRestoring || !targetId}
+                            className="px-4 py-2 rounded-lg bg-primary font-medium hover:bg-primary/90 text-primary-foreground transition-colors flex items-center gap-2"
                         >
-                            Confirmar Reemplazo
+                            {isRestoring && <Loader2 className="h-4 w-4 animate-spin" />}
+                            Restaurar a Stock
                         </button>
                     </div>
                 </div>

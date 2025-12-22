@@ -11,13 +11,14 @@ import {
     Cable,
     Car,
     Warehouse as WarehouseIcon,
-    AlertTriangle
+    AlertTriangle,
+    Clock
 } from 'lucide-react';
 import { DataTable, Column } from '@/components/ui/DataTable';
 import { StatusBadge } from '@/components/ui/StatusBadge';
 import { Modal } from '@/components/ui/Modal';
 import { addItem, updateItem, deleteItem, subscribeToCollection, getWarehouses, getVehicles } from '@/services/FirebaseService';
-import { InventoryItem, Warehouse, Vehicle } from '@/types';
+import { InventoryItem, Warehouse, Vehicle, MaterialCondition } from '@/types';
 
 interface LocationCellProps {
     item: InventoryItem;
@@ -115,9 +116,11 @@ const LocationCell = ({ item, vehicles, warehouses, onEdit, onReportBroken }: Lo
                                 name = v ? `${v.brand} ${v.model} (${v.plate})` : 'Vehículo desconocido';
                             }
 
-                            const isBroken = loc.status === 'broken';
-                            const iconColor = isBroken ? 'text-red-500' : 'text-muted-foreground';
-                            const bgColor = isBroken ? 'bg-red-50 dark:bg-red-900/20' : iconBg;
+                            const isBroken = loc.status === 'totally_broken';
+                            const isUrgent = loc.status === 'working_urgent_change';
+                            const hasIssue = isBroken || isUrgent;
+                            const iconColor = hasIssue ? (isBroken ? 'text-red-500' : 'text-amber-500') : 'text-muted-foreground';
+                            const bgColor = isBroken ? 'bg-red-50 dark:bg-red-900/20' : isUrgent ? 'bg-amber-50 dark:bg-amber-900/20' : iconBg;
 
                             return (
                                 <div
@@ -127,19 +130,21 @@ const LocationCell = ({ item, vehicles, warehouses, onEdit, onReportBroken }: Lo
                                 >
                                     <div className="flex items-center gap-2 overflow-hidden flex-1">
                                         <div className={`flex-shrink-0 p-1 rounded-md ${bgColor}`}>
-                                            {isBroken ? <AlertTriangle className="w-3.5 h-3.5 text-red-500" /> : icon}
+                                            {isBroken ? <AlertTriangle className="w-3.5 h-3.5 text-red-500" /> : isUrgent ? <AlertTriangle className="w-3.5 h-3.5 text-amber-500" /> : loc.status === 'ordered' ? <Clock className="w-3.5 h-3.5 text-blue-500" /> : icon}
                                         </div>
                                         <div className="flex flex-col overflow-hidden">
-                                            <span className={`truncate text-xs font-medium ${isBroken ? 'text-red-700' : 'text-foreground'}`} title={name}>{name}</span>
-                                            {isBroken && <span className="text-[9px] font-bold text-red-500 uppercase leading-none">Roto</span>}
+                                            <span className={`truncate text-xs font-medium ${isBroken ? 'text-red-700' : isUrgent ? 'text-amber-700' : loc.status === 'ordered' ? 'text-blue-700' : 'text-foreground'}`} title={name}>{name}</span>
+                                            {isBroken && <span className="text-[9px] font-bold text-red-500 uppercase leading-none">Roto Total</span>}
+                                            {isUrgent && <span className="text-[9px] font-bold text-amber-500 uppercase leading-none">Urge Cambio</span>}
+                                            {loc.status === 'ordered' && <span className="text-[9px] font-bold text-blue-500 uppercase leading-none">Pedido</span>}
                                         </div>
                                     </div>
 
                                     <div className="flex items-center gap-1 pl-2">
-                                        <span className={`flex-shrink-0 font-mono text-[10px] items-center justify-center border px-1.5 py-0.5 rounded ${isBroken ? 'bg-red-100 border-red-200 text-red-700' : 'bg-muted border-border text-muted-foreground'}`}>
+                                        <span className={`flex-shrink-0 font-mono text-[10px] items-center justify-center border px-1.5 py-0.5 rounded ${isBroken ? 'bg-red-100 border-red-200 text-red-700' : isUrgent ? 'bg-amber-100 border-amber-200 text-amber-700' : loc.status === 'ordered' ? 'bg-blue-100 border-blue-200 text-blue-700' : 'bg-muted border-border text-muted-foreground'}`}>
                                             x{loc.quantity}
                                         </span>
-                                        {!isBroken && (
+                                        {!hasIssue && (
                                             <button
                                                 onClick={(e) => {
                                                     e.stopPropagation();
@@ -193,6 +198,7 @@ export default function InventoryPage() {
     const [newLocType, setNewLocType] = useState<'warehouse' | 'vehicle'>('warehouse');
     const [newLocId, setNewLocId] = useState<string>('');
     const [newLocQty, setNewLocQty] = useState<number>(1);
+    const [newLocStatus, setNewLocStatus] = useState<MaterialCondition>('new');
 
     useEffect(() => {
         const unsubscribe = subscribeToCollection<InventoryItem>('inventory', (data) => {
@@ -298,7 +304,7 @@ export default function InventoryPage() {
             return;
         }
 
-        const updatedLocs = [...currentLocs, { type: newLocType, id: newLocId, quantity: newLocQty }];
+        const updatedLocs = [...currentLocs, { type: newLocType, id: newLocId, quantity: newLocQty, status: newLocStatus }];
         setFormData({ ...formData, locations: updatedLocs });
 
         // Reset inputs
@@ -336,11 +342,11 @@ export default function InventoryPage() {
             locations.push({
                 ...target,
                 quantity: 1,
-                status: 'broken'
+                status: 'totally_broken'
             });
         } else {
             // Mark entire stack as broken
-            target.status = 'broken';
+            target.status = 'totally_broken';
         }
 
         try {
@@ -663,7 +669,15 @@ export default function InventoryPage() {
 
                                     return (
                                         <div key={idx} className="flex items-center justify-between bg-muted/50 p-2 rounded text-sm">
-                                            <span>{loc.type === 'warehouse' ? '🏭' : '🚗'} {locName} (Cant: {loc.quantity})</span>
+                                            <div className="flex flex-col">
+                                                <span>{loc.type === 'warehouse' ? '🏭' : '🚗'} {locName} (Cant: {loc.quantity})</span>
+                                                <span className="text-[10px] uppercase font-bold text-muted-foreground italic">
+                                                    {loc.status === 'new' ? 'Nuevo o funcional' :
+                                                        loc.status === 'working_urgent_change' ? 'Urge cambio' :
+                                                            loc.status === 'ordered' ? 'Pedido' :
+                                                                loc.status === 'totally_broken' ? 'Roto' : 'Normal'}
+                                                </span>
+                                            </div>
                                             <button type="button" onClick={() => removeLocation(idx)} className="text-red-500 hover:bg-red-50 p-1 rounded">
                                                 <Trash2 className="h-3 w-3" />
                                             </button>
@@ -683,6 +697,19 @@ export default function InventoryPage() {
                                     >
                                         <option value="warehouse">Almacén</option>
                                         <option value="vehicle">Vehículo</option>
+                                    </select>
+                                </div>
+                                <div className="space-y-1 flex-[1]">
+                                    <label className="text-xs font-medium">Estado</label>
+                                    <select
+                                        value={newLocStatus}
+                                        onChange={e => setNewLocStatus(e.target.value as MaterialCondition)}
+                                        className="w-full text-sm px-2 py-1 border rounded"
+                                    >
+                                        <option value="new">Nuevo o funcional</option>
+                                        <option value="working_urgent_change">Urge cambio</option>
+                                        <option value="ordered">Pedido</option>
+                                        <option value="totally_broken">Roto</option>
                                     </select>
                                 </div>
                                 <div className="space-y-1 flex-[2]">

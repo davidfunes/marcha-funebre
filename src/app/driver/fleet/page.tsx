@@ -17,11 +17,22 @@ import {
     MapPin,
     X,
     Phone,
-    Map
+    Map,
+    Music,
+    Search,
+    Loader2,
+    Clock,
+    Package,
+    ChevronRight,
+    SearchIcon
 } from 'lucide-react';
 import Link from 'next/link';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { getInventory, getVehicles, reportMaterialIncident } from '@/services/FirebaseService';
+import { InventoryItem, Incident, MaterialCondition } from '@/types';
+import { Modal } from '@/components/ui/Modal';
+import { updateItem } from '@/services/FirebaseService';
 
 export default function MyVehiclePage() {
     const { user } = useAuth();
@@ -33,6 +44,19 @@ export default function MyVehiclePage() {
     const [showReturnModal, setShowReturnModal] = useState(false);
     const [parkingLocation, setParkingLocation] = useState('');
     const [returning, setReturning] = useState(false);
+
+    // Material List & Incident State
+    const [material, setMaterial] = useState<InventoryItem[]>([]);
+    const [isLoadingMaterial, setIsLoadingMaterial] = useState(true);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null);
+    const [isReporting, setIsReporting] = useState(false);
+    const [formData, setFormData] = useState<Partial<Incident> & { condition: MaterialCondition | '' }>({
+        title: '',
+        description: '',
+        condition: ''
+    });
 
     useEffect(() => {
         const fetchVehicle = async () => {
@@ -63,10 +87,20 @@ export default function MyVehiclePage() {
                 }
 
                 setVehicle(vehicleData);
+
+                // Fetch material if vehicle found
+                if (vehicleData?.id) {
+                    const allInventory = await getInventory();
+                    const vehicleMaterial = allInventory.filter(item =>
+                        (item.locations || []).some(loc => loc.type === 'vehicle' && loc.id === vehicleData?.id)
+                    );
+                    setMaterial(vehicleMaterial);
+                }
             } catch (err) {
-                console.error('Error fetching vehicle:', err);
+                console.error('Error fetching vehicle/material:', err);
             } finally {
                 setLoading(false);
+                setIsLoadingMaterial(false);
             }
         };
 
@@ -171,6 +205,82 @@ export default function MyVehiclePage() {
         if (!date) return null;
         return date.seconds ? new Date(date.seconds * 1000) : new Date(date);
     };
+
+    const handleReportIncident = (item: InventoryItem) => {
+        setSelectedItem(item);
+        setFormData({
+            title: `Incidencia: ${item.name}`,
+            description: '',
+            priority: 'medium',
+            condition: ''
+        });
+        setIsModalOpen(true);
+    };
+
+    const handleSubmitIncident = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!selectedItem || !user || !vehicle?.id) return;
+        if (!formData.condition) {
+            alert('Por favor, selecciona el estado del material.');
+            return;
+        }
+
+        setIsReporting(true);
+        try {
+            await reportMaterialIncident(
+                {
+                    title: formData.title,
+                    description: formData.description,
+                    priority: formData.condition === 'totally_broken' ? 'high' : 'medium',
+                    reportedByUserId: user.id!,
+                    vehicleId: vehicle.id
+                },
+                selectedItem.id!,
+                vehicle.id,
+                formData.condition as MaterialCondition
+            );
+
+            // Optimistic update
+            setMaterial(prev => prev.map(item => {
+                if (item.id === selectedItem.id) {
+                    const locations = [...(item.locations || [])];
+                    const vIdx = locations.findIndex(l =>
+                        l.id === vehicle.id &&
+                        (l.status === 'new' || l.status === 'working_urgent_change' || !l.status)
+                    );
+
+                    if (vIdx !== -1) {
+                        if (locations[vIdx].quantity > 1) {
+                            locations[vIdx].quantity -= 1;
+                            locations.push({
+                                ...locations[vIdx],
+                                quantity: 1,
+                                status: formData.condition as MaterialCondition
+                            });
+                        } else {
+                            locations[vIdx].status = formData.condition as MaterialCondition;
+                        }
+                    }
+                    return { ...item, locations };
+                }
+                return item;
+            }));
+
+            setIsModalOpen(false);
+            setSelectedItem(null);
+            alert('Incidencia reportada correctamente.');
+        } catch (error) {
+            console.error("Error reporting incident:", error);
+            alert('Error al reportar la incidencia.');
+        } finally {
+            setIsReporting(false);
+        }
+    };
+
+    const filteredMaterial = material.filter(item =>
+        item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.category.toLowerCase().includes(searchQuery.toLowerCase())
+    );
 
     if (loading) {
         return (
@@ -296,6 +406,78 @@ export default function MyVehiclePage() {
                         </div>
                     </div>
 
+                    {/* Material Section Integrated */}
+                    <div className="space-y-4 pt-4 border-t border-border">
+                        <div className="flex items-center justify-between">
+                            <h3 className="font-bold text-foreground">Material del Vehículo</h3>
+                            <div className="relative w-1/2">
+                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                <input
+                                    type="text"
+                                    placeholder="Buscar..."
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    className="w-full bg-muted/50 border border-border rounded-lg py-1.5 pl-9 pr-3 text-xs focus:outline-none focus:ring-1 focus:ring-primary transition-all"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="space-y-2">
+                            {isLoadingMaterial ? (
+                                <div className="flex justify-center py-4">
+                                    <Loader2 className="h-6 w-6 text-primary animate-spin" />
+                                </div>
+                            ) : filteredMaterial.length > 0 ? (
+                                filteredMaterial.map((item) => {
+                                    const loc = (item.locations || []).find(l => l.id === vehicle.id);
+                                    const qty = loc?.quantity || 0;
+                                    const status = loc?.status;
+
+                                    return (
+                                        <div key={item.id} className="bg-muted/30 rounded-xl p-3 flex items-center gap-3 border border-border/50">
+                                            <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                                                <Music className="h-5 w-5 text-primary" />
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <div className="flex justify-between items-start">
+                                                    <p className="text-sm font-semibold truncate leading-tight">{item.name}</p>
+                                                    <span className="text-[10px] bg-primary/20 text-primary px-1.5 rounded-full font-bold">x{qty}</span>
+                                                </div>
+                                                {status === 'ordered' && (
+                                                    <p className="text-[10px] text-blue-500 font-bold uppercase mt-0.5 flex items-center gap-1">
+                                                        <Clock className="h-3 w-3" /> Material Pedido
+                                                    </p>
+                                                )}
+                                                {status === 'working_urgent_change' && (
+                                                    <p className="text-[10px] text-amber-500 font-bold uppercase mt-0.5 flex items-center gap-1">
+                                                        <AlertTriangle className="h-3 w-3" /> Urge Cambio
+                                                    </p>
+                                                )}
+                                                {(status === 'totally_broken' || (status as any) === 'broken') && (
+                                                    <p className="text-[10px] text-red-500 font-bold uppercase mt-0.5 flex items-center gap-1">
+                                                        <AlertTriangle className="h-3 w-3" /> Roto Total
+                                                    </p>
+                                                )}
+                                            </div>
+                                            <button
+                                                onClick={() => handleReportIncident(item)}
+                                                disabled={status === 'totally_broken' || status === 'ordered'}
+                                                className={`p-2 rounded-lg transition-all ${(status === 'totally_broken' || status === 'ordered')
+                                                    ? 'opacity-20 cursor-not-allowed'
+                                                    : 'hover:bg-red-500/10 text-muted-foreground hover:text-red-500'
+                                                    }`}
+                                            >
+                                                <AlertTriangle className="h-4 w-4" />
+                                            </button>
+                                        </div>
+                                    );
+                                })
+                            ) : (
+                                <p className="text-xs text-muted-foreground text-center py-4 italic">No se encontró material</p>
+                            )}
+                        </div>
+                    </div>
+
                     {rentingCompany && (
                         <div className="bg-card p-4 rounded-xl border border-border flex items-center gap-4">
                             <div className="bg-green-500/10 p-3 rounded-lg text-green-500">
@@ -397,6 +579,65 @@ export default function MyVehiclePage() {
                     </div>
                 </div>
             )}
+
+            {/* Incident Modal Integrated */}
+            <Modal
+                isOpen={isModalOpen}
+                onClose={() => !isReporting && setIsModalOpen(false)}
+                title="Reportar Incidencia de Material"
+            >
+                <form onSubmit={handleSubmitIncident} className="space-y-4 pt-4 text-foreground">
+                    <div className="p-3 bg-amber-500/10 border border-amber-500/20 rounded-xl flex items-start gap-3">
+                        <AlertTriangle className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
+                        <p className="text-xs text-amber-900 dark:text-amber-100 italic">
+                            El material permanecerá vinculado con su estado actualizado.
+                        </p>
+                    </div>
+
+                    <div className="space-y-1">
+                        <label className="text-xs font-bold text-muted-foreground uppercase px-1">Estado</label>
+                        <select
+                            required
+                            value={formData.condition}
+                            onChange={(e) => setFormData({ ...formData, condition: e.target.value as MaterialCondition })}
+                            className="w-full bg-background border border-border rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/50 outline-none"
+                        >
+                            <option value="" disabled>Selecciona...</option>
+                            <option value="working_urgent_change">Funciona pero urge un cambio</option>
+                            <option value="totally_broken">Roto completamente (Roto Total)</option>
+                        </select>
+                    </div>
+
+                    <div className="space-y-1">
+                        <label className="text-xs font-bold text-muted-foreground uppercase px-1">Descripción</label>
+                        <textarea
+                            rows={3}
+                            required
+                            placeholder="¿Qué ha pasado?"
+                            value={formData.description}
+                            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                            className="w-full bg-background border border-border rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-primary/50 outline-none resize-none"
+                        />
+                    </div>
+
+                    <div className="flex gap-3 pt-2">
+                        <button
+                            type="button"
+                            onClick={() => setIsModalOpen(false)}
+                            className="flex-1 bg-muted py-3 rounded-xl text-sm font-medium"
+                        >
+                            Cancelar
+                        </button>
+                        <button
+                            type="submit"
+                            disabled={isReporting || !formData.condition}
+                            className="flex-1 bg-primary text-primary-foreground py-3 rounded-xl font-bold shadow-lg shadow-primary/20 disabled:opacity-50 flex items-center justify-center"
+                        >
+                            {isReporting ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Confirmar'}
+                        </button>
+                    </div>
+                </form>
+            </Modal>
         </div>
     );
 }

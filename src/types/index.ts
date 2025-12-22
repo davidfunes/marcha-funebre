@@ -58,6 +58,7 @@ export interface VehicleMake {
 
 export type IncidentPriority = 'low' | 'medium' | 'high' | 'critical';
 export type IncidentStatus = 'open' | 'in_progress' | 'resolved' | 'closed';
+export type MaterialCondition = 'new' | 'working_urgent_change' | 'totally_broken' | 'ordered';
 
 export interface Incident {
     id?: string;
@@ -67,6 +68,8 @@ export interface Incident {
     status: IncidentStatus;
     vehicleId: string;
     reportedByUserId: string;
+    inventoryItemId?: string; // Optional: linked to a specific item
+    sourceVehicleId?: string; // Optional: where the item was when it broke
     createdAt: any;
     updatedAt?: any;
     images?: string[];
@@ -87,7 +90,7 @@ export interface InventoryItem {
         type: 'warehouse' | 'vehicle';
         id: string; // warehouseId or vehicleId
         quantity: number;
-        status?: 'ok' | 'broken'; // Default 'ok'
+        status?: MaterialCondition; // Default 'new' or 'ok' (legacy)
     }[];
 
     // Single location (Legacy - keep for backward compatibility or easy access)

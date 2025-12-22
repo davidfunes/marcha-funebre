@@ -14,7 +14,9 @@ import {
     orderBy,
     onSnapshot,
     Timestamp,
-    arrayUnion
+    arrayUnion,
+    runTransaction,
+    getDoc
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase/firebase';
 import {
@@ -24,7 +26,8 @@ import {
     InventoryItem,
     MaintenanceRecord,
     Warehouse,
-    RentingCompany
+    RentingCompany,
+    MaterialCondition
 } from '@/types';
 
 /**
@@ -182,4 +185,151 @@ export const getAdminMessages = async (): Promise<any[]> => {
         console.error("Error getting admin messages:", error);
         return [];
     }
+};
+
+/**
+ * Reports an incident for a material item.
+ * Unlinks from vehicle only if 'totally_broken'.
+ */
+export const reportMaterialIncident = async (
+    incidentData: Partial<Incident>,
+    itemId: string,
+    locationId: string, // Changed from vehicleId to be more generic
+    condition: MaterialCondition
+): Promise<string> => {
+    return await runTransaction(db, async (transaction) => {
+        const itemRef = doc(db, 'inventory', itemId);
+        const itemDoc = await transaction.get(itemRef);
+
+        if (!itemDoc.exists()) throw new Error("Item not found");
+
+        const item = itemDoc.data() as InventoryItem;
+        const locations = [...(item.locations || [])];
+
+        // 1. Find the item in the specified location
+        // We prioritize stacks that are "good" (new, functional, ok, or undefined)
+        let locIdx = locations.findIndex(l =>
+            l.id === locationId &&
+            (!l.status || l.status === 'new' || l.status === 'working_urgent_change' || (l.status as any) === 'ok')
+        );
+
+        // Fallback: If no "good" stack found, just find ANY stack in that location (except ordered)
+        if (locIdx === -1) {
+            locIdx = locations.findIndex(l => l.id === locationId && l.status !== 'ordered');
+        }
+
+        if (locIdx === -1) throw new Error("Item not found in specified location");
+
+        // 2. Update status in place. If quantity > 1, split it.
+        if (locations[locIdx].quantity > 1) {
+            // Decrement one from the healthy stack
+            locations[locIdx].quantity -= 1;
+            // Add one with the incident status
+            locations.push({
+                type: locations[locIdx].type,
+                id: locations[locIdx].id,
+                quantity: 1,
+                status: condition
+            });
+        } else {
+            // Just update the status if only 1 unit exists
+            locations[locIdx].status = condition;
+        }
+
+        // Update item in Firestore
+        transaction.update(itemRef, { locations });
+
+        // 3. Create Incident linked to this item and location
+        const incidentRef = doc(collection(db, 'incidents'));
+        const fullIncident = {
+            ...incidentData,
+            inventoryItemId: itemId,
+            vehicleId: locations[locIdx].type === 'vehicle' ? locationId : '', // For UI backward compatibility
+            sourceLocationId: locationId, // New field for clarity
+            sourceLocationType: locations[locIdx].type,
+            status: 'open',
+            createdAt: Timestamp.now(),
+            updatedAt: Timestamp.now()
+        };
+        transaction.set(incidentRef, fullIncident);
+
+        return incidentRef.id;
+    });
+};
+
+/**
+ * Restores a material item from the repair pool or flagged status to a warehouse.
+ * Always restores to 'new' (Nuevo o funcional).
+ */
+export const restoreMaterial = async (
+    incidentId: string,
+    itemId: string,
+    targetId: string,
+    targetType: 'warehouse' | 'vehicle' = 'warehouse'
+): Promise<void> => {
+    await runTransaction(db, async (transaction) => {
+        const itemRef = doc(db, 'inventory', itemId);
+        const itemDoc = await transaction.get(itemRef);
+        const incidentRef = doc(db, 'incidents', incidentId);
+
+        if (!itemDoc.exists()) throw new Error("Item not found");
+
+        const item = itemDoc.data() as InventoryItem;
+        let locations = [...(item.locations || [])];
+
+        // 1. Identify the unit to restore (any non-new status)
+        const brokenIdx = locations.findIndex(l =>
+            l.status === 'totally_broken' ||
+            l.status === 'working_urgent_change' ||
+            l.status === 'ordered' ||
+            (l.status as any) === 'broken'
+        );
+
+        if (brokenIdx !== -1) {
+            // Remove one unit from the broken/urgent/ordered stack
+            if (locations[brokenIdx].quantity > 1) {
+                locations[brokenIdx].quantity -= 1;
+            } else {
+                locations.splice(brokenIdx, 1);
+            }
+        } else {
+            // Check if there's any item in a 'broken' type location (REPAIR_POOL legacy)
+            const repairIdx = locations.findIndex(l => l.id === 'REPAIR_POOL');
+            if (repairIdx !== -1) {
+                if (locations[repairIdx].quantity > 1) {
+                    locations[repairIdx].quantity -= 1;
+                } else {
+                    locations.splice(repairIdx, 1);
+                }
+            } else {
+                // Last resort: find any incident-related item if we can't find by status
+                // If we still can't find it, we might be restoring a "new" item by mistake, but let's be strict
+                console.warn("No specific broken status found, attempting to find any unit to move...");
+                if (locations.length > 0) {
+                    // Try to find one at least
+                    locations[0].quantity -= 1;
+                    if (locations[0].quantity <= 0) locations.splice(0, 1);
+                } else {
+                    throw new Error("No items found in any location to restore");
+                }
+            }
+        }
+
+        // 2. Add to Target Destination as 'new'
+        const destIdx = locations.findIndex(l => l.id === targetId && l.type === targetType && l.status === 'new');
+        if (destIdx !== -1) {
+            locations[destIdx].quantity += 1;
+        } else {
+            locations.push({
+                type: targetType,
+                id: targetId,
+                quantity: 1,
+                status: 'new'
+            });
+        }
+
+        // Update Item and Resolve Incident
+        transaction.update(itemRef, { locations });
+        transaction.update(incidentRef, { status: 'resolved', updatedAt: Timestamp.now() });
+    });
 };

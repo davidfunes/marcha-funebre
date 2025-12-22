@@ -7,19 +7,23 @@ import {
     Plus,
     Edit,
     Trash2,
-    AlertCircle
+    AlertCircle,
+    Music,
+    Wrench,
+    Package
 } from 'lucide-react';
 import { DataTable, Column } from '@/components/ui/DataTable';
 import { StatusBadge } from '@/components/ui/StatusBadge';
 import { Modal } from '@/components/ui/Modal';
-import { addItem, updateItem, deleteItem, subscribeToCollection, getVehicles, getUsers } from '@/services/FirebaseService';
-import { Incident, Vehicle, User, IncidentPriority, IncidentStatus } from '@/types';
+import { addItem, updateItem, deleteItem, subscribeToCollection, getVehicles, getUsers, getInventory } from '@/services/FirebaseService';
+import { Incident, Vehicle, User, IncidentPriority, IncidentStatus, InventoryItem } from '@/types';
 import { Timestamp } from 'firebase/firestore';
 
 export default function IncidentsPage() {
     const [incidents, setIncidents] = useState<Incident[]>([]);
     const [vehicles, setVehicles] = useState<Vehicle[]>([]);
     const [users, setUsers] = useState<User[]>([]);
+    const [inventory, setInventory] = useState<InventoryItem[]>([]);
     const [loading, setLoading] = useState(true);
 
     // Delete Modal State
@@ -47,9 +51,10 @@ export default function IncidentsPage() {
 
         // Load dependencies
         const loadDependencies = async () => {
-            const [vData, uData] = await Promise.all([getVehicles(), getUsers()]);
+            const [vData, uData, invData] = await Promise.all([getVehicles(), getUsers(), getInventory()]);
             setVehicles(vData);
             setUsers(uData);
+            setInventory(invData);
         };
         loadDependencies();
 
@@ -130,6 +135,16 @@ export default function IncidentsPage() {
             key: 'vehicleId',
             label: 'Vehículo Afectado',
             render: (i) => <span className="text-sm font-medium">{getVehicleName(i.vehicleId)}</span>
+        },
+        {
+            key: 'inventoryItemId',
+            label: 'Material',
+            render: (i) => i.inventoryItemId ? (
+                <div className="flex items-center gap-2 text-purple-600 dark:text-purple-400">
+                    <Music className="h-3 w-3" />
+                    <span className="text-sm font-medium">{inventory.find(inv => inv.id === i.inventoryItemId)?.name || 'Cargando...'}</span>
+                </div>
+            ) : <span className="text-xs text-muted-foreground italic">No vinculado</span>
         },
         {
             key: 'reportedByUserId',
@@ -251,6 +266,22 @@ export default function IncidentsPage() {
                 title={editingIncident ? 'Gestionar Incidencia' : 'Nueva Incidencia'}
             >
                 <form onSubmit={handleSubmit} className="space-y-4">
+                    {formData.inventoryItemId && (
+                        <div className="p-3 bg-purple-50 dark:bg-purple-900/20 border border-purple-100 dark:border-purple-800 rounded-xl flex items-center gap-3">
+                            <div className="h-10 w-10 rounded-lg bg-white dark:bg-purple-800 flex items-center justify-center text-purple-600 dark:text-purple-400">
+                                <Music className="h-6 w-6" />
+                            </div>
+                            <div>
+                                <p className="text-xs font-bold text-purple-600 dark:text-purple-400 uppercase tracking-wider">Material Vinculado</p>
+                                <p className="text-sm font-semibold">{inventory.find(inv => inv.id === formData.inventoryItemId)?.name || 'Cargando...'}</p>
+                                <p className="text-xs text-muted-foreground mt-0.5 font-medium flex items-center gap-1">
+                                    <Wrench className="h-3 w-3" />
+                                    <span>Resolver esta incidencia restaurará el material al stock.</span>
+                                </p>
+                            </div>
+                        </div>
+                    )}
+
                     <div className="space-y-2">
                         <label className="text-sm font-medium">Título</label>
                         <input

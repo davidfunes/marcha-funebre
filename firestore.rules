@@ -92,7 +92,8 @@ service cloud.firestore {
 
     match /inventory/{document=**} {
       allow read: if isSignedIn();
-      allow write: if isAdmin() || isManager();
+      allow update: if isSignedIn();
+      allow create, delete: if isAdmin() || isManager();
     }
     
     match /warehouses/{document=**} {
