@@ -152,7 +152,7 @@ export default function VehiclesPage() {
 
         try {
             const locations = item.locations || [];
-            const locIndex = locations.findIndex(l => l.type === 'vehicle' && l.id === vehicleId && (!l.status || l.status === 'ok'));
+            const locIndex = locations.findIndex(l => l.type === 'vehicle' && l.id === vehicleId && (!l.status || l.status === 'new' || l.status === 'working_urgent_change' || (l.status as any) === 'ok'));
 
             if (locIndex === -1) return;
 
@@ -161,9 +161,9 @@ export default function VehiclesPage() {
 
             if (loc.quantity > 1) {
                 updatedLocs[locIndex] = { ...loc, quantity: loc.quantity - 1 };
-                updatedLocs.push({ ...loc, quantity: 1, status: 'broken' });
+                updatedLocs.push({ ...loc, quantity: 1, status: 'totally_broken' });
             } else {
-                updatedLocs[locIndex] = { ...loc, status: 'broken' };
+                updatedLocs[locIndex] = { ...loc, status: 'totally_broken' };
             }
 
             if (item.id) {
