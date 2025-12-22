@@ -760,53 +760,53 @@ export default function AdminDashboard() {
 
                 <div className="grid gap-4 md:grid-cols-3">
                     {/* Utilization Card */}
-                    <div className="rounded-xl border border-emerald-100 bg-gradient-to-br from-emerald-50 to-white p-6 shadow-sm">
+                    <div className="rounded-xl border border-emerald-100 dark:border-emerald-900/30 bg-gradient-to-br from-emerald-50 dark:from-emerald-950/20 to-white dark:to-background p-6 shadow-sm">
                         <div className="flex justify-between items-start">
                             <div>
-                                <p className="text-sm font-medium text-emerald-600 mb-1">Tasa de Utilización</p>
-                                <h4 className="text-2xl font-bold text-emerald-900">
+                                <p className="text-sm font-medium text-emerald-600 dark:text-emerald-400 mb-1">Tasa de Utilización</p>
+                                <h4 className="text-2xl font-bold text-emerald-900 dark:text-emerald-50">
                                     {kpis.utilizationRate.toFixed(1)}%
                                 </h4>
                             </div>
-                            <div className="p-2 bg-emerald-100 rounded-lg text-emerald-600">
+                            <div className="p-2 bg-emerald-100 dark:bg-emerald-900/40 rounded-lg text-emerald-600 dark:text-emerald-400">
                                 <Activity className="h-5 w-5" />
                             </div>
                         </div>
-                        <div className="mt-4 w-full bg-emerald-100 rounded-full h-1.5 overflow-hidden">
+                        <div className="mt-4 w-full bg-emerald-100 dark:bg-emerald-900/30 rounded-full h-1.5 overflow-hidden">
                             <div className="bg-emerald-500 h-full rounded-full transition-all duration-1000" style={{ width: `${kpis.utilizationRate}%` }} />
                         </div>
-                        <p className="text-xs text-emerald-700/80 mt-1">Material asignado en vehículos</p>
+                        <p className="text-xs text-emerald-700/80 dark:text-emerald-400/80 mt-1">Material asignado en vehículos</p>
                     </div>
 
                     {/* Breakage Card */}
-                    <div className="rounded-xl border border-red-100 bg-gradient-to-br from-red-50 to-white p-6 shadow-sm">
+                    <div className="rounded-xl border border-red-100 dark:border-red-900/30 bg-gradient-to-br from-red-50 dark:from-red-950/20 to-white dark:to-background p-6 shadow-sm">
                         <div className="flex justify-between items-start">
                             <div>
-                                <p className="text-sm font-medium text-red-600 mb-1">Tasa de Rotura</p>
-                                <h4 className="text-2xl font-bold text-red-900">
+                                <p className="text-sm font-medium text-red-600 dark:text-red-400 mb-1">Tasa de Rotura</p>
+                                <h4 className="text-2xl font-bold text-red-900 dark:text-red-50">
                                     {kpis.breakageRate.toFixed(1)}%
                                 </h4>
                             </div>
-                            <div className="p-2 bg-red-100 rounded-lg text-red-600">
+                            <div className="p-2 bg-red-100 dark:bg-red-900/40 rounded-lg text-red-600 dark:text-red-400">
                                 <AlertTriangle className="h-5 w-5" />
                             </div>
                         </div>
-                        <div className="mt-4 flex items-center text-xs text-red-700/80">
+                        <div className="mt-4 flex items-center text-xs text-red-700/80 dark:text-red-400/80">
                             {kpis.breakageRate > 5 ? <ArrowUpRight className="h-3 w-3 mr-1" /> : <ArrowDownRight className="h-3 w-3 mr-1" />}
                             <span className="font-medium">{kpis.breakageRate > 5 ? 'Atención requerida' : 'Nivel aceptable'}</span>
                         </div>
                     </div>
 
                     {/* Fleet Efficiency */}
-                    <div className="rounded-xl border border-amber-100 bg-gradient-to-br from-amber-50 to-white p-6 shadow-sm">
+                    <div className="rounded-xl border border-amber-100 dark:border-amber-900/30 bg-gradient-to-br from-amber-50 dark:from-amber-950/20 to-white dark:to-background p-6 shadow-sm">
                         <div className="flex justify-between items-start">
                             <div>
-                                <p className="text-sm font-medium text-amber-600 mb-1">Eficiencia de Flota</p>
-                                <h4 className="text-2xl font-bold text-amber-900">
+                                <p className="text-sm font-medium text-amber-600 dark:text-amber-400 mb-1">Eficiencia de Flota</p>
+                                <h4 className="text-2xl font-bold text-amber-900 dark:text-amber-50">
                                     {(vehicles.filter(v => v.status === 'active').length / vehicles.length * 100 || 0).toFixed(0)}%
                                 </h4>
                             </div>
-                            <div className="p-2 bg-amber-100 rounded-lg text-amber-600">
+                            <div className="p-2 bg-amber-100 dark:bg-amber-900/40 rounded-lg text-amber-600 dark:text-amber-400">
                                 <Percent className="h-5 w-5" />
                             </div>
                         </div>
@@ -817,14 +817,14 @@ export default function AdminDashboard() {
 
             {/* Material Alerts Section (anything not 'new') */}
             {inventory.some(i => (i.locations || []).some(l => l.status && l.status !== 'new')) && (
-                <div className="rounded-xl border border-red-200 bg-red-50 p-6 animate-in fade-in slide-in-from-top-4">
+                <div className="rounded-xl border border-red-200 dark:border-red-900/40 bg-red-50 dark:bg-red-950/10 p-6 animate-in fade-in slide-in-from-top-4">
                     <div className="flex items-center gap-3 mb-4">
-                        <div className="p-2 bg-red-100 rounded-full text-red-600">
+                        <div className="p-2 bg-red-100 dark:bg-red-900/40 rounded-full text-red-600 dark:text-red-400">
                             <AlertTriangle className="h-6 w-6" />
                         </div>
                         <div>
-                            <h3 className="text-lg font-bold text-red-900">Alertas de Material Roto</h3>
-                            <p className="text-sm text-red-700">El siguiente material está marcado como roto y requiere reemplazo.</p>
+                            <h3 className="text-lg font-bold text-red-900 dark:text-red-100">Alertas de Material Roto</h3>
+                            <p className="text-sm text-red-700 dark:text-red-400/80">El siguiente material está marcado como roto y requiere reemplazo.</p>
                         </div>
                     </div>
 
@@ -856,11 +856,11 @@ export default function AdminDashboard() {
                             const reporter = linkedIncident ? users.find(u => u.id === linkedIncident.reportedByUserId) : null;
 
                             return (
-                                <div key={`${item.id}-${idx}`} className="bg-white p-4 rounded-lg border border-red-100 shadow-sm flex flex-col justify-between gap-3">
+                                <div key={`${item.id}-${idx}`} className="bg-white dark:bg-zinc-900 p-4 rounded-lg border border-red-100 dark:border-red-900/20 shadow-sm flex flex-col justify-between gap-3">
                                     <div>
                                         <div className="flex justify-between items-start">
-                                            <h4 className="font-semibold text-red-900">{item.name}</h4>
-                                            <span className="text-xs font-mono bg-red-100 text-red-700 px-2 py-1 rounded">{item.sku}</span>
+                                            <h4 className="font-semibold text-red-900 dark:text-red-100">{item.name}</h4>
+                                            <span className="text-xs font-mono bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300 px-2 py-1 rounded">{item.sku}</span>
                                         </div>
                                         <div className="flex items-center gap-2 mt-1">
                                             <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold uppercase ${loc.status === 'totally_broken' ? 'bg-red-200 text-red-800' :
@@ -871,10 +871,10 @@ export default function AdminDashboard() {
                                                     loc.status === 'ordered' ? 'Pedido' :
                                                         'Urge Cambio'}
                                             </span>
-                                            <p className="text-sm text-red-600">{locationName}</p>
+                                            <p className="text-sm text-red-600 dark:text-red-400">{locationName}</p>
                                         </div>
                                         {reporter && (
-                                            <div className="flex items-center gap-2 mt-3 pt-2 border-t border-red-100/50">
+                                            <div className="flex items-center gap-2 mt-3 pt-2 border-t border-red-100/50 dark:border-red-900/30">
                                                 <div className="h-5 w-5 rounded-full bg-secondary flex items-center justify-center shrink-0 text-secondary-foreground font-bold text-[8px]">
                                                     {getUserInitials(reporter)}
                                                 </div>
