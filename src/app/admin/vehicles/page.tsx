@@ -875,11 +875,15 @@ export default function VehiclesPage() {
                                         .map(incident => (
                                             <div
                                                 key={incident.id}
-                                                className="flex items-center justify-between p-3 rounded-lg border border-border bg-muted/30 cursor-pointer hover:bg-muted transition-colors"
-                                                onClick={() => handleViewIncident(incident)}
+                                                className="flex items-center justify-between p-3 rounded-lg border border-border bg-muted/30 hover:bg-muted transition-colors"
                                             >
                                                 <div className="flex flex-col">
-                                                    <span className="font-medium text-sm">{incident.title}</span>
+                                                    <button
+                                                        onClick={() => handleViewIncident(incident)}
+                                                        className="font-medium text-sm hover:text-primary hover:underline transition-colors text-left"
+                                                    >
+                                                        {incident.title}
+                                                    </button>
                                                     <span className="text-xs text-muted-foreground">
                                                         {incident.createdAt?.toDate ?
                                                             incident.createdAt.toDate().toLocaleDateString() :
