@@ -150,15 +150,7 @@ export default function IncidentsPage() {
         {
             key: 'title',
             label: 'Incidencia',
-            sortable: true,
-            render: (i) => (
-                <button
-                    onClick={() => handleViewIncident(i)}
-                    className="text-sm font-medium hover:text-primary hover:underline transition-colors text-left"
-                >
-                    {i.title}
-                </button>
-            )
+            sortable: true
         },
         {
             key: 'vehicleId',
@@ -252,6 +244,7 @@ export default function IncidentsPage() {
                 isLoading={loading}
                 title="Historial de Incidencias"
                 searchPlaceholder="Buscar incidencia..."
+                onRowClick={handleViewIncident}
                 breakpoint="2xl"
                 mobileItem={(incident) => (
                     <div className="bg-card p-4 rounded-xl border border-border shadow-sm space-y-4">
@@ -265,12 +258,7 @@ export default function IncidentsPage() {
                                     <AlertTriangle className="h-5 w-5" />
                                 </div>
                                 <div>
-                                    <button
-                                        onClick={() => handleViewIncident(incident)}
-                                        className="font-semibold text-foreground line-clamp-1 hover:text-primary hover:underline text-left"
-                                    >
-                                        {incident.title}
-                                    </button>
+                                    <h3 className="font-semibold text-foreground line-clamp-1">{incident.title}</h3>
                                     <span className={`text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded ${incident.priority === 'critical' ? 'bg-red-100 text-red-700' :
                                         incident.priority === 'high' ? 'bg-orange-100 text-orange-700' :
                                             incident.priority === 'medium' ? 'bg-yellow-100 text-yellow-700' :

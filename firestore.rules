@@ -29,9 +29,11 @@ service cloud.firestore {
       allow read: if isSignedIn();
       
       // Allow creation ONLY if the user is creating their own document
-      // AND they are NOT setting themselves as admin (security check)
-      allow create: if isSignedIn() && request.auth.uid == userId &&
-                    (!request.resource.data.keys().hasAll(['role']) || request.resource.data.role != 'admin');
+      // (self-registration, security check) OR if the user is an admin
+      allow create: if isSignedIn() && (
+        (request.auth.uid == userId && (!request.resource.data.keys().hasAll(['role']) || request.resource.data.role != 'admin')) ||
+        isAdmin()
+      );
       
       // Allow updates:
       // - Users can update their own profile

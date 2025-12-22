@@ -453,18 +453,14 @@ export default function AdminDashboard() {
                             return (
                                 <div
                                     key={i.id}
-                                    className="p-3 bg-muted/20 rounded-lg space-y-2 hover:bg-muted/30 transition-colors"
+                                    className="p-3 bg-muted/20 rounded-lg space-y-2 cursor-pointer hover:bg-muted/30 transition-colors"
+                                    onClick={() => handleViewIncident(i)}
                                 >
                                     <div className="flex items-center justify-between">
                                         <div className="flex items-center gap-3">
                                             <AlertTriangle className="h-4 w-4 text-amber-500" />
                                             <div>
-                                                <button
-                                                    onClick={() => handleViewIncident(i)}
-                                                    className="text-sm font-medium hover:text-primary hover:underline transition-colors text-left"
-                                                >
-                                                    {i.title}
-                                                </button>
+                                                <p className="text-sm font-medium">{i.title}</p>
                                                 <p className="text-xs text-muted-foreground">{i.priority.toUpperCase()}</p>
                                             </div>
                                         </div>
@@ -885,20 +881,12 @@ export default function AdminDashboard() {
                             return (
                                 <div
                                     key={`${item.id}-${idx}`}
-                                    className={`bg-white dark:bg-zinc-900 p-4 rounded-lg border border-red-100 dark:border-red-900/20 shadow-sm flex flex-col justify-between gap-3 ${linkedIncident ? 'hover:border-red-300 transition-colors' : ''}`}
+                                    className={`bg-white dark:bg-zinc-900 p-4 rounded-lg border border-red-100 dark:border-red-900/20 shadow-sm flex flex-col justify-between gap-3 ${linkedIncident ? 'cursor-pointer hover:border-red-300 transition-colors' : ''}`}
+                                    onClick={() => linkedIncident && handleViewIncident(linkedIncident)}
                                 >
                                     <div>
                                         <div className="flex justify-between items-start">
-                                            {linkedIncident ? (
-                                                <button
-                                                    onClick={() => handleViewIncident(linkedIncident)}
-                                                    className="font-semibold text-red-900 dark:text-red-100 hover:text-primary hover:underline text-left"
-                                                >
-                                                    {item.name}
-                                                </button>
-                                            ) : (
-                                                <h4 className="font-semibold text-red-900 dark:text-red-100">{item.name}</h4>
-                                            )}
+                                            <h4 className="font-semibold text-red-900 dark:text-red-100">{item.name}</h4>
                                             <span className="text-xs font-mono bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300 px-2 py-1 rounded">{item.sku}</span>
                                         </div>
                                         <div className="flex items-center gap-2 mt-1">
@@ -965,7 +953,8 @@ export default function AdminDashboard() {
                                         return (
                                             <div
                                                 key={inc.id}
-                                                className="flex items-center justify-between p-4 hover:bg-muted/50 transition-colors"
+                                                className="flex items-center justify-between p-4 hover:bg-muted/50 transition-colors cursor-pointer"
+                                                onClick={() => handleViewIncident(inc)}
                                             >
                                                 <div className="flex items-center gap-4">
                                                     <div className={`h-8 w-8 rounded-full flex items-center justify-center ${inc.priority === 'high' ? 'bg-red-100 text-red-600' :
@@ -974,12 +963,7 @@ export default function AdminDashboard() {
                                                         <AlertTriangle className="h-4 w-4" />
                                                     </div>
                                                     <div>
-                                                        <button
-                                                            onClick={() => handleViewIncident(inc)}
-                                                            className="text-sm font-medium hover:text-primary hover:underline transition-colors text-left"
-                                                        >
-                                                            {inc.title}
-                                                        </button>
+                                                        <p className="text-sm font-medium">{inc.title}</p>
                                                         {affectedVehicle && (
                                                             <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
                                                                 <Car className="h-3 w-3" />
