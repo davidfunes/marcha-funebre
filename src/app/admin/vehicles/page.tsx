@@ -6,7 +6,8 @@ import {
     MoreVertical,
     Edit,
     Trash2,
-    Car
+    Car,
+    Fuel
 } from 'lucide-react';
 import { DataTable, Column } from '@/components/ui/DataTable';
 import { StatusBadge } from '@/components/ui/StatusBadge';
@@ -799,6 +800,48 @@ export default function VehiclesPage() {
                                     </p>
                                 </div>
                             )}
+
+                            <div className="space-y-3 col-span-2 md:col-span-3 pt-4 border-t border-border">
+                                <div className="flex justify-between items-center">
+                                    <span className="text-sm font-bold text-foreground flex items-center gap-2">
+                                        <Fuel className="w-4 h-4 text-primary" />
+                                        Nivel de Combustible Actual
+                                    </span>
+                                    <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${viewingVehicle.fuelLevel === '100' ? 'bg-green-100 text-green-700' :
+                                        viewingVehicle.fuelLevel === '75' ? 'bg-green-100 text-green-700' :
+                                            viewingVehicle.fuelLevel === '50' ? 'bg-yellow-100 text-yellow-700' :
+                                                viewingVehicle.fuelLevel === '25' ? 'bg-orange-100 text-orange-700' :
+                                                    viewingVehicle.fuelLevel === '10' ? 'bg-red-100 text-red-700' :
+                                                        viewingVehicle.fuelLevel === '0' ? 'bg-red-200 text-red-800 animate-pulse' :
+                                                            'bg-muted text-muted-foreground'
+                                        }`}>
+                                        {viewingVehicle.fuelLevel === '100' ? 'Lleno (100%)' :
+                                            viewingVehicle.fuelLevel === '75' ? '3/4' :
+                                                viewingVehicle.fuelLevel === '50' ? 'Medio (50%)' :
+                                                    viewingVehicle.fuelLevel === '25' ? '1/4' :
+                                                        viewingVehicle.fuelLevel === '10' ? 'Casi Reserva' :
+                                                            viewingVehicle.fuelLevel === '0' ? 'En Reserva (!)' :
+                                                                'No reportado'}
+                                    </span>
+                                </div>
+                                <div className="w-full bg-muted h-3 rounded-full overflow-hidden border border-border shadow-inner">
+                                    <div
+                                        className={`h-full transition-all duration-500 rounded-full ${viewingVehicle.fuelLevel === '100' ? 'bg-green-500 w-full' :
+                                            viewingVehicle.fuelLevel === '75' ? 'bg-green-400 w-[75%]' :
+                                                viewingVehicle.fuelLevel === '50' ? 'bg-yellow-400 w-[50%]' :
+                                                    viewingVehicle.fuelLevel === '25' ? 'bg-orange-400 w-[25%]' :
+                                                        viewingVehicle.fuelLevel === '10' ? 'bg-red-400 w-[10%]' :
+                                                            viewingVehicle.fuelLevel === '0' ? 'bg-red-600 w-[5%] animate-pulse' :
+                                                                'w-0'
+                                            }`}
+                                    ></div>
+                                </div>
+                                {!viewingVehicle.fuelLevel && (
+                                    <p className="text-[10px] text-muted-foreground italic text-center">
+                                        El nivel se actualizará automáticamente cuando un conductor lo reporte.
+                                    </p>
+                                )}
+                            </div>
                         </div>
 
                         {/* Incidents Section */}

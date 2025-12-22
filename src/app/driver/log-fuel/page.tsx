@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { db } from '@/lib/firebase/firebase';
-import { collection, addDoc, serverTimestamp, query, where, getDocs } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, query, where, getDocs, doc, updateDoc } from 'firebase/firestore';
 import {
     Fuel,
     Save,
@@ -98,6 +98,11 @@ export default function LogFuelPage() {
                 liters: liters ? Number(liters) : null,
                 notes,
                 createdAt: serverTimestamp()
+            });
+
+            // Update Vehicle Document with current fuel level
+            await updateDoc(doc(db, 'vehicles', targetVehicleId), {
+                fuelLevel: fuelLevel
             });
 
             if (user!.id) {

@@ -48,6 +48,7 @@ export interface Vehicle {
     requiresParkingSpot?: boolean; // If true, requires location on return
     parkingLocation?: string; // Current parking spot
     warehouseId?: string; // Assigned Headquarters (Sede/Tanatorio)
+    fuelLevel?: string; // Current fuel level percentage (0-100)
 }
 
 export interface VehicleMake {
