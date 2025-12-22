@@ -2,10 +2,10 @@
 // Add your Firebase config here after creating a project in Firebase Console
 
 export const firebaseConfig = {
-    apiKey: "AIzaSyBz-9vttL0jOlR05xQDvJj9UrFrm5i9VXs",
-    authDomain: "fleet-management-7267c.firebaseapp.com",
-    projectId: "fleet-management-7267c",
-    storageBucket: "fleet-management-7267c.firebasestorage.app",
-    messagingSenderId: "523519089476",
-    appId: "1:523519089476:web:649a30e67aa587042f5511",
+    apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+    authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+    projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+    storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+    messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+    appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
