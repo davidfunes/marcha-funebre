@@ -834,10 +834,11 @@ export default function AdminDashboard() {
                                 .map((loc, idx) => ({ item, loc, idx }))
                                 .filter(({ loc }) => loc.status && loc.status !== 'new')
                         ).map(({ item, loc, idx }) => {
+                            // Find linked incident for this broken item to get reporter info
+                            const linkedIncident = incidents.find(inc => inc.inventoryItemId === item.id && inc.status !== 'resolved');
+
                             let locationName = 'Desconocido';
                             if (loc.id === 'REPAIR_POOL') {
-                                // Find linked incident to know origin
-                                const linkedIncident = incidents.find(inc => inc.inventoryItemId === item.id && inc.status !== 'resolved');
                                 if (linkedIncident) {
                                     const v = vehicles.find(v => v.id === linkedIncident.vehicleId);
                                     locationName = v ? `🛠️ Origen: ${v.plate}` : '🛠️ Reparación (Origen desc.)';
@@ -851,6 +852,8 @@ export default function AdminDashboard() {
                                 const w = warehouses.find(w => w.id === loc.id);
                                 locationName = w ? `🏭 ${w.name}` : 'Almacén no encontrado';
                             }
+
+                            const reporter = linkedIncident ? users.find(u => u.id === linkedIncident.reportedByUserId) : null;
 
                             return (
                                 <div key={`${item.id}-${idx}`} className="bg-white p-4 rounded-lg border border-red-100 shadow-sm flex flex-col justify-between gap-3">
@@ -870,6 +873,16 @@ export default function AdminDashboard() {
                                             </span>
                                             <p className="text-sm text-red-600">{locationName}</p>
                                         </div>
+                                        {reporter && (
+                                            <div className="flex items-center gap-2 mt-3 pt-2 border-t border-red-100/50">
+                                                <div className="h-5 w-5 rounded-full bg-secondary flex items-center justify-center shrink-0 text-secondary-foreground font-bold text-[8px]">
+                                                    {getUserInitials(reporter)}
+                                                </div>
+                                                <p className="text-[10px] text-muted-foreground">
+                                                    Reportado por: <span className="font-medium text-foreground">{getFullName(reporter)}</span>
+                                                </p>
+                                            </div>
+                                        )}
                                         <div className="flex flex-wrap gap-2 mt-4">
                                             {loc.status !== 'ordered' && (
                                                 <button
