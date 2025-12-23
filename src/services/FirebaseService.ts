@@ -161,7 +161,10 @@ export const uploadFile = async (file: File, path: string): Promise<string> => {
     try {
         console.log(`Starting upload of ${file.name} to ${path}`);
         const storageRef = ref(storage, path);
-        const snapshot = await uploadBytes(storageRef, file);
+        const metadata = {
+            contentType: file.type,
+        };
+        const snapshot = await uploadBytes(storageRef, file, metadata);
         const downloadURL = await getDownloadURL(snapshot.ref);
         console.log("Upload successful. Download URL:", downloadURL);
         return downloadURL;
