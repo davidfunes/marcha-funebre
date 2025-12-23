@@ -35,6 +35,7 @@ import { InventoryItem, Incident, MaterialCondition } from '@/types';
 import { Modal } from '@/components/ui/Modal';
 import { updateItem } from '@/services/FirebaseService';
 import { getFuelLevelLabel } from '@/lib/utils';
+import { getFuelLevelMessage } from '@/utils/fuelUtils';
 
 export default function MyVehiclePage() {
     const { user } = useAuth();
@@ -365,11 +366,18 @@ export default function MyVehiclePage() {
                             </div>
                             <div>
                                 <p className="text-xs text-muted-foreground mb-1 uppercase tracking-wider">Combustible</p>
-                                <div className="flex items-center gap-2">
-                                    <Fuel className="w-4 h-4 text-primary" />
-                                    <span className="font-semibold capitalize">
-                                        {vehicle.fuelType} {vehicle.fuelLevel ? `(${getFuelLevelLabel(vehicle.fuelLevel)})` : ''}
-                                    </span>
+                                <div className="flex flex-col gap-1 mt-1">
+                                    <div className="flex items-center gap-2">
+                                        <Fuel className="w-4 h-4 text-primary" />
+                                        <span className="font-semibold capitalize">
+                                            {vehicle.fuelType} {vehicle.fuelLevel ? `(${vehicle.fuelLevel}%)` : ''}
+                                        </span>
+                                    </div>
+                                    {vehicle.fuelLevel !== undefined && (
+                                        <p className={`text-[10px] leading-tight ${getFuelLevelMessage(vehicle.fuelLevel).color}`}>
+                                            {getFuelLevelMessage(vehicle.fuelLevel).message}
+                                        </p>
+                                    )}
                                 </div>
                             </div>
                         </div>
