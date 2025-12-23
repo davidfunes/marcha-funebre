@@ -15,7 +15,9 @@ import {
     X,
     RefreshCw,
     ScanLine,
-    Gauge
+    Gauge,
+    ZoomIn,
+    ZoomOut
 } from 'lucide-react';
 import Link from 'next/link';
 import { Vehicle } from '@/types';
@@ -43,6 +45,7 @@ export default function LogKmPage() {
     const [isCameraOpen, setIsCameraOpen] = useState(false);
     const [cameraError, setCameraError] = useState('');
     const [isScanning, setIsScanning] = useState(false);
+    const [zoomLevel, setZoomLevel] = useState(1);
     const [ocrCandidates, setOcrCandidates] = useState<string[]>([]);
     const videoRef = useRef<HTMLVideoElement>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -111,6 +114,7 @@ export default function LogKmPage() {
             videoRef.current.srcObject = null;
         }
         setIsCameraOpen(false);
+        setZoomLevel(1);
     };
 
     const preprocessImage = (canvas: HTMLCanvasElement) => {
@@ -203,9 +207,17 @@ export default function LogKmPage() {
             const context = canvas.getContext('2d');
 
             if (context) {
+                // Calculate crop based on zoom
+                const sw = video.videoWidth / zoomLevel;
+                const sh = video.videoHeight / zoomLevel;
+                const sx = (video.videoWidth - sw) / 2;
+                const sy = (video.videoHeight - sh) / 2;
+
                 canvas.width = video.videoWidth;
                 canvas.height = video.videoHeight;
-                context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+                // Draw only the zoomed section
+                context.drawImage(video, sx, sy, sw, sh, 0, 0, canvas.width, canvas.height);
 
                 // Save original for preview
                 const dataUrl = canvas.toDataURL('image/jpeg');
@@ -232,6 +244,7 @@ export default function LogKmPage() {
         setImagePreview(null);
         setOdometer('');
         setOcrCandidates([]);
+        setZoomLevel(1);
         startCamera();
     };
 
@@ -364,8 +377,36 @@ export default function LogKmPage() {
                         <span className="text-sm font-medium mb-2 block">Foto del Marcador (OCR Inteligente)</span>
                         {isCameraOpen ? (
                             <div className="relative rounded-xl overflow-hidden bg-black aspect-[4/3] shadow-lg">
-                                <video ref={videoRef} autoPlay playsInline className="w-full h-full object-cover" />
+                                <video
+                                    ref={videoRef}
+                                    autoPlay
+                                    playsInline
+                                    className="w-full h-full object-cover transition-transform duration-300"
+                                    style={{ transform: `scale(${zoomLevel})` }}
+                                />
                                 <canvas ref={canvasRef} className="hidden" />
+
+                                {/* Zoom Controls */}
+                                <div className="absolute top-4 right-4 flex flex-col gap-2 z-30">
+                                    <button
+                                        type="button"
+                                        onClick={() => setZoomLevel(prev => Math.min(prev + 0.5, 3))}
+                                        className="bg-black/60 backdrop-blur p-3 rounded-full text-white hover:bg-black/80 transition-colors"
+                                    >
+                                        <ZoomIn className="w-5 h-5" />
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setZoomLevel(prev => Math.max(prev - 0.5, 1))}
+                                        className="bg-black/60 backdrop-blur p-3 rounded-full text-white hover:bg-black/80 transition-colors"
+                                    >
+                                        <ZoomOut className="w-5 h-5" />
+                                    </button>
+                                    <div className="bg-black/60 backdrop-blur px-2 py-1 rounded text-[10px] text-white font-bold text-center">
+                                        {zoomLevel.toFixed(1)}x
+                                    </div>
+                                </div>
+
                                 <div className="absolute bottom-4 inset-x-0 flex justify-center gap-6 items-center z-20">
                                     <button type="button" onClick={stopCamera} className="bg-black/40 backdrop-blur p-3 rounded-full text-white">
                                         <X className="w-6 h-6" />
