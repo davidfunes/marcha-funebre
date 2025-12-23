@@ -35,11 +35,11 @@ export default function DirectoryPage() {
     const [filter, setFilter] = useState<'all' | 'available' | 'occupied'>('all');
 
     useEffect(() => {
-        if (!authLoading && (!user || user.role !== 'conductor')) {
-            if (user && user.role !== 'conductor') {
+        if (!authLoading) {
+            if (!user) {
                 router.push('/login');
-            } else if (!user) {
-                router.push('/login');
+            } else if (user.role !== 'conductor' && user.role !== 'admin' && user.role !== 'manager') {
+                router.push('/admin/dashboard');
             }
         }
     }, [user, authLoading, router]);
@@ -198,7 +198,7 @@ export default function DirectoryPage() {
                                     )}
                                     {/* Status Dot */}
                                     <div className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-card ${vehicle.status === 'maintenance' ? 'bg-red-500' :
-                                            vehicle.assignedDriverId ? 'bg-amber-500' : 'bg-green-500'
+                                        vehicle.assignedDriverId ? 'bg-amber-500' : 'bg-green-500'
                                         }`}></div>
                                 </div>
 
