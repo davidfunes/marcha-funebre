@@ -24,7 +24,8 @@ import {
     Clock,
     Package,
     ChevronRight,
-    SearchIcon
+    SearchIcon,
+    Gauge
 } from 'lucide-react';
 import Link from 'next/link';
 import { format } from 'date-fns';
@@ -508,7 +509,7 @@ export default function MyVehiclePage() {
                 {/* Actions */}
                 <div className="space-y-3">
                     <h3 className="font-bold text-foreground">Acciones Rápidas</h3>
-                    <div className="grid grid-cols-2 gap-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                         <Link
                             href="/driver/report-incident"
                             className="flex flex-col items-center justify-center p-4 bg-card border border-border rounded-xl hover:bg-red-500/5 hover:border-red-500/20 transition-all group"
@@ -522,6 +523,13 @@ export default function MyVehiclePage() {
                         >
                             <Fuel className="w-8 h-8 text-blue-500 mb-2 group-hover:scale-110 transition-transform" />
                             <span className="text-sm font-medium text-foreground">Añadir Combustible</span>
+                        </Link>
+                        <Link
+                            href="/driver/log-km"
+                            className="flex flex-col items-center justify-center p-4 bg-card border border-border rounded-xl hover:bg-orange-500/5 hover:border-orange-500/20 transition-all group"
+                        >
+                            <Gauge className="w-8 h-8 text-orange-500 mb-2 group-hover:scale-110 transition-transform" />
+                            <span className="text-sm font-medium text-foreground">Registrar KM</span>
                         </Link>
                     </div>
                 </div>

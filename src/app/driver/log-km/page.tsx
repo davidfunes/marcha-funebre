@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { db } from '@/lib/firebase/firebase';
-import { collection, addDoc, doc, updateDoc, serverTimestamp, query, where, getDocs } from 'firebase/firestore';
+import { collection, addDoc, doc, updateDoc, serverTimestamp, query, where, getDocs, getDoc } from 'firebase/firestore';
 import {
     Settings,
     Camera,
@@ -17,12 +17,14 @@ import {
     ScanLine,
     Gauge,
     ZoomIn,
-    ZoomOut
+    ZoomOut,
+    AlertTriangle
 } from 'lucide-react';
 import Link from 'next/link';
 import { Vehicle } from '@/types';
 import { createWorker } from 'tesseract.js';
 import { awardPointsForAction } from '@/services/GamificationService';
+import { Modal } from '@/components/ui/Modal';
 
 export default function LogKmPage() {
     const { user } = useAuth();
@@ -37,6 +39,8 @@ export default function LogKmPage() {
 
     // Form States
     const [odometer, setOdometer] = useState('');
+    const [currentVehicleKms, setCurrentVehicleKms] = useState<number>(0);
+    const [showKmError, setShowKmError] = useState(false);
     const [notes, setNotes] = useState('');
     const [image, setImage] = useState<File | null>(null);
     const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -50,6 +54,22 @@ export default function LogKmPage() {
     const videoRef = useRef<HTMLVideoElement>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const streamRef = useRef<MediaStream | null>(null);
+
+    useEffect(() => {
+        const fetchCurrentKms = async () => {
+            if (selectedVehicleId) {
+                try {
+                    const vehicleDoc = await getDoc(doc(db, 'vehicles', selectedVehicleId));
+                    if (vehicleDoc.exists()) {
+                        setCurrentVehicleKms(vehicleDoc.data().odometer || 0);
+                    }
+                } catch (error) {
+                    console.error("Error fetching vehicle kms:", error);
+                }
+            }
+        };
+        fetchCurrentKms();
+    }, [selectedVehicleId]);
 
     useEffect(() => {
         const fetchVehicles = async () => {
@@ -258,6 +278,11 @@ export default function LogKmPage() {
 
         if (!odometer) {
             alert('Por favor indica los kilómetros.');
+            return;
+        }
+
+        if (Number(odometer) <= currentVehicleKms) {
+            setShowKmError(true);
             return;
         }
 
@@ -496,6 +521,31 @@ export default function LogKmPage() {
                     </button>
                 </form>
             </main>
+
+            <Modal
+                isOpen={showKmError}
+                onClose={() => setShowKmError(false)}
+                title="Kilometraje Incorrecto"
+            >
+                <div className="flex flex-col items-center text-center py-4">
+                    <div className="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center mb-4">
+                        <AlertTriangle className="w-8 h-8 text-red-500" />
+                    </div>
+                    <p className="text-muted-foreground mb-6">
+                        El kilometraje reportado no puede ser menor o igual al actual registrados en este vehículo.
+                    </p>
+                    <div className="w-full bg-muted p-4 rounded-xl mb-6">
+                        <p className="text-sm text-muted-foreground mb-1 uppercase tracking-wider font-bold">Kilometraje Actual</p>
+                        <p className="text-3xl font-mono font-bold text-foreground">{currentVehicleKms.toLocaleString()} KM</p>
+                    </div>
+                    <button
+                        onClick={() => setShowKmError(false)}
+                        className="w-full py-3 bg-primary text-primary-foreground font-bold rounded-xl"
+                    >
+                        Entendido
+                    </button>
+                </div>
+            </Modal>
         </div>
     );
 }
