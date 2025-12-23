@@ -123,12 +123,15 @@ export default function ReportIncidentPage() {
             setSuccess(true);
             setTimeout(() => router.push('/driver/dashboard'), 2500);
 
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error saving vehicle incident:', error);
+            const errorMessage = error.message || 'Error desconocido';
+            const errorCode = error.code || 'n/a';
+
             setModalConfig({
                 isOpen: true,
-                title: 'Error',
-                message: 'Ocurrió un error al enviar el reporte.'
+                title: 'Error al Enviar',
+                message: `No se pudo enviar el reporte: ${errorMessage} (${errorCode}). Si el error persiste, contacta al administrador.`
             });
         } finally {
             setLoading(false);
@@ -169,12 +172,15 @@ export default function ReportIncidentPage() {
             setSuccess(true);
             setTimeout(() => router.push('/driver/dashboard'), 2500);
 
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error saving material incident:', error);
+            const errorMessage = error.message || 'Error desconocido';
+            const errorCode = error.code || 'n/a';
+
             setModalConfig({
                 isOpen: true,
-                title: 'Error',
-                message: 'No se pudo reportar la incidencia del material.'
+                title: 'Error al Enviar',
+                message: `No se pudo reportar la incidencia del material: ${errorMessage} (${errorCode}). Si el bug persiste envíame una captura de este mensaje.`
             });
         } finally {
             setLoading(false);

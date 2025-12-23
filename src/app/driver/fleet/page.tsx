@@ -283,9 +283,11 @@ export default function MyVehiclePage() {
             setIsModalOpen(false);
             setSelectedItem(null);
             alert('Incidencia reportada correctamente.');
-        } catch (error) {
+        } catch (error: any) {
             console.error("Error reporting incident:", error);
-            alert('Error al reportar la incidencia.');
+            const errorMessage = error.message || 'Error desconocido';
+            const errorCode = error.code || 'n/a';
+            alert(`Error al reportar la incidencia: ${errorMessage} (${errorCode})`);
         } finally {
             setIsReporting(false);
         }
