@@ -96,7 +96,7 @@ export default function ReportIncidentPage() {
         try {
             let imageUrls: string[] = [];
             if (image) {
-                const path = `incidents/vehicles/${user.assignedVehicleId}/${Date.now()}_${image.name}`;
+                const path = `avatars/${user.id}/incidents/vehicle_${Date.now()}_${image.name}`;
                 const url = await uploadFile(image, path);
                 imageUrls = [url];
             }
@@ -146,7 +146,7 @@ export default function ReportIncidentPage() {
         try {
             let imageUrls: string[] = [];
             if (image) {
-                const path = `incidents/material/${selectedMaterial.id}/${Date.now()}_${image.name}`;
+                const path = `avatars/${user.id}/incidents/material_${Date.now()}_${image.name}`;
                 const url = await uploadFile(image, path);
                 imageUrls = [url];
             }

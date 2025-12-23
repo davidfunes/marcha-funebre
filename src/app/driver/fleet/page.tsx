@@ -235,7 +235,7 @@ export default function MyVehiclePage() {
         try {
             let imageUrls: string[] = [];
             if (incidentImage) {
-                const path = `incidents/material/${selectedItem.id}/${Date.now()}_${incidentImage.name}`;
+                const path = `avatars/${user.id}/incidents/material_${Date.now()}_${incidentImage.name}`;
                 const url = await uploadFile(incidentImage, path);
                 imageUrls = [url];
             }
