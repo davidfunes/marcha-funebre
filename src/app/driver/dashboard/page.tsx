@@ -21,7 +21,8 @@ import {
     MapPin,
     X,
     Droplets,
-    Info
+    Info,
+    Trophy
 } from 'lucide-react';
 import Link from 'next/link';
 import { Vehicle } from '@/types';
@@ -213,15 +214,21 @@ export default function DriverDashboard() {
         <div className="min-h-screen bg-background text-foreground font-sans selection:bg-primary-500/30">
             <main className="max-w-md mx-auto px-4 pb-20 pt-8 lg:pt-12 lg:max-w-4xl">
                 {/* Header Section (Greeting Only) */}
-                <div className="mb-8 flex items-center justify-between">
-                    <div>
-                        <h1 className="text-2xl font-display font-bold text-foreground mb-1">
+                <div className="flex flex-col">
+                    <div className="flex items-center gap-3 mb-1">
+                        <h1 className="text-2xl font-display font-bold text-foreground">
                             Hola, {user.name.split(' ')[0]} 👋
                         </h1>
-                        <p className="text-muted-foreground text-sm">
-                            ¿Qué tarea vamos a realizar ahora?
-                        </p>
+                        {user.points !== undefined && (
+                            <div className="flex items-center gap-1.5 bg-yellow-500/10 px-3 py-1 rounded-full border border-yellow-500/20 shadow-sm animate-in zoom-in duration-500">
+                                <Trophy className="w-4 h-4 text-yellow-500" />
+                                <span className="text-sm font-bold text-yellow-500">{user.points}</span>
+                            </div>
+                        )}
                     </div>
+                    <p className="text-muted-foreground text-sm">
+                        ¿Qué tarea vamos a realizar ahora?
+                    </p>
                 </div>
 
                 {/* Quick Stats / Gamification Banner */}
@@ -230,10 +237,6 @@ export default function DriverDashboard() {
                         <div>
                             <p className="text-xs font-medium text-primary uppercase tracking-wider mb-1">Nivel actual</p>
                             <p className="text-xl font-bold text-foreground">Conductor Experto</p>
-                        </div>
-                        <div className="text-right">
-                            <p className="text-2xl font-bold text-yellow-500">{user.points || 0}</p>
-                            <p className="text-xs text-muted-foreground">Puntos totales</p>
                         </div>
                     </div>
                 </div>

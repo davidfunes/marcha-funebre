@@ -84,14 +84,6 @@ export default function DriverLayout({ children }: { children: React.ReactNode }
                     </div>
 
                     <div className="flex items-center gap-2 md:gap-4">
-                        {/* Points Badge */}
-                        {user?.points !== undefined && (
-                            <div className="flex items-center gap-1.5 bg-yellow-500/10 px-2.5 py-1 rounded-full border border-yellow-500/20">
-                                <Trophy className="w-3.5 h-3.5 text-yellow-500" />
-                                <span className="text-xs font-bold text-yellow-500">{user.points}</span>
-                            </div>
-                        )}
-
                         {/* Back to Admin Portal (Issue #18 Minimalist update) */}
                         {(user?.role === 'admin' || user?.role === 'manager') && (
                             <Link
