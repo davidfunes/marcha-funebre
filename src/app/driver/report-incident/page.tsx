@@ -21,7 +21,7 @@ import {
 import Link from 'next/link';
 import { IncidentPriority, IncidentStatus, InventoryItem, MaterialCondition } from '@/types';
 import { awardPointsForAction } from '@/services/GamificationService';
-import { getInventory, reportMaterialIncident } from '@/services/FirebaseService';
+import { getInventory, reportMaterialIncident, uploadFile } from '@/services/FirebaseService';
 
 import { Modal } from '@/components/ui/Modal';
 
@@ -94,6 +94,13 @@ export default function ReportIncidentPage() {
         setLoading(true);
 
         try {
+            let imageUrls: string[] = [];
+            if (image) {
+                const path = `incidents/vehicles/${user.assignedVehicleId}/${Date.now()}_${image.name}`;
+                const url = await uploadFile(image, path);
+                imageUrls = [url];
+            }
+
             const incidentData = {
                 title,
                 description,
@@ -102,7 +109,7 @@ export default function ReportIncidentPage() {
                 status: 'open' as IncidentStatus,
                 vehicleId: user.assignedVehicleId,
                 reportedByUserId: user.id,
-                images: image ? ['https://simulate-url.com/damage.jpg'] : [], // Simulation
+                images: imageUrls,
                 createdAt: serverTimestamp(),
                 updatedAt: serverTimestamp()
             };
@@ -134,6 +141,13 @@ export default function ReportIncidentPage() {
 
         setLoading(true);
         try {
+            let imageUrls: string[] = [];
+            if (image) {
+                const path = `incidents/material/${selectedMaterial.id}/${Date.now()}_${image.name}`;
+                const url = await uploadFile(image, path);
+                imageUrls = [url];
+            }
+
             await reportMaterialIncident(
                 {
                     title: `Incidencia Material: ${selectedMaterial.name}`,
@@ -141,7 +155,7 @@ export default function ReportIncidentPage() {
                     priority: condition === 'totally_broken' ? 'high' : 'medium',
                     reportedByUserId: user.id!,
                     vehicleId: user.assignedVehicleId,
-                    images: image ? ['https://simulate-url.com/material_damage.jpg'] : [] // Simulation
+                    images: imageUrls
                 },
                 selectedMaterial.id!,
                 user.assignedVehicleId,

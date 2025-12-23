@@ -25,7 +25,8 @@ import {
     Package,
     ChevronRight,
     SearchIcon,
-    Gauge
+    Gauge,
+    Camera
 } from 'lucide-react';
 import Link from 'next/link';
 import { format } from 'date-fns';
@@ -33,7 +34,7 @@ import { es } from 'date-fns/locale';
 import { getInventory, getVehicles, reportMaterialIncident } from '@/services/FirebaseService';
 import { InventoryItem, Incident, MaterialCondition } from '@/types';
 import { Modal } from '@/components/ui/Modal';
-import { updateItem } from '@/services/FirebaseService';
+import { updateItem, uploadFile } from '@/services/FirebaseService';
 import { getFuelLevelLabel } from '@/lib/utils';
 import { getFuelLevelMessage } from '@/utils/fuelUtils';
 
@@ -60,6 +61,7 @@ export default function MyVehiclePage() {
         description: '',
         condition: ''
     });
+    const [incidentImage, setIncidentImage] = useState<File | null>(null);
 
     useEffect(() => {
         const fetchVehicle = async () => {
@@ -217,6 +219,7 @@ export default function MyVehiclePage() {
             priority: 'medium',
             condition: ''
         });
+        setIncidentImage(null);
         setIsModalOpen(true);
     };
 
@@ -230,13 +233,21 @@ export default function MyVehiclePage() {
 
         setIsReporting(true);
         try {
+            let imageUrls: string[] = [];
+            if (incidentImage) {
+                const path = `incidents/material/${selectedItem.id}/${Date.now()}_${incidentImage.name}`;
+                const url = await uploadFile(incidentImage, path);
+                imageUrls = [url];
+            }
+
             await reportMaterialIncident(
                 {
                     title: formData.title,
                     description: formData.description,
                     priority: formData.condition === 'totally_broken' ? 'high' : 'medium',
                     reportedByUserId: user.id!,
-                    vehicleId: vehicle.id
+                    vehicleId: vehicle.id,
+                    images: imageUrls
                 },
                 selectedItem.id!,
                 vehicle.id,
@@ -637,6 +648,22 @@ export default function MyVehiclePage() {
                             onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                             className="w-full bg-background border border-border rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-primary/50 outline-none resize-none"
                         />
+                    </div>
+
+                    {/* Photo evidenca (Issue #22) */}
+                    <div className="space-y-1">
+                        <label className="text-xs font-bold text-muted-foreground uppercase px-1">Evidencia Fotográfica</label>
+                        <label className="flex flex-col items-center justify-center w-full h-24 border-2 border-dashed border-border rounded-xl cursor-pointer hover:bg-muted/50 transition">
+                            <Camera className="w-6 h-6 text-muted-foreground mb-1" />
+                            <p className="text-[10px] text-muted-foreground">Toca para añadir foto</p>
+                            <input
+                                type="file"
+                                className="hidden"
+                                accept="image/*"
+                                onChange={(e) => setIncidentImage(e.target.files?.[0] || null)}
+                            />
+                        </label>
+                        {incidentImage && <p className="text-[10px] text-green-500 px-1 font-medium">✓ {incidentImage.name}</p>}
                     </div>
 
                     <div className="flex gap-3 pt-2">
