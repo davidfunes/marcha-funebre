@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { LogOut, ArrowLeft, Trophy, User as UserIcon, Loader2 } from 'lucide-react';
+import { LogOut, ArrowLeft, Trophy, User as UserIcon, Loader2, LayoutDashboard } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Logo } from '@/components/ui/Logo';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
@@ -90,6 +90,18 @@ export default function DriverLayout({ children }: { children: React.ReactNode }
                                 <Trophy className="w-3.5 h-3.5 text-yellow-500" />
                                 <span className="text-xs font-bold text-yellow-500">{user.points}</span>
                             </div>
+                        )}
+
+                        {/* Back to Admin Portal (Issue #17 Feedback) */}
+                        {(user?.role === 'admin' || user?.role === 'manager') && (
+                            <Link
+                                href="/admin/dashboard"
+                                className="flex items-center gap-1.5 bg-primary/10 px-2.5 py-1 rounded-full border border-primary/20 text-primary hover:bg-primary/20 transition-all shadow-sm"
+                                title="Volver al Portal Admin"
+                            >
+                                <LayoutDashboard className="w-3.5 h-3.5" />
+                                <span className="text-xs font-bold hidden sm:inline">Portal Admin</span>
+                            </Link>
                         )}
 
                         <ThemeToggle />
