@@ -517,7 +517,7 @@ export default function MyVehiclePage() {
                             <span className="text-sm font-medium text-foreground">Reportar Incidencia</span>
                         </Link>
                         <Link
-                            href="/driver/log-km-fuel"
+                            href="/driver/log-fuel"
                             className="flex flex-col items-center justify-center p-4 bg-card border border-border rounded-xl hover:bg-blue-500/5 hover:border-blue-500/20 transition-all group"
                         >
                             <Fuel className="w-8 h-8 text-blue-500 mb-2 group-hover:scale-110 transition-transform" />
