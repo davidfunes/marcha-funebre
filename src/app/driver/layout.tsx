@@ -92,15 +92,15 @@ export default function DriverLayout({ children }: { children: React.ReactNode }
                             </div>
                         )}
 
-                        {/* Back to Admin Portal (Issue #17 Feedback) */}
+                        {/* Back to Admin Portal (Issue #18 Minimalist update) */}
                         {(user?.role === 'admin' || user?.role === 'manager') && (
                             <Link
                                 href="/admin/dashboard"
-                                className="flex items-center gap-1.5 bg-primary/10 px-2.5 py-1 rounded-full border border-primary/20 text-primary hover:bg-primary/20 transition-all shadow-sm"
+                                className="flex items-center justify-center w-8 h-8 bg-primary/10 border border-primary/20 text-primary rounded-full hover:bg-primary/20 transition-all shadow-sm"
                                 title="Volver al Portal Admin"
                             >
-                                <LayoutDashboard className="w-3.5 h-3.5" />
-                                <span className="text-xs font-bold hidden sm:inline">Portal Admin</span>
+                                <LayoutDashboard className="w-4 h-4" />
+                                <span className="sr-only">Portal Admin</span>
                             </Link>
                         )}
 

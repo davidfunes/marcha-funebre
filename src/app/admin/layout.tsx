@@ -171,10 +171,11 @@ export default function AdminLayout({
                         <div className="h-6 w-px bg-border hidden md:block"></div>
                         <Link
                             href="/driver/dashboard"
-                            className="flex items-center gap-2 px-3 py-1.5 text-xs font-bold bg-primary/10 text-primary border border-primary/20 rounded-full hover:bg-primary/20 transition-all shadow-sm"
+                            className="flex items-center justify-center w-8 h-8 text-primary bg-primary/10 border border-primary/20 rounded-full hover:bg-primary/20 transition-all shadow-sm group relative"
+                            title="Ver como Conductor"
                         >
-                            <Play className="h-3 w-3 fill-current" />
-                            Ver como Conductor
+                            <Play className="h-3.5 w-3.5 fill-current" />
+                            <span className="sr-only">Ver como Conductor</span>
                         </Link>
                     </div>
 
