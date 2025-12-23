@@ -296,7 +296,7 @@ export default function LogKmPage() {
                 type: 'km',
                 value: Number(odometer),
                 notes,
-                imageUrl: image ? 'https://simulate-url.com/receipt.jpg' : null, // TODO: Real storage
+                imageUrl: null, // OCR procesado localmente para evitar uso innecesario de almacenamiento (Issue #16)
                 createdAt: serverTimestamp()
             });
 

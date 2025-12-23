@@ -20,10 +20,12 @@ import {
     ArrowRight,
     MapPin,
     X,
-    Droplets
+    Droplets,
+    Info
 } from 'lucide-react';
 import Link from 'next/link';
 import { Vehicle } from '@/types';
+import { getFuelLevelMessage } from '@/utils/fuelUtils';
 
 export default function DriverDashboard() {
     const { user, loading, signOut } = useAuth();
@@ -34,11 +36,11 @@ export default function DriverDashboard() {
     const [returning, setReturning] = useState(false);
 
     useEffect(() => {
-        if (!loading && (!user || user.role !== 'conductor')) {
-            if (user && user.role !== 'conductor') {
+        if (!loading) {
+            if (!user) {
                 router.push('/login');
-            } else if (!user) {
-                router.push('/login');
+            } else if (user.role !== 'conductor' && user.role !== 'admin' && user.role !== 'manager') {
+                router.push('/admin/dashboard');
             }
         }
     }, [user, loading, router]);
@@ -235,6 +237,21 @@ export default function DriverDashboard() {
                         </div>
                     </div>
                 </div>
+
+                {/* Fuel Level Natural Language Alert (Issue #15) */}
+                {assignedVehicle && assignedVehicle.fuelLevel !== undefined && (
+                    <div className="mb-8 p-4 rounded-xl bg-card border border-border flex items-start gap-4 shadow-sm animate-in slide-in-from-bottom-2 duration-300">
+                        <div className="p-2 rounded-lg bg-primary/10">
+                            <Fuel className="w-5 h-5 text-primary" />
+                        </div>
+                        <div>
+                            <h4 className="text-sm font-bold text-foreground">Estado del Combustible</h4>
+                            <p className={`text-sm mt-0.5 ${getFuelLevelMessage(assignedVehicle.fuelLevel).color}`}>
+                                {getFuelLevelMessage(assignedVehicle.fuelLevel).message}
+                            </p>
+                        </div>
+                    </div>
+                )}
 
                 {/* Action Grid */}
                 <div className="grid grid-cols-1 gap-4">
