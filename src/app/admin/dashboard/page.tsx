@@ -943,75 +943,82 @@ export default function AdminDashboard() {
                     {/* Active Incidents */}
                     <div className="rounded-xl border border-border bg-card shadow-sm">
                         <div className="p-6 border-b border-border flex items-center justify-between">
-                            <h3 className="font-semibold">Incidencias Activas</h3>
+                            <h3 className="font-semibold">Incidencias de Vehículos Activas</h3>
                         </div>
                         <div className="p-0">
-                            {incidents.filter(inc => inc.status !== 'resolved').length > 0 ? (
-                                <div className="divide-y divide-border">
-                                    {incidents.filter(inc => inc.status !== 'resolved').slice(0, 5).map((inc) => {
-                                        const affectedVehicle = vehicles.find(v => v.id === inc.vehicleId);
-                                        return (
-                                            <div
-                                                key={inc.id}
-                                                className="flex items-center justify-between p-4 hover:bg-muted/50 transition-colors cursor-pointer"
-                                                onClick={() => handleViewIncident(inc)}
-                                            >
-                                                <div className="flex items-center gap-4">
-                                                    <div className={`h-8 w-8 rounded-full flex items-center justify-center ${inc.priority === 'high' ? 'bg-red-100 text-red-600' :
-                                                        inc.priority === 'medium' ? 'bg-amber-100 text-amber-600' : 'bg-blue-100 text-blue-600'
-                                                        }`}>
-                                                        <AlertTriangle className="h-4 w-4" />
-                                                    </div>
-                                                    <div>
-                                                        <p className="text-sm font-medium">{inc.title}</p>
-                                                        {affectedVehicle && (
-                                                            <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
-                                                                <Car className="h-3 w-3" />
-                                                                {affectedVehicle.brand} {affectedVehicle.model} ({affectedVehicle.plate})
-                                                            </p>
-                                                        )}
-                                                        <p className="text-xs text-muted-foreground">{inc.status}</p>
-                                                        {(() => {
-                                                            const reporter = users.find(u => u.id === inc.reportedByUserId);
-                                                            return reporter ? (
-                                                                <div className="flex items-center gap-1.5 mt-1.5">
-                                                                    <div className="h-4 w-4 rounded-full bg-secondary flex items-center justify-center shrink-0 text-secondary-foreground font-bold text-[7px]">
-                                                                        {getUserInitials(reporter)}
+                            {(() => {
+                                const priorityOrder = { 'critical': 0, 'high': 1, 'medium': 2, 'low': 3 };
+                                const vehicleIncidents = incidents
+                                    .filter(inc => inc.status !== 'resolved' && !inc.inventoryItemId)
+                                    .sort((a, b) => (priorityOrder[a.priority as keyof typeof priorityOrder] ?? 99) - (priorityOrder[b.priority as keyof typeof priorityOrder] ?? 99));
+
+                                return vehicleIncidents.length > 0 ? (
+                                    <div className="divide-y divide-border">
+                                        {vehicleIncidents.map((inc) => {
+                                            const affectedVehicle = vehicles.find(v => v.id === inc.vehicleId);
+                                            return (
+                                                <div
+                                                    key={inc.id}
+                                                    className="flex items-center justify-between p-4 hover:bg-muted/50 transition-colors cursor-pointer"
+                                                    onClick={() => handleViewIncident(inc)}
+                                                >
+                                                    <div className="flex items-center gap-4">
+                                                        <div className={`h-8 w-8 rounded-full flex items-center justify-center ${inc.priority === 'high' ? 'bg-red-100 text-red-600' :
+                                                            inc.priority === 'medium' ? 'bg-amber-100 text-amber-600' : 'bg-blue-100 text-blue-600'
+                                                            }`}>
+                                                            <AlertTriangle className="h-4 w-4" />
+                                                        </div>
+                                                        <div>
+                                                            <p className="text-sm font-medium">{inc.title}</p>
+                                                            {affectedVehicle && (
+                                                                <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
+                                                                    <Car className="h-3 w-3" />
+                                                                    {affectedVehicle.brand} {affectedVehicle.model} ({affectedVehicle.plate})
+                                                                </p>
+                                                            )}
+                                                            <p className="text-xs text-muted-foreground">{inc.status}</p>
+                                                            {(() => {
+                                                                const reporter = users.find(u => u.id === inc.reportedByUserId);
+                                                                return reporter ? (
+                                                                    <div className="flex items-center gap-1.5 mt-1.5">
+                                                                        <div className="h-4 w-4 rounded-full bg-secondary flex items-center justify-center shrink-0 text-secondary-foreground font-bold text-[7px]">
+                                                                            {getUserInitials(reporter)}
+                                                                        </div>
+                                                                        <span className="text-[10px] text-indigo-600 font-medium">{getFullName(reporter)}</span>
                                                                     </div>
-                                                                    <span className="text-[10px] text-indigo-600 font-medium">{getFullName(reporter)}</span>
-                                                                </div>
-                                                            ) : null;
-                                                        })()}
+                                                                ) : null;
+                                                            })()}
+                                                        </div>
+                                                    </div>
+                                                    <div className="flex items-center gap-2">
+                                                        <div className="text-xs font-medium px-2 py-1 rounded-full bg-secondary">
+                                                            {inc.priority}
+                                                        </div>
+                                                        {inc.status !== 'resolved' && (
+                                                            <button
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    setIncidentToResolve(inc);
+                                                                    setIsResolveModalOpen(true);
+                                                                }}
+                                                                className="p-2 hover:bg-green-100 rounded-full transition-colors group"
+                                                                title="Marcar como resuelta"
+                                                            >
+                                                                <Check className="h-4 w-4 text-muted-foreground group-hover:text-green-600" />
+                                                            </button>
+                                                        )}
                                                     </div>
                                                 </div>
-                                                <div className="flex items-center gap-2">
-                                                    <div className="text-xs font-medium px-2 py-1 rounded-full bg-secondary">
-                                                        {inc.priority}
-                                                    </div>
-                                                    {inc.status !== 'resolved' && (
-                                                        <button
-                                                            onClick={(e) => {
-                                                                e.stopPropagation();
-                                                                setIncidentToResolve(inc);
-                                                                setIsResolveModalOpen(true);
-                                                            }}
-                                                            className="p-2 hover:bg-green-100 rounded-full transition-colors group"
-                                                            title="Marcar como resuelta"
-                                                        >
-                                                            <Check className="h-4 w-4 text-muted-foreground group-hover:text-green-600" />
-                                                        </button>
-                                                    )}
-                                                </div>
-                                            </div>
-                                        );
-                                    })}
-                                </div>
-                            ) : (
-                                <div className="flex flex-col items-center justify-center py-12 text-center">
-                                    <AlertTriangle className="h-8 w-8 text-muted-foreground mb-3" />
-                                    <p className="text-muted-foreground">No hay incidencias pendientes</p>
-                                </div>
-                            )}
+                                            );
+                                        })}
+                                    </div>
+                                ) : (
+                                    <div className="flex flex-col items-center justify-center py-12 text-center">
+                                        <AlertTriangle className="h-8 w-8 text-muted-foreground mb-3" />
+                                        <p className="text-muted-foreground">No hay incidencias de vehículos activas</p>
+                                    </div>
+                                );
+                            })()}
                         </div>
                     </div>
 
