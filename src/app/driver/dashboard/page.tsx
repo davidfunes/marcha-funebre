@@ -97,8 +97,7 @@ export default function DriverDashboard() {
             // 2. Update User Reference
             const userRef = doc(db, 'users', user.id!);
             batch.update(userRef, {
-                assignedVehicleId: null,
-                points: increment(15)
+                assignedVehicleId: null
             });
 
             // Commit atomic batch

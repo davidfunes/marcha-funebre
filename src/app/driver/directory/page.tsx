@@ -12,9 +12,18 @@ import {
     User,
     ArrowLeft,
     Filter,
-    MapPin
+    MapPin,
+    Fuel,
+    Settings,
+    Calendar,
+    Music,
+    Clock,
+    AlertTriangle,
+    X,
+    Loader2
 } from 'lucide-react';
 import Link from 'next/link';
+import { getFuelLevelMessage } from '@/utils/fuelUtils';
 
 interface DriverMap {
     [userId: string]: string; // userId -> userName
@@ -33,6 +42,37 @@ export default function DirectoryPage() {
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [filter, setFilter] = useState<'all' | 'available' | 'occupied'>('all');
+
+    // Modal State
+    const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null);
+    const [vehicleMaterial, setVehicleMaterial] = useState<any[]>([]);
+    const [isLoadingMaterial, setIsLoadingMaterial] = useState(false);
+
+    const fetchVehicleMaterial = async (vehicleId: string) => {
+        setIsLoadingMaterial(true);
+        try {
+            const q = query(collection(db, 'inventory'));
+            const snapshot = await getDocs(q);
+            const material: any[] = [];
+            snapshot.forEach(doc => {
+                const data = doc.data();
+                const location = (data.locations || []).find((l: any) => l.id === vehicleId);
+                if (location) {
+                    material.push({ id: doc.id, ...data });
+                }
+            });
+            setVehicleMaterial(material);
+        } catch (error) {
+            console.error('Error fetching material:', error);
+        } finally {
+            setIsLoadingMaterial(false);
+        }
+    };
+
+    const handleOpenDetails = (vehicle: Vehicle) => {
+        setSelectedVehicle(vehicle);
+        fetchVehicleMaterial(vehicle.id!);
+    };
 
     useEffect(() => {
         if (!authLoading) {
@@ -188,7 +228,11 @@ export default function DirectoryPage() {
                         </div>
                     ) : (
                         filteredVehicles.map(vehicle => (
-                            <div key={vehicle.id} className="bg-card border border-border rounded-xl p-4 shadow-sm flex items-center gap-4">
+                            <div
+                                key={vehicle.id}
+                                onClick={() => handleOpenDetails(vehicle)}
+                                className="bg-card border border-border rounded-xl p-4 shadow-sm flex items-center gap-4 cursor-pointer hover:border-primary/50 transition-all active:scale-[0.98]"
+                            >
                                 <div className="w-14 h-14 bg-muted rounded-lg flex items-center justify-center shrink-0 overflow-hidden relative">
                                     {vehicle.image ? (
                                         // eslint-disable-next-line @next/next/no-img-element
@@ -237,6 +281,157 @@ export default function DirectoryPage() {
                     )}
                 </div>
             </main>
+
+            {/* Vehicle Detail Modal */}
+            {selectedVehicle && (
+                <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 animate-in fade-in duration-200">
+                    <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setSelectedVehicle(null)} />
+
+                    <div className="relative w-full max-w-lg bg-card border-t sm:border border-border rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden animate-in slide-in-from-bottom duration-300 max-h-[90vh] flex flex-col">
+                        {/* Modal Header */}
+                        <div className="p-4 border-b border-border flex items-center justify-between bg-muted/30">
+                            <h2 className="font-bold text-lg flex items-center gap-2">
+                                <Car className="w-5 h-5 text-primary" />
+                                Detalles del Vehículo
+                            </h2>
+                            <button
+                                onClick={() => setSelectedVehicle(null)}
+                                className="p-2 hover:bg-muted rounded-full transition-colors"
+                            >
+                                <X className="w-6 h-6" />
+                            </button>
+                        </div>
+
+                        {/* Modal Body */}
+                        <div className="flex-1 overflow-y-auto p-5 space-y-6 custom-scrollbar">
+                            {/* Main Info */}
+                            <div className="flex gap-4">
+                                <div className="w-24 h-24 bg-muted rounded-xl flex items-center justify-center shrink-0 overflow-hidden border border-border">
+                                    {selectedVehicle.image ? (
+                                        <img src={selectedVehicle.image} alt={selectedVehicle.model} className="w-full h-full object-cover" />
+                                    ) : (
+                                        <Car className="w-10 h-10 text-muted-foreground/30" />
+                                    )}
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                    <h3 className="text-xl font-bold text-foreground leading-tight">{selectedVehicle.brand} {selectedVehicle.model}</h3>
+                                    <p className="text-lg font-mono text-muted-foreground mt-1">{selectedVehicle.plate}</p>
+                                    <div className="flex flex-wrap gap-2 mt-2">
+                                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase border ${selectedVehicle.status === 'maintenance' ? 'bg-red-500/10 text-red-500 border-red-500/20' :
+                                                selectedVehicle.assignedDriverId ? 'bg-amber-500/10 text-amber-500 border-amber-500/20' : 'bg-green-500/10 text-green-500 border-green-500/20'
+                                            }`}>
+                                            {selectedVehicle.status === 'maintenance' ? 'Mantenimiento' :
+                                                selectedVehicle.assignedDriverId ? 'En Uso' : 'Disponible'}
+                                        </span>
+                                        {selectedVehicle.requiresParkingSpot && (
+                                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full uppercase bg-blue-500/10 text-blue-500 border border-blue-500/20">
+                                                Requiere Parking
+                                            </span>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Stats Grid */}
+                            <div className="grid grid-cols-2 gap-3">
+                                <div className="p-3 rounded-xl bg-muted/50 border border-border">
+                                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1">Odómetro</p>
+                                    <div className="flex items-center gap-2">
+                                        <Settings className="w-4 h-4 text-primary" />
+                                        <span className="font-bold">{selectedVehicle.odometer?.toLocaleString()} km</span>
+                                    </div>
+                                </div>
+                                <div className="p-3 rounded-xl bg-muted/50 border border-border">
+                                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1">Combustible</p>
+                                    <div className="flex flex-col gap-0.5">
+                                        <div className="flex items-center gap-2">
+                                            <Fuel className="w-4 h-4 text-primary" />
+                                            <span className="font-bold">{selectedVehicle.fuelType} {selectedVehicle.fuelLevel}%</span>
+                                        </div>
+                                        {selectedVehicle.fuelLevel !== undefined && (
+                                            <p className={`text-[9px] font-medium ${getFuelLevelMessage(selectedVehicle.fuelLevel).color}`}>
+                                                {getFuelLevelMessage(selectedVehicle.fuelLevel).message}
+                                            </p>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Location Info */}
+                            {selectedVehicle.warehouseId && (
+                                <div className="p-4 rounded-xl bg-primary/5 border border-primary/20 flex items-start gap-3">
+                                    <MapPin className="w-5 h-5 text-primary shrink-0 mt-0.5" />
+                                    <div>
+                                        <p className="text-xs font-bold text-primary uppercase tracking-wider">Sede Principal</p>
+                                        <p className="text-sm font-medium text-foreground">{warehouses[selectedVehicle.warehouseId]}</p>
+                                        {selectedVehicle.parkingLocation && (
+                                            <p className="text-xs text-muted-foreground mt-1 italic">Visto por última vez en: {selectedVehicle.parkingLocation}</p>
+                                        )}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Inventory Section */}
+                            <div className="space-y-3">
+                                <h4 className="text-sm font-bold text-foreground flex items-center gap-2 px-1">
+                                    <Music className="w-4 h-4 text-primary" />
+                                    Inventario de Material
+                                </h4>
+
+                                {isLoadingMaterial ? (
+                                    <div className="flex flex-col items-center justify-center py-6 gap-2">
+                                        <Loader2 className="w-6 h-6 text-primary animate-spin" />
+                                        <p className="text-xs text-muted-foreground">Cargando material...</p>
+                                    </div>
+                                ) : vehicleMaterial.length === 0 ? (
+                                    <div className="text-center py-6 bg-muted/20 rounded-xl border border-dashed border-border">
+                                        <p className="text-xs text-muted-foreground italic">No hay inventario registrado</p>
+                                    </div>
+                                ) : (
+                                    <div className="grid grid-cols-1 gap-2">
+                                        {vehicleMaterial.map(item => {
+                                            const loc = item.locations.find((l: any) => l.id === selectedVehicle.id);
+                                            const status = loc?.status;
+
+                                            return (
+                                                <div key={item.id} className="flex items-center justify-between p-3 bg-muted/30 rounded-xl border border-border/50">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="w-8 h-8 rounded-lg bg-background flex items-center justify-center border border-border">
+                                                            <Music className="w-4 h-4 text-muted-foreground" />
+                                                        </div>
+                                                        <div>
+                                                            <p className="text-sm font-bold">{item.name}</p>
+                                                            {status && (
+                                                                <p className={`text-[10px] font-bold uppercase ${status === 'Totally Broken' || status === 'broken' ? 'text-red-500' :
+                                                                        status === 'ordered' ? 'text-blue-500' : 'text-amber-500'
+                                                                    }`}>
+                                                                    {status === 'Totally Broken' || status === 'broken' ? 'Roto' :
+                                                                        status === 'ordered' ? 'Pedido' : 'Revisión'}
+                                                                </p>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                    <span className="text-xs font-black bg-primary/10 text-primary px-2 py-1 rounded-lg">x{loc?.quantity || 0}</span>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Modal Footer */}
+                        <div className="p-4 border-t border-border bg-muted/30 flex justify-end">
+                            <button
+                                onClick={() => setSelectedVehicle(null)}
+                                className="px-6 py-2.5 bg-foreground text-background rounded-xl font-bold text-sm hover:opacity-90 transition-opacity"
+                            >
+                                Entendido
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

@@ -24,7 +24,7 @@ export const RANKS: RankInfo[] = [
     { name: 'Veterano', minPoints: 5001, color: 'text-orange-400', icon: 'award' },
     { name: 'Maestro de Flota', minPoints: 10001, color: 'text-emerald-400', icon: 'star' },
     { name: 'Leyenda de la Carretera', minPoints: 25001, color: 'text-pink-400', icon: 'crown' },
-    { name: 'Centinela', minPoints: 50001, color: 'text-yellow-400', icon: 'trophy' },
+    { name: 'Guardián de la Marcha', minPoints: 50001, color: 'text-yellow-400', icon: 'trophy' },
 ];
 
 export interface GamificationConfig {
