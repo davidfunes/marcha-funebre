@@ -1,14 +1,26 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { getRanking, RankingPeriod, RankingUser } from '@/services/GamificationService';
-import { Trophy, Medal, Crown } from 'lucide-react';
+import { getRanking, RankingPeriod, RankingUser, getUserRank } from '@/services/GamificationService';
+import { Trophy, Medal, Crown, Shield, Zap, Award, Star } from 'lucide-react';
 import { getFullName, getUserInitials } from '@/utils/userUtils';
 
 export function RankingBoard() {
     const [period, setPeriod] = useState<RankingPeriod>('all');
     const [ranking, setRanking] = useState<RankingUser[]>([]);
     const [loading, setLoading] = useState(true);
+
+    const RankIcon = ({ name, className }: { name: string; className?: string }) => {
+        switch (name) {
+            case 'shield': return <Shield className={className} />;
+            case 'zap': return <Zap className={className} />;
+            case 'award': return <Award className={className} />;
+            case 'star': return <Star className={className} />;
+            case 'crown': return <Crown className={className} />;
+            case 'trophy': return <Trophy className={className} />;
+            default: return <Medal className={className} />;
+        }
+    };
 
     useEffect(() => {
         const fetchRanking = async () => {
@@ -96,7 +108,12 @@ export function RankingBoard() {
                                 )}
                                 <div>
                                     <p className="font-bold text-foreground line-clamp-1">{getFullName(item.user)}</p>
-                                    <p className="text-xs text-muted-foreground">Nivel {Math.floor((item.user?.points || 0) / 1000) + 1}</p>
+                                    <div className="flex items-center gap-1">
+                                        <RankIcon name={getUserRank(item.points).icon} className={`w-3 h-3 ${getUserRank(item.points).color}`} />
+                                        <p className={`text-[10px] font-bold uppercase tracking-wider ${getUserRank(item.points).color}`}>
+                                            {getUserRank(item.points).name}
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
 

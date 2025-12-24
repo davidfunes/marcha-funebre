@@ -10,6 +10,23 @@ export interface RankingUser {
     user?: User; // Hydrated user data
 }
 
+export interface RankInfo {
+    name: string;
+    minPoints: number;
+    color: string;
+    icon: string; // Lucide icon name or emoji
+}
+
+export const RANKS: RankInfo[] = [
+    { name: 'Novato', minPoints: 0, color: 'text-slate-400', icon: 'medal' },
+    { name: 'Profesional', minPoints: 501, color: 'text-blue-400', icon: 'shield' },
+    { name: 'Especialista', minPoints: 2001, color: 'text-purple-400', icon: 'zap' },
+    { name: 'Veterano', minPoints: 5001, color: 'text-orange-400', icon: 'award' },
+    { name: 'Maestro de Flota', minPoints: 10001, color: 'text-emerald-400', icon: 'star' },
+    { name: 'Leyenda de la Carretera', minPoints: 25001, color: 'text-pink-400', icon: 'crown' },
+    { name: 'Guardián de la Marcha', minPoints: 50001, color: 'text-yellow-400', icon: 'trophy' },
+];
+
 export interface GamificationConfig {
     actions: {
         checklist_completed: number;
@@ -17,6 +34,12 @@ export interface GamificationConfig {
         log_fuel: number;
         game_time_1min: number;
         incident_reported: number;
+        // Specific wash types
+        wash_exterior: number;
+        wash_interior: number;
+        wash_complete: number;
+        tire_pressure_log: number;
+        // Legacy/General
         vehicle_wash: number;
     };
     updatedAt: any;
@@ -25,12 +48,16 @@ export interface GamificationConfig {
 
 const DEFAULT_CONFIG: GamificationConfig = {
     actions: {
-        checklist_completed: 50,
+        checklist_completed: 1, // Reduced as requested
+        incident_reported: 5,   // Reduced as requested
+        wash_exterior: 100,
+        wash_interior: 100,
+        wash_complete: 200,
         log_km: 10,
-        log_fuel: 5,
+        log_fuel: 10,
         game_time_1min: 1,
-        incident_reported: 25,
-        vehicle_wash: 15 // Default value for new feature
+        tire_pressure_log: 50, // Updated from 20 to 50 as requested
+        vehicle_wash: 15 // Legacy default
     },
     updatedAt: null
 };
@@ -91,6 +118,43 @@ export const awardPointsForAction = async (userId: string, actionKey: keyof Gami
             return fallbackPoints;
         }
     }
+};
+
+/**
+ * Gets the current rank based on points
+ */
+export const getUserRank = (points: number): RankInfo => {
+    // Find the highest rank whose minPoints is <= current points
+    const currentRank = [...RANKS].reverse().find(r => points >= r.minPoints);
+    return currentRank || RANKS[0];
+};
+
+/**
+ * Calculates progress to the next rank
+ * @returns { progress: number, nextRank: RankInfo | null, pointsToNext: number }
+ */
+export const getNextRankProgress = (points: number) => {
+    const currentRankIndex = [...RANKS].findIndex((r, i) => {
+        const nextRank = RANKS[i + 1];
+        return points >= r.minPoints && (!nextRank || points < nextRank.minPoints);
+    });
+
+    const currentRank = RANKS[currentRankIndex] || RANKS[0];
+    const nextRank = RANKS[currentRankIndex + 1];
+
+    if (!nextRank) {
+        return { progress: 100, nextRank: null, pointsToNext: 0 };
+    }
+
+    const range = nextRank.minPoints - currentRank.minPoints;
+    const currentInRange = points - currentRank.minPoints;
+    const progress = Math.min(100, Math.max(0, (currentInRange / range) * 100));
+
+    return {
+        progress,
+        nextRank,
+        pointsToNext: nextRank.minPoints - points
+    };
 };
 
 export const logPoints = async (userId: string, points: number, reason: string) => {

@@ -15,7 +15,8 @@ import {
     Gauge,
     Gamepad2,
     AlertTriangle,
-    Droplets
+    Droplets,
+    CircleDot
 } from 'lucide-react';
 
 type ConfigActions = GamificationConfig['actions'];
@@ -70,7 +71,7 @@ export default function GamificationAdminPage() {
             key: 'checklist_completed',
             label: 'Checklist Completado',
             icon: CheckSquare,
-            description: 'Puntos otorgados al completar una inspección diaria.'
+            description: 'Puntos por completar la inspección diaria.'
         },
         {
             key: 'log_km',
@@ -85,10 +86,28 @@ export default function GamificationAdminPage() {
             description: 'Puntos por registrar una carga de combustible.'
         },
         {
-            key: 'vehicle_wash',
-            label: 'Lavado de Vehículo',
+            key: 'tire_pressure_log',
+            label: 'Presión de Neumáticos',
+            icon: CircleDot,
+            description: 'Puntos por revisar la presión de las ruedas.'
+        },
+        {
+            key: 'wash_exterior',
+            label: 'Lavado Exterior',
             icon: Droplets,
-            description: 'Puntos por registrar limpieza del vehículo.'
+            description: 'Puntos por limpieza externa del vehículo.'
+        },
+        {
+            key: 'wash_interior',
+            label: 'Lavado Interior',
+            icon: Droplets,
+            description: 'Puntos por limpieza interna del vehículo.'
+        },
+        {
+            key: 'wash_complete',
+            label: 'Lavado Completo',
+            icon: Droplets,
+            description: 'Puntos por limpieza integral (Int + Ext).'
         },
         {
             key: 'incident_reported',

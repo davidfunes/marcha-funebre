@@ -29,6 +29,16 @@ service firebase.storage {
                     && request.resource.size < 20 * 1024 * 1024
                     && request.resource.contentType.matches('image/.*');
     }
+
+    // Structured storage for tire pressure checks
+    match /tires/{userId}/{fileName} {
+      // Allow all authenticated users to read tire proof
+      allow read: if request.auth != null;
+      // Only the reporting user can upload to their subfolder
+      allow write: if request.auth != null && request.auth.uid == userId
+                    && request.resource.size < 20 * 1024 * 1024
+                    && request.resource.contentType.matches('image/.*');
+    }
     
     // Legacy support for root incidents path (if any)
     match /incidents/{fileName} {

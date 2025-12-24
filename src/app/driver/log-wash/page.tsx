@@ -12,7 +12,8 @@ import {
     CheckCircle,
     Car,
     Camera,
-    Sparkles
+    Sparkles,
+    Trophy
 } from 'lucide-react';
 import Link from 'next/link';
 import { Vehicle } from '@/types';
@@ -103,8 +104,11 @@ export default function LogWashPage() {
             });
 
             // 2. Award Points Configurable
-            if (user!.id) {
-                const points = await awardPointsForAction(user!.id, 'vehicle_wash', `vehicle_wash_${washType}`);
+            if (user.id) {
+                const pointKey = washType === 'complete' ? 'wash_complete' :
+                    (washType === 'exterior' ? 'wash_exterior' : 'wash_interior');
+
+                const points = await awardPointsForAction(user.id, pointKey as any, `vehicle_wash_${washType}`);
                 setAwardedPoints(points || 0);
             }
 
@@ -123,17 +127,49 @@ export default function LogWashPage() {
 
     if (success) {
         return (
-            <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4 animate-in fade-in zoom-in duration-300">
-                <div className="w-20 h-20 bg-blue-500 rounded-full flex items-center justify-center mb-6 shadow-lg shadow-blue-500/20">
-                    <CheckCircle className="w-10 h-10 text-white" />
+            <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4 overflow-hidden relative">
+                {/* Celebratory Particles (Emoji Confetti) */}
+                <div className="absolute inset-0 pointer-events-none">
+                    {[...Array(20)].map((_, i) => (
+                        <div
+                            key={i}
+                            className="absolute animate-bounce"
+                            style={{
+                                left: `${Math.random() * 100}%`,
+                                top: `-10%`,
+                                animationDuration: `${2 + Math.random() * 3}s`,
+                                animationDelay: `${Math.random() * 2}s`,
+                                fontSize: `${20 + Math.random() * 20}px`,
+                                color: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444'][Math.floor(Math.random() * 4)]
+                            }}
+                        >
+                            {['✨', '🫧', '💎', '🎉', '🌟'][Math.floor(Math.random() * 5)]}
+                        </div>
+                    ))}
                 </div>
-                <h1 className="text-3xl font-bold mb-2">¡Lavado Registrado!</h1>
-                <p className="text-muted-foreground mb-6">El vehículo ha quedado reluciente.</p>
+
+                <div className="w-24 h-24 bg-gradient-to-tr from-blue-600 to-cyan-400 rounded-full flex items-center justify-center mb-6 shadow-xl shadow-blue-500/40 animate-in zoom-in duration-500">
+                    <Sparkles className="w-12 h-12 text-white animate-pulse" />
+                </div>
+
+                <h1 className="text-4xl font-black mb-2 text-center text-balance bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-cyan-500">
+                    ¡COCHAZO RELUCIENTE!
+                </h1>
+                <p className="text-muted-foreground mb-8 text-center text-lg">El vehículo ha quedado impecable. Los agentes te lo agradecen.</p>
+
                 {awardedPoints > 0 && (
-                    <div className="bg-yellow-500/10 px-6 py-3 rounded-full border border-yellow-500/20 text-yellow-600 font-bold text-lg animate-bounce">
+                    <div className="bg-yellow-500/10 px-8 py-4 rounded-3xl border-2 border-yellow-500/30 text-yellow-600 font-black text-3xl mb-8 animate-bounce shadow-lg flex items-center gap-3">
+                        <Trophy className="w-8 h-8" />
                         +{awardedPoints} Puntos
                     </div>
                 )}
+
+                <button
+                    onClick={() => router.push('/driver/dashboard')}
+                    className="w-full max-w-xs bg-card border-2 border-border hover:border-primary text-foreground font-bold py-4 rounded-2xl transition-all shadow-sm"
+                >
+                    Volver al inicio
+                </button>
             </div>
         );
     }

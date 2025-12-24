@@ -22,11 +22,19 @@ import {
     X,
     Droplets,
     Info,
-    Trophy
+    Trophy,
+    CircleDot,
+    Shield,
+    Zap,
+    Award,
+    Star,
+    Crown,
+    Medal
 } from 'lucide-react';
 import Link from 'next/link';
 import { Vehicle } from '@/types';
 import { getFuelLevelMessage } from '@/utils/fuelUtils';
+import { getUserRank, getNextRankProgress } from '@/services/GamificationService';
 
 export default function DriverDashboard() {
     const { user, loading, signOut } = useAuth();
@@ -176,6 +184,16 @@ export default function DriverDashboard() {
             requiresVehicle: true
         },
         {
+            label: 'Presión de Neumáticos',
+            description: 'Control de seguridad',
+            href: '/driver/log-tires',
+            icon: CircleDot,
+            color: 'text-emerald-400',
+            bg: 'bg-emerald-500/10',
+            border: 'border-emerald-500/20',
+            requiresVehicle: true
+        },
+        {
             label: 'Registrar Lavado',
             description: 'Reportar limpieza',
             href: '/driver/log-wash',
@@ -210,6 +228,22 @@ export default function DriverDashboard() {
 
     // ... omitted
 
+    // Calculate Rank and Progress
+    const currentRank = getUserRank(user?.points || 0);
+    const { progress, nextRank, pointsToNext } = getNextRankProgress(user?.points || 0);
+
+    const RankIcon = ({ name, className }: { name: string; className?: string }) => {
+        switch (name) {
+            case 'shield': return <Shield className={className} />;
+            case 'zap': return <Zap className={className} />;
+            case 'award': return <Award className={className} />;
+            case 'star': return <Star className={className} />;
+            case 'crown': return <Crown className={className} />;
+            case 'trophy': return <Trophy className={className} />;
+            default: return <Medal className={className} />;
+        }
+    };
+
     return (
         <div className="min-h-screen bg-background text-foreground font-sans selection:bg-primary-500/30">
             <main className="max-w-md mx-auto px-4 pb-20 pt-8 lg:pt-12 lg:max-w-4xl">
@@ -232,11 +266,44 @@ export default function DriverDashboard() {
                 </div>
 
                 {/* Quick Stats / Gamification Banner */}
-                <div className="mb-8 p-4 rounded-xl bg-card border border-border relative overflow-hidden shadow-sm">
-                    <div className="relative z-10 flex items-center justify-between">
-                        <div>
-                            <p className="text-xs font-medium text-primary uppercase tracking-wider mb-1">Nivel actual</p>
-                            <p className="text-xl font-bold text-foreground">Conductor Experto</p>
+                <div className="mt-6 mb-8 p-6 rounded-2xl bg-card border border-border relative overflow-hidden shadow-sm group">
+                    {/* Background Glow */}
+                    <div className={`absolute top-0 right-0 w-32 h-32 -mr-8 -mt-8 rounded-full blur-3xl opacity-10 transition-colors duration-500 ${currentRank.color.replace('text', 'bg')}`}></div>
+
+                    <div className="relative z-10">
+                        <div className="flex items-center justify-between mb-4">
+                            <div className="flex items-center gap-3">
+                                <div className={`p-2.5 rounded-xl bg-muted border border-border ${currentRank.color}`}>
+                                    <RankIcon name={currentRank.icon} className="w-6 h-6" />
+                                </div>
+                                <div>
+                                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground mb-0.5">Rango Actual</p>
+                                    <p className={`text-xl font-black tracking-tight ${currentRank.color}`}>{currentRank.name}</p>
+                                </div>
+                            </div>
+                            {nextRank && (
+                                <div className="text-right">
+                                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground mb-0.5">Faltan</p>
+                                    <p className="text-sm font-bold text-foreground">{pointsToNext} pts</p>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Progress Bar Container */}
+                        <div className="space-y-2">
+                            <div className="h-2.5 w-full bg-muted rounded-full overflow-hidden border border-border/50">
+                                <div
+                                    className={`h-full transition-all duration-1000 ease-out rounded-full ${currentRank.color.replace('text', 'bg')}`}
+                                    style={{ width: `${progress}%` }}
+                                ></div>
+                            </div>
+                            {nextRank && (
+                                <div className="flex justify-between items-center text-[10px] font-bold text-muted-foreground/60 uppercase tracking-widest px-1">
+                                    <span>{currentRank.minPoints}</span>
+                                    <span className="text-foreground/40 italic">Siguiente: {nextRank.name}</span>
+                                    <span>{nextRank.minPoints}</span>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>
