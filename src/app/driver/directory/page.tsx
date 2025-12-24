@@ -51,13 +51,20 @@ export default function DirectoryPage() {
     const fetchVehicleMaterial = async (vehicleId: string) => {
         setIsLoadingMaterial(true);
         try {
-            const q = query(collection(db, 'inventory'));
-            const snapshot = await getDocs(q);
+            const q = query(
+                collection(db, 'inventory'),
+                where('locations', 'array-contains-any', [
+                    { id: vehicleId, type: 'vehicle', quantity: 1 }, // this won't work perfectly with array-contains-any if quantities vary
+                ])
+            );
+            // Actually, because of how Firestore works with arrays of objects, fetching all and filtering is safer if we don't have a better index
+            const allQ = query(collection(db, 'inventory'));
+            const snapshot = await getDocs(allQ);
             const material: any[] = [];
             snapshot.forEach(doc => {
                 const data = doc.data();
-                const location = (data.locations || []).find((l: any) => l.id === vehicleId);
-                if (location) {
+                const itemLocations = (data.locations || []).filter((l: any) => l.id === vehicleId && l.type === 'vehicle');
+                if (itemLocations.length > 0) {
                     material.push({ id: doc.id, ...data });
                 }
             });
@@ -318,7 +325,7 @@ export default function DirectoryPage() {
                                     <p className="text-lg font-mono text-muted-foreground mt-1">{selectedVehicle.plate}</p>
                                     <div className="flex flex-wrap gap-2 mt-2">
                                         <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase border ${selectedVehicle.status === 'maintenance' ? 'bg-red-500/10 text-red-500 border-red-500/20' :
-                                                selectedVehicle.assignedDriverId ? 'bg-amber-500/10 text-amber-500 border-amber-500/20' : 'bg-green-500/10 text-green-500 border-green-500/20'
+                                            selectedVehicle.assignedDriverId ? 'bg-amber-500/10 text-amber-500 border-amber-500/20' : 'bg-green-500/10 text-green-500 border-green-500/20'
                                             }`}>
                                             {selectedVehicle.status === 'maintenance' ? 'Mantenimiento' :
                                                 selectedVehicle.assignedDriverId ? 'En Uso' : 'Disponible'}
@@ -389,32 +396,38 @@ export default function DirectoryPage() {
                                     </div>
                                 ) : (
                                     <div className="grid grid-cols-1 gap-2">
-                                        {vehicleMaterial.map(item => {
-                                            const loc = item.locations.find((l: any) => l.id === selectedVehicle.id);
-                                            const status = loc?.status;
+                                        {vehicleMaterial.flatMap(item =>
+                                            (item.locations || [])
+                                                .filter((l: any) => l.id === selectedVehicle.id && l.type === 'vehicle')
+                                                .map((loc: any, idx: number) => {
+                                                    const status = loc.status;
+                                                    const isBroken = status === 'totally_broken' || (status as any) === 'broken';
+                                                    const isOrdered = status === 'ordered';
+                                                    const isUrgent = status === 'working_urgent_change';
 
-                                            return (
-                                                <div key={item.id} className="flex items-center justify-between p-3 bg-muted/30 rounded-xl border border-border/50">
-                                                    <div className="flex items-center gap-3">
-                                                        <div className="w-8 h-8 rounded-lg bg-background flex items-center justify-center border border-border">
-                                                            <Music className="w-4 h-4 text-muted-foreground" />
+                                                    return (
+                                                        <div key={`${item.id}-${idx}`} className="flex items-center justify-between p-3 bg-muted/30 rounded-xl border border-border/50">
+                                                            <div className="flex items-center gap-3">
+                                                                <div className="w-8 h-8 rounded-lg bg-background flex items-center justify-center border border-border">
+                                                                    <Music className="w-4 h-4 text-muted-foreground" />
+                                                                </div>
+                                                                <div>
+                                                                    <p className="text-sm font-bold">{item.name}</p>
+                                                                    {(isBroken || isOrdered || isUrgent) && (
+                                                                        <p className={`text-[10px] font-bold uppercase ${isBroken ? 'text-red-500' :
+                                                                            isOrdered ? 'text-blue-500' : 'text-amber-500'
+                                                                            }`}>
+                                                                            {isBroken ? 'Roto' :
+                                                                                isOrdered ? 'Pedido' : 'Urge Cambio'}
+                                                                        </p>
+                                                                    )}
+                                                                </div>
+                                                            </div>
+                                                            <span className="text-xs font-black bg-primary/10 text-primary px-2 py-1 rounded-lg">x{loc.quantity || 0}</span>
                                                         </div>
-                                                        <div>
-                                                            <p className="text-sm font-bold">{item.name}</p>
-                                                            {status && (
-                                                                <p className={`text-[10px] font-bold uppercase ${status === 'Totally Broken' || status === 'broken' ? 'text-red-500' :
-                                                                        status === 'ordered' ? 'text-blue-500' : 'text-amber-500'
-                                                                    }`}>
-                                                                    {status === 'Totally Broken' || status === 'broken' ? 'Roto' :
-                                                                        status === 'ordered' ? 'Pedido' : 'Revisión'}
-                                                                </p>
-                                                            )}
-                                                        </div>
-                                                    </div>
-                                                    <span className="text-xs font-black bg-primary/10 text-primary px-2 py-1 rounded-lg">x{loc?.quantity || 0}</span>
-                                                </div>
-                                            );
-                                        })}
+                                                    );
+                                                })
+                                        )}
                                     </div>
                                 )}
                             </div>

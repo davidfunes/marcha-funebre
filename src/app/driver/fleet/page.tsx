@@ -453,50 +453,53 @@ export default function MyVehiclePage() {
                                     <Loader2 className="h-6 w-6 text-primary animate-spin" />
                                 </div>
                             ) : filteredMaterial.length > 0 ? (
-                                filteredMaterial.map((item) => {
-                                    const loc = (item.locations || []).find(l => l.id === vehicle.id);
-                                    const qty = loc?.quantity || 0;
-                                    const status = loc?.status;
+                                filteredMaterial.flatMap((item) =>
+                                    (item.locations || [])
+                                        .filter(l => l.id === vehicle.id && l.type === 'vehicle')
+                                        .map((loc, idx) => {
+                                            const qty = loc.quantity || 0;
+                                            const status = loc.status;
 
-                                    return (
-                                        <div key={item.id} className="bg-muted/30 rounded-xl p-3 flex items-center gap-3 border border-border/50">
-                                            <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                                                <Music className="h-5 w-5 text-primary" />
-                                            </div>
-                                            <div className="flex-1 min-w-0">
-                                                <div className="flex justify-between items-start">
-                                                    <p className="text-sm font-semibold truncate leading-tight">{item.name}</p>
-                                                    <span className="text-[10px] bg-primary/20 text-primary px-1.5 rounded-full font-bold">x{qty}</span>
+                                            return (
+                                                <div key={`${item.id}-${idx}`} className="bg-muted/30 rounded-xl p-3 flex items-center gap-3 border border-border/50">
+                                                    <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                                                        <Music className="h-5 w-5 text-primary" />
+                                                    </div>
+                                                    <div className="flex-1 min-w-0">
+                                                        <div className="flex justify-between items-start">
+                                                            <p className="text-sm font-semibold truncate leading-tight">{item.name}</p>
+                                                            <span className="text-[10px] bg-primary/20 text-primary px-1.5 rounded-full font-bold">x{qty}</span>
+                                                        </div>
+                                                        {status === 'ordered' && (
+                                                            <p className="text-[10px] text-blue-500 font-bold uppercase mt-0.5 flex items-center gap-1">
+                                                                <Clock className="h-3 w-3" /> Material Pedido
+                                                            </p>
+                                                        )}
+                                                        {status === 'working_urgent_change' && (
+                                                            <p className="text-[10px] text-amber-500 font-bold uppercase mt-0.5 flex items-center gap-1">
+                                                                <AlertTriangle className="h-3 w-3" /> Urge Cambio
+                                                            </p>
+                                                        )}
+                                                        {(status === 'totally_broken' || (status as any) === 'broken') && (
+                                                            <p className="text-[10px] text-red-500 font-bold uppercase mt-0.5 flex items-center gap-1">
+                                                                <AlertTriangle className="h-3 w-3" /> Roto Total
+                                                            </p>
+                                                        )}
+                                                    </div>
+                                                    <button
+                                                        onClick={() => handleReportIncident(item)}
+                                                        disabled={status === 'totally_broken' || status === 'ordered'}
+                                                        className={`p-2 rounded-lg transition-all ${(status === 'totally_broken' || status === 'ordered')
+                                                            ? 'opacity-20 cursor-not-allowed'
+                                                            : 'hover:bg-red-500/10 text-muted-foreground hover:text-red-500'
+                                                            }`}
+                                                    >
+                                                        <AlertTriangle className="h-4 w-4" />
+                                                    </button>
                                                 </div>
-                                                {status === 'ordered' && (
-                                                    <p className="text-[10px] text-blue-500 font-bold uppercase mt-0.5 flex items-center gap-1">
-                                                        <Clock className="h-3 w-3" /> Material Pedido
-                                                    </p>
-                                                )}
-                                                {status === 'working_urgent_change' && (
-                                                    <p className="text-[10px] text-amber-500 font-bold uppercase mt-0.5 flex items-center gap-1">
-                                                        <AlertTriangle className="h-3 w-3" /> Urge Cambio
-                                                    </p>
-                                                )}
-                                                {(status === 'totally_broken' || (status as any) === 'broken') && (
-                                                    <p className="text-[10px] text-red-500 font-bold uppercase mt-0.5 flex items-center gap-1">
-                                                        <AlertTriangle className="h-3 w-3" /> Roto Total
-                                                    </p>
-                                                )}
-                                            </div>
-                                            <button
-                                                onClick={() => handleReportIncident(item)}
-                                                disabled={status === 'totally_broken' || status === 'ordered'}
-                                                className={`p-2 rounded-lg transition-all ${(status === 'totally_broken' || status === 'ordered')
-                                                    ? 'opacity-20 cursor-not-allowed'
-                                                    : 'hover:bg-red-500/10 text-muted-foreground hover:text-red-500'
-                                                    }`}
-                                            >
-                                                <AlertTriangle className="h-4 w-4" />
-                                            </button>
-                                        </div>
-                                    );
-                                })
+                                            );
+                                        })
+                                )
                             ) : (
                                 <p className="text-xs text-muted-foreground text-center py-4 italic">No se encontró material</p>
                             )}
