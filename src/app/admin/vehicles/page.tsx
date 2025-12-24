@@ -917,7 +917,7 @@ export default function VehiclesPage() {
                                             return vehicleLocs.map((loc, idx) => ({ item, loc, idx }));
                                         })
                                         .map(({ item, loc, idx }) => {
-                                            const isBroken = loc.status === 'totally_broken' || (loc.status as any) === 'broken';
+                                            const isBroken = loc.status === 'totally_broken';
                                             return (
                                                 <div key={`${item.id}-${idx}`} className={`flex items-center justify-between p-3 rounded-lg border ${isBroken ? 'border-red-200 bg-red-50' : 'border-border bg-muted/30'}`}>
                                                     <div className="flex flex-col">
