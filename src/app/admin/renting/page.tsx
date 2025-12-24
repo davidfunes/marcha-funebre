@@ -7,16 +7,19 @@ import {
     Trash2,
     Building2,
     Phone,
-    FileText
+    FileText,
+    Car,
+    X
 } from 'lucide-react';
 import { DataTable, Column } from '@/components/ui/DataTable';
 import { Modal } from '@/components/ui/Modal';
 import { formatPhoneNumber } from '@/lib/utils';
 import { addItem, updateItem, deleteItem, subscribeToCollection } from '@/services/FirebaseService';
-import { RentingCompany } from '@/types';
+import { RentingCompany, Vehicle } from '@/types';
 
 export default function RentingPage() {
     const [companies, setCompanies] = useState<RentingCompany[]>([]);
+    const [vehicles, setVehicles] = useState<Vehicle[]>([]);
     const [loading, setLoading] = useState(true);
 
     // Delete Modal State
@@ -32,13 +35,30 @@ export default function RentingPage() {
         activeContracts: 0
     });
 
+    // Vehicle Details Modal
+    const [viewingCompany, setViewingCompany] = useState<RentingCompany | null>(null);
+    const [isVehiclesModalOpen, setIsVehiclesModalOpen] = useState(false);
+
     useEffect(() => {
-        const unsubscribe = subscribeToCollection<RentingCompany>('renting_companies', (data) => {
+        const unsubscribeCompanies = subscribeToCollection<RentingCompany>('renting_companies', (data) => {
             setCompanies(data);
             setLoading(false);
         });
-        return () => unsubscribe();
+
+        const unsubscribeVehicles = subscribeToCollection<Vehicle>('vehicles', (data) => {
+            setVehicles(data);
+        });
+
+        return () => {
+            unsubscribeCompanies();
+            unsubscribeVehicles();
+        };
     }, []);
+
+    const getCompanyVehicles = (companyId?: string) => {
+        if (!companyId) return [];
+        return vehicles.filter(v => v.rentingCompanyId === companyId);
+    };
 
     const handleOpenModal = (company?: RentingCompany) => {
         if (company) {
@@ -53,6 +73,11 @@ export default function RentingPage() {
             });
         }
         setIsModalOpen(true);
+    };
+
+    const handleViewVehicles = (company: RentingCompany) => {
+        setViewingCompany(company);
+        setIsVehiclesModalOpen(true);
     };
 
     const confirmDelete = (id: string) => {
@@ -104,11 +129,18 @@ export default function RentingPage() {
             key: 'activeContracts',
             label: 'Contratos Activos',
             sortable: true,
-            render: (c) => (
-                <div className="font-medium text-center bg-muted/50 rounded-full px-2 py-1 inline-block">
-                    {c.activeContracts}
-                </div>
-            )
+            render: (c) => {
+                const count = getCompanyVehicles(c.id).length;
+                return (
+                    <button
+                        onClick={(e) => { e.stopPropagation(); handleViewVehicles(c); }}
+                        className="font-medium text-center bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-full px-3 py-1 inline-flex items-center gap-1 transition-colors cursor-pointer"
+                    >
+                        <span>{count}</span>
+                        <Car className="h-3 w-3" />
+                    </button>
+                );
+            }
         },
         {
             key: 'phone',
@@ -158,46 +190,53 @@ export default function RentingPage() {
                 title="Proveedores Activos"
                 searchPlaceholder="Buscar empresa..."
                 breakpoint="2xl"
-                mobileItem={(c) => (
-                    <div className="bg-card p-4 rounded-xl border border-border shadow-sm space-y-3">
-                        <div className="flex items-start justify-between">
-                            <div className="flex items-center gap-3">
-                                <div className="h-10 w-10 rounded-lg bg-blue-100 flex items-center justify-center text-blue-700">
-                                    <Building2 className="h-5 w-5" />
+                mobileItem={(c) => {
+                    const count = getCompanyVehicles(c.id).length;
+                    return (
+                        <div className="bg-card p-4 rounded-xl border border-border shadow-sm space-y-3">
+                            <div className="flex items-start justify-between">
+                                <div className="flex items-center gap-3">
+                                    <div className="h-10 w-10 rounded-lg bg-blue-100 flex items-center justify-center text-blue-700">
+                                        <Building2 className="h-5 w-5" />
+                                    </div>
+                                    <div>
+                                        <h3 className="font-semibold text-foreground">{c.name}</h3>
+                                        <p className="text-xs text-muted-foreground">{c.contactPerson}</p>
+                                    </div>
                                 </div>
-                                <div>
-                                    <h3 className="font-semibold text-foreground">{c.name}</h3>
-                                    <p className="text-xs text-muted-foreground">{c.contactPerson}</p>
+                                <button
+                                    onClick={(e) => { e.stopPropagation(); handleViewVehicles(c); }}
+                                    className="bg-blue-50 text-blue-700 px-2 py-1 rounded-lg text-xs font-medium flex items-center gap-1"
+                                >
+                                    <span>{count}</span>
+                                    <Car className="h-3 w-3" />
+                                </button>
+                            </div>
+
+                            <div className="space-y-2 pt-2 border-t border-border/50">
+                                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                    <Phone className="h-4 w-4" />
+                                    <span>{c.phone}</span>
                                 </div>
                             </div>
-                            <div className="bg-muted/50 text-foreground px-2 py-1 rounded text-xs font-medium">
-                                {c.activeContracts} contratos
+
+                            <div className="flex justify-end gap-2 pt-2">
+                                <button
+                                    onClick={(e) => { e.stopPropagation(); handleOpenModal(c); }}
+                                    className="p-2 hover:bg-muted rounded-lg text-muted-foreground transition-colors"
+                                >
+                                    <Edit className="h-4 w-4" />
+                                </button>
+                                <button
+                                    onClick={(e) => { e.stopPropagation(); if (c.id) confirmDelete(c.id); }}
+                                    className="p-2 hover:bg-red-50 text-muted-foreground hover:text-red-500 rounded-lg transition-colors"
+                                >
+                                    <Trash2 className="h-4 w-4" />
+                                </button>
                             </div>
                         </div>
-
-                        <div className="space-y-2 pt-2 border-t border-border/50">
-                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                <Phone className="h-4 w-4" />
-                                <span>{c.phone}</span>
-                            </div>
-                        </div>
-
-                        <div className="flex justify-end gap-2 pt-2">
-                            <button
-                                onClick={(e) => { e.stopPropagation(); handleOpenModal(c); }}
-                                className="p-2 hover:bg-muted rounded-lg text-muted-foreground transition-colors"
-                            >
-                                <Edit className="h-4 w-4" />
-                            </button>
-                            <button
-                                onClick={(e) => { e.stopPropagation(); if (c.id) confirmDelete(c.id); }}
-                                className="p-2 hover:bg-red-50 text-muted-foreground hover:text-red-500 rounded-lg transition-colors"
-                            >
-                                <Trash2 className="h-4 w-4" />
-                            </button>
-                        </div>
-                    </div>
-                )}
+                    );
+                }}
                 actionButton={
                     <button
                         onClick={() => handleOpenModal()}
@@ -237,8 +276,6 @@ export default function RentingPage() {
                         />
                     </div>
 
-
-
                     <div className="pt-4 flex justify-end gap-2">
                         <button
                             type="button"
@@ -255,6 +292,62 @@ export default function RentingPage() {
                         </button>
                     </div>
                 </form>
+            </Modal>
+
+            {/* Vehicle Details Modal */}
+            <Modal
+                isOpen={isVehiclesModalOpen}
+                onClose={() => setIsVehiclesModalOpen(false)}
+                title={viewingCompany ? `Vehículos de ${viewingCompany.name}` : 'Detalle de Vehículos'}
+                className="max-w-2xl"
+            >
+                <div className="space-y-4">
+                    {viewingCompany && getCompanyVehicles(viewingCompany.id).length > 0 ? (
+                        <div className="overflow-hidden rounded-lg border border-border">
+                            <table className="w-full text-sm">
+                                <thead className="bg-muted/50 text-muted-foreground text-xs uppercase">
+                                    <tr>
+                                        <th className="px-4 py-3 text-left font-medium">Vehículo</th>
+                                        <th className="px-4 py-3 text-left font-medium">Matrícula</th>
+                                        <th className="px-4 py-3 text-right font-medium">Combustible</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-border bg-card">
+                                    {getCompanyVehicles(viewingCompany.id).map((vehicle) => (
+                                        <tr key={vehicle.id} className="hover:bg-muted/20 transition-colors">
+                                            <td className="px-4 py-3">
+                                                <div className="font-medium">{vehicle.brand} {vehicle.model}</div>
+                                                <div className="text-xs text-muted-foreground">{vehicle.year}</div>
+                                            </td>
+                                            <td className="px-4 py-3">
+                                                <span className="font-mono bg-muted px-1.5 py-0.5 rounded text-xs">
+                                                    {vehicle.plate}
+                                                </span>
+                                            </td>
+                                            <td className="px-4 py-3 text-right">
+                                                <span className="capitalize text-muted-foreground">{vehicle.fuelType}</span>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    ) : (
+                        <div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
+                            <Car className="h-10 w-10 mb-2 opacity-20" />
+                            <p>No hay vehículos asignados a esta empresa.</p>
+                        </div>
+                    )}
+
+                    <div className="flex justify-end pt-2">
+                        <button
+                            onClick={() => setIsVehiclesModalOpen(false)}
+                            className="px-4 py-2 rounded-lg bg-primary text-primary-foreground font-medium hover:bg-primary/90 transition-colors"
+                        >
+                            Cerrar
+                        </button>
+                    </div>
+                </div>
             </Modal>
 
             {/* Delete Confirmation Modal */}
