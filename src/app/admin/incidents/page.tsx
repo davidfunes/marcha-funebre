@@ -33,6 +33,7 @@ export default function IncidentsPage() {
     const [users, setUsers] = useState<User[]>([]);
     const [inventory, setInventory] = useState<InventoryItem[]>([]);
     const [loading, setLoading] = useState(true);
+    const [showAllInQueue, setShowAllInQueue] = useState(false);
 
     // Delete Modal State
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -226,6 +227,20 @@ export default function IncidentsPage() {
                     <h1 className="text-3xl font-bold tracking-tight">Incidencias</h1>
                     <p className="text-muted-foreground mt-2">Reporte y seguimiento de averías y problemas.</p>
                 </div>
+                <div className="flex items-center gap-3 bg-muted/30 p-1.5 rounded-xl border border-border/50">
+                    <button
+                        onClick={() => setShowAllInQueue(false)}
+                        className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${!showAllInQueue ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
+                    >
+                        Pendientes
+                    </button>
+                    <button
+                        onClick={() => setShowAllInQueue(true)}
+                        className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${showAllInQueue ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
+                    >
+                        Todas
+                    </button>
+                </div>
             </div>
 
             <IncidentDetailsModal
@@ -240,7 +255,7 @@ export default function IncidentsPage() {
 
             <DataTable
                 columns={columns}
-                data={incidents}
+                data={showAllInQueue ? incidents : incidents.filter(i => i.status !== 'resolved' && i.status !== 'closed')}
                 isLoading={loading}
                 title="Historial de Incidencias"
                 searchPlaceholder="Buscar incidencia..."
@@ -450,7 +465,6 @@ export default function IncidentsPage() {
                 </form>
             </Modal>
 
-            {/* Delete Confirmation Modal */}
             <Modal
                 isOpen={isDeleteModalOpen}
                 onClose={() => setIsDeleteModalOpen(false)}

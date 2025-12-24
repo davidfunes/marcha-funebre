@@ -4,8 +4,8 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { db } from '@/lib/firebase/firebase';
-import { collection, query, where, getDocs, doc, getDoc } from 'firebase/firestore';
-import { Vehicle } from '@/types';
+import { collection, query, where, getDocs, doc, getDoc, orderBy, limit, Timestamp } from 'firebase/firestore';
+import { Vehicle, RentingCompany, MaintenanceRecord } from '@/types';
 import {
     Search,
     Car,
@@ -23,7 +23,10 @@ import {
     Loader2
 } from 'lucide-react';
 import Link from 'next/link';
+import { format } from 'date-fns';
+import { es } from 'date-fns/locale';
 import { getFuelLevelMessage } from '@/utils/fuelUtils';
+import { Phone } from 'lucide-react';
 
 interface DriverMap {
     [userId: string]: string; // userId -> userName
@@ -47,6 +50,9 @@ export default function DirectoryPage() {
     const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null);
     const [vehicleMaterial, setVehicleMaterial] = useState<any[]>([]);
     const [isLoadingMaterial, setIsLoadingMaterial] = useState(false);
+    const [materialSearchQuery, setMaterialSearchQuery] = useState('');
+    const [nextAppointment, setNextAppointment] = useState<MaintenanceRecord | null>(null);
+    const [rentingCompany, setRentingCompany] = useState<RentingCompany | null>(null);
 
     const fetchVehicleMaterial = async (vehicleId: string) => {
         setIsLoadingMaterial(true);
@@ -76,10 +82,60 @@ export default function DirectoryPage() {
         }
     };
 
-    const handleOpenDetails = (vehicle: Vehicle) => {
+    const handleOpenDetails = async (vehicle: Vehicle) => {
         setSelectedVehicle(vehicle);
         fetchVehicleMaterial(vehicle.id!);
+
+        // Fetch Next Appointment
+        try {
+            const now = Timestamp.now();
+            const q = query(
+                collection(db, 'maintenance'),
+                where('vehicleId', '==', vehicle.id),
+                where('status', '==', 'scheduled'),
+                where('date', '>=', now),
+                orderBy('date', 'asc'),
+                limit(1)
+            );
+            const snapshot = await getDocs(q);
+            if (!snapshot.empty) {
+                const data = snapshot.docs[0].data() as MaintenanceRecord;
+                setNextAppointment({ id: snapshot.docs[0].id, ...data });
+            } else {
+                setNextAppointment(null);
+            }
+        } catch (error) {
+            console.error("Error fetching appointments:", error);
+            setNextAppointment(null);
+        }
+
+        // Fetch Renting Company
+        if (vehicle.rentingCompanyId) {
+            try {
+                const docRef = doc(db, 'renting_companies', vehicle.rentingCompanyId);
+                const docSnap = await getDoc(docRef);
+                if (docSnap.exists()) {
+                    setRentingCompany({ id: docSnap.id, ...docSnap.data() } as RentingCompany);
+                } else {
+                    setRentingCompany(null);
+                }
+            } catch (error) {
+                console.error("Error fetching renting company:", error);
+                setRentingCompany(null);
+            }
+        } else {
+            setRentingCompany(null);
+        }
     };
+
+    const getAppointmentDate = (date: any) => {
+        if (!date) return null;
+        return date.seconds ? new Date(date.seconds * 1000) : new Date(date);
+    };
+
+    const filteredMaterial = vehicleMaterial.filter(item =>
+        item.name.toLowerCase().includes(materialSearchQuery.toLowerCase())
+    );
 
     useEffect(() => {
         if (!authLoading) {
@@ -366,10 +422,10 @@ export default function DirectoryPage() {
 
                             {/* Location Info */}
                             {selectedVehicle.warehouseId && (
-                                <div className="p-4 rounded-xl bg-primary/5 border border-primary/20 flex items-start gap-3">
+                                <div className="p-4 rounded-xl bg-muted/30 border border-border flex items-start gap-3">
                                     <MapPin className="w-5 h-5 text-primary shrink-0 mt-0.5" />
                                     <div>
-                                        <p className="text-xs font-bold text-primary uppercase tracking-wider">Sede Principal</p>
+                                        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Sede Principal</p>
                                         <p className="text-sm font-medium text-foreground">{warehouses[selectedVehicle.warehouseId]}</p>
                                         {selectedVehicle.parkingLocation && (
                                             <p className="text-xs text-muted-foreground mt-1 italic">Visto por última vez en: {selectedVehicle.parkingLocation}</p>
@@ -378,12 +434,56 @@ export default function DirectoryPage() {
                                 </div>
                             )}
 
+                            {/* Next Appointment Card - SYNCED FROM FLEET PAGE */}
+                            <div className={`
+                                p-4 rounded-xl border flex items-center gap-4 transition-colors
+                                ${nextAppointment
+                                    ? 'bg-primary/5 border-primary/20'
+                                    : 'bg-card border-border'}
+                            `}>
+                                <div className={`
+                                    p-3 rounded-lg flex items-center justify-center
+                                    ${nextAppointment ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}
+                                `}>
+                                    <Calendar className="w-6 h-6" />
+                                </div>
+                                <div className="flex-1">
+                                    <p className="text-sm font-medium text-muted-foreground">Próxima Cita Taller</p>
+                                    {nextAppointment ? (
+                                        <div>
+                                            <p className="font-bold text-primary text-lg">
+                                                {format(getAppointmentDate(nextAppointment.date)!, 'd MMM, HH:mm', { locale: es })}
+                                            </p>
+                                            <p className="text-sm text-foreground/80 truncate max-w-[200px]">
+                                                {nextAppointment.garageName || 'Taller Asignado'}
+                                            </p>
+                                        </div>
+                                    ) : (
+                                        <p className="font-semibold text-foreground/50 italic">
+                                            No hay citas programadas
+                                        </p>
+                                    )}
+                                </div>
+                            </div>
+
                             {/* Inventory Section */}
                             <div className="space-y-3">
-                                <h4 className="text-sm font-bold text-foreground flex items-center gap-2 px-1">
-                                    <Music className="w-4 h-4 text-primary" />
-                                    Inventario de Material
-                                </h4>
+                                <div className="flex items-center justify-between px-1">
+                                    <h4 className="text-sm font-bold text-foreground flex items-center gap-2">
+                                        <Music className="w-4 h-4 text-primary" />
+                                        Inventario de Material
+                                    </h4>
+                                    <div className="relative w-1/2">
+                                        <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                                        <input
+                                            type="text"
+                                            placeholder="Buscar..."
+                                            value={materialSearchQuery}
+                                            onChange={(e) => setMaterialSearchQuery(e.target.value)}
+                                            className="w-full bg-muted/50 border border-border rounded-lg py-1 px-7 text-[10px] focus:outline-none focus:ring-1 focus:ring-primary transition-all"
+                                        />
+                                    </div>
+                                </div>
 
                                 {isLoadingMaterial ? (
                                     <div className="flex flex-col items-center justify-center py-6 gap-2">
@@ -396,7 +496,7 @@ export default function DirectoryPage() {
                                     </div>
                                 ) : (
                                     <div className="grid grid-cols-1 gap-2">
-                                        {vehicleMaterial.flatMap(item =>
+                                        {filteredMaterial.flatMap(item =>
                                             (item.locations || [])
                                                 .filter((l: any) => l.id === selectedVehicle.id && l.type === 'vehicle')
                                                 .map((loc: any, idx: number) => {
@@ -428,6 +528,21 @@ export default function DirectoryPage() {
                                                     );
                                                 })
                                         )}
+                                    </div>
+                                )}
+
+                                {/* Roadside Assistance - SYNCED FROM FLEET PAGE */}
+                                {rentingCompany && (
+                                    <div className="bg-card p-4 rounded-xl border border-border flex items-center gap-4 mt-4">
+                                        <div className="bg-green-500/10 p-3 rounded-lg text-green-500">
+                                            <Phone className="w-6 h-6" />
+                                        </div>
+                                        <div>
+                                            <p className="text-xs text-muted-foreground uppercase font-bold tracking-wider">Asistencia {rentingCompany.name}</p>
+                                            <a href={`tel:${rentingCompany.phone}`} className="font-bold text-lg text-green-600 hover:underline">
+                                                {rentingCompany.phone}
+                                            </a>
+                                        </div>
                                     </div>
                                 )}
                             </div>
