@@ -68,7 +68,15 @@ export const getGamificationConfig = async (): Promise<GamificationConfig> => {
         const docSnap = await getDoc(docRef);
 
         if (docSnap.exists()) {
-            return docSnap.data() as GamificationConfig;
+            const data = docSnap.data() as GamificationConfig;
+            // Merge actions with defaults to ensure new keys exist
+            return {
+                ...data,
+                actions: {
+                    ...DEFAULT_CONFIG.actions,
+                    ...data.actions
+                }
+            };
         } else {
             // Seed default if not exists
             await setDoc(docRef, {
@@ -168,11 +176,12 @@ export const logPoints = async (userId: string, points: number, reason: string) 
         });
 
         // 2. Increment total points (keep existing field for overall legacy/simple view)
-        await updateDoc(doc(db, 'users', userId), {
+        // Use setDoc with merge to ensure the field is created if missing
+        await setDoc(doc(db, 'users', userId), {
             points: increment(points)
-        });
+        }, { merge: true });
 
-        console.log(`[Gamification] Awarded ${points} points to ${userId} for ${reason}`);
+        console.log(`[Gamification] User ${userId} points incremented by ${points} pts for ${reason}`);
     } catch (error) {
         console.error('[Gamification] Error logging points:', error);
         throw error;
