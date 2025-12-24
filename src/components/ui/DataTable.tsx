@@ -46,7 +46,6 @@ export function DataTable<T extends { id?: string }>({
     const [sortConfig, setSortConfig] = useState<{ key: keyof T; direction: 'asc' | 'desc' } | null>(null);
     const [searchTerm, setSearchTerm] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
-    const [isSortDropdownOpen, setIsSortDropdownOpen] = useState(false);
     const itemsPerPage = 10;
 
 
@@ -173,42 +172,42 @@ export function DataTable<T extends { id?: string }>({
                 <div className="flex items-center gap-2 self-end sm:self-auto">
                     {/* Sort Dropdown for Grid View mostly */}
                     <div className="relative">
+                        <select
+                            className={cn(
+                                "absolute inset-0 w-full h-full opacity-0 z-10 cursor-pointer",
+                                sortDropdownVisibilityClass === 'hidden' && "hidden"
+                            )}
+                            value={sortConfig ? `${String(sortConfig.key)}-${sortConfig.direction}` : ''}
+                            onChange={(e) => {
+                                const [key, dir] = e.target.value.split('-');
+                                if (key) setSortConfig({ key: key as keyof T, direction: dir as 'asc' | 'desc' });
+                            }}
+                            disabled={sortDropdownVisibilityClass === 'hidden'}
+                        >
+                            <option value="" disabled>Ordenar por...</option>
+                            {columns.filter(c => c.sortable).flatMap((col) => [
+                                <option key={`${String(col.key)}-asc`} value={`${String(col.key)}-asc`}>
+                                    {col.label} (Asc)
+                                </option>,
+                                <option key={`${String(col.key)}-desc`} value={`${String(col.key)}-desc`}>
+                                    {col.label} (Desc)
+                                </option>
+                            ])}
+                        </select>
                         <button
-                            onClick={() => setIsSortDropdownOpen(!isSortDropdownOpen)}
                             className={cn(
                                 "items-center gap-2 px-3 py-2 rounded-lg border bg-background hover:bg-muted transition-colors text-sm font-medium",
                                 sortDropdownVisibilityClass
                             )}
                         >
-                            <span>Ordenar</span>
-                            <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                            <span className="truncate max-w-[100px] sm:max-w-none">
+                                {sortConfig
+                                    ? `${columns.find(c => c.key === sortConfig.key)?.label} (${sortConfig.direction === 'asc' ? 'Asc' : 'Desc'})`
+                                    : 'Ordenar'
+                                }
+                            </span>
+                            <ChevronDown className="h-4 w-4 text-muted-foreground shrink-0" />
                         </button>
-
-                        {isSortDropdownOpen && (
-                            <>
-                                <div className="fixed inset-0 z-10" onClick={() => setIsSortDropdownOpen(false)}></div>
-                                <div className="absolute right-0 top-full mt-2 w-48 rounded-lg border border-border bg-popover p-1 shadow-lg z-20 animate-in fade-in zoom-in-95 duration-100">
-                                    {columns.filter(c => c.sortable).map((col) => (
-                                        <button
-                                            key={String(col.key)}
-                                            className={cn(
-                                                "w-full flex items-center justify-between px-3 py-2 text-sm rounded-md hover:bg-muted transition-colors text-left",
-                                                sortConfig?.key === col.key && "bg-muted font-medium"
-                                            )}
-                                            onClick={() => {
-                                                requestSort(col.key as keyof T);
-                                                setIsSortDropdownOpen(false);
-                                            }}
-                                        >
-                                            {col.label}
-                                            {sortConfig?.key === col.key && (
-                                                sortConfig.direction === 'asc' ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />
-                                            )}
-                                        </button>
-                                    ))}
-                                </div>
-                            </>
-                        )}
                     </div>
 
                     {actionButton && (
