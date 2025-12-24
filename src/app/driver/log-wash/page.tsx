@@ -17,6 +17,7 @@ import {
 import Link from 'next/link';
 import { Vehicle } from '@/types';
 import { awardPointsForAction } from '@/services/GamificationService';
+import { uploadFile } from '@/services/FirebaseService';
 
 export default function LogWashPage() {
     const { user } = useAuth();
@@ -78,9 +79,18 @@ export default function LogWashPage() {
             return;
         }
 
+        if (!user) return;
+
         setLoading(true);
         try {
-            // 1. Log Wash Entry
+            // 1. Upload image if exists
+            let imageUrl = '';
+            if (image) {
+                const path = `washes/${user.id}/wash_${Date.now()}_${image.name}`;
+                imageUrl = await uploadFile(image, path);
+            }
+
+            // 2. Log Wash Entry
             await addDoc(collection(db, 'logs'), {
                 userId: user!.id,
                 vehicleId: targetVehicleId,
@@ -88,8 +98,7 @@ export default function LogWashPage() {
                 type: 'wash',
                 washType,
                 notes,
-                // In production, upload image to storage and clear URL
-                imageUrl: 'https://simulate-url.com/wash_proof.jpg',
+                imageUrl,
                 createdAt: serverTimestamp()
             });
 
