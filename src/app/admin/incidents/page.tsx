@@ -221,22 +221,22 @@ export default function IncidentsPage() {
     ];
 
     return (
-        <div className="p-8 space-y-8">
-            <div className="flex items-center justify-between">
+        <div className="p-4 md:p-8 space-y-6 md:space-y-8">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight">Incidencias</h1>
-                    <p className="text-muted-foreground mt-2">Reporte y seguimiento de averías y problemas.</p>
+                    <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Incidencias</h1>
+                    <p className="text-sm md:text-base text-muted-foreground mt-1 md:mt-2">Reporte y seguimiento de averías y problemas.</p>
                 </div>
-                <div className="flex items-center gap-3 bg-muted/30 p-1.5 rounded-xl border border-border/50">
+                <div className="flex items-center justify-center md:justify-end gap-2 bg-muted/30 p-1.5 rounded-xl border border-border/50 w-full md:w-auto">
                     <button
                         onClick={() => setShowAllInQueue(false)}
-                        className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${!showAllInQueue ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
+                        className={`flex-1 md:flex-none px-4 py-2 rounded-lg text-sm font-bold transition-all ${!showAllInQueue ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
                     >
                         Pendientes
                     </button>
                     <button
                         onClick={() => setShowAllInQueue(true)}
-                        className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${showAllInQueue ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
+                        className={`flex-1 md:flex-none px-4 py-2 rounded-lg text-sm font-bold transition-all ${showAllInQueue ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
                     >
                         Todas
                     </button>
@@ -263,18 +263,18 @@ export default function IncidentsPage() {
                 breakpoint="2xl"
                 mobileItem={(incident) => (
                     <div className="bg-card p-4 rounded-xl border border-border shadow-sm space-y-4">
-                        <div className="flex items-start justify-between">
-                            <div className="flex items-center gap-3">
-                                <div className={`h-10 w-10 rounded-lg flex items-center justify-center shrink-0 ${incident.priority === 'critical' ? 'bg-red-100 text-red-600' :
+                        <div className="flex items-start justify-between gap-2">
+                            <div className="flex items-start gap-3 min-w-0">
+                                <div className={`h-10 w-10 rounded-lg flex items-center justify-center shrink-0 mt-0.5 ${incident.priority === 'critical' ? 'bg-red-100 text-red-600' :
                                     incident.priority === 'high' ? 'bg-orange-100 text-orange-600' :
                                         incident.priority === 'medium' ? 'bg-yellow-100 text-yellow-600' :
                                             'bg-blue-100 text-blue-600'
                                     }`}>
                                     <AlertTriangle className="h-5 w-5" />
                                 </div>
-                                <div>
-                                    <h3 className="font-semibold text-foreground line-clamp-1">{incident.title}</h3>
-                                    <span className={`text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded ${incident.priority === 'critical' ? 'bg-red-100 text-red-700' :
+                                <div className="min-w-0">
+                                    <h3 className="font-semibold text-foreground line-clamp-1 truncate">{incident.title}</h3>
+                                    <span className={`text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded inline-block mt-1 ${incident.priority === 'critical' ? 'bg-red-100 text-red-700' :
                                         incident.priority === 'high' ? 'bg-orange-100 text-orange-700' :
                                             incident.priority === 'medium' ? 'bg-yellow-100 text-yellow-700' :
                                                 'bg-blue-100 text-blue-700'
@@ -283,7 +283,9 @@ export default function IncidentsPage() {
                                     </span>
                                 </div>
                             </div>
-                            <StatusBadge status={incident.status} />
+                            <div className="shrink-0">
+                                <StatusBadge status={incident.status} />
+                            </div>
                         </div>
 
                         <div className="space-y-2 text-sm border-y border-border/50 py-3">
