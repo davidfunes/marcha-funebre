@@ -7,7 +7,8 @@ import {
     Edit,
     Trash2,
     Car,
-    Fuel
+    Fuel,
+    Music
 } from 'lucide-react';
 import { DataTable, Column } from '@/components/ui/DataTable';
 import { StatusBadge } from '@/components/ui/StatusBadge';
@@ -871,31 +872,48 @@ export default function VehiclesPage() {
                                     {incidents
                                         .filter(i => i.vehicleId === viewingVehicle.id)
                                         .sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0))
-                                        .map(incident => (
-                                            <div
-                                                key={incident.id}
-                                                className="flex items-center justify-between p-3 rounded-lg border border-border bg-muted/30 cursor-pointer hover:bg-muted transition-colors"
-                                                onClick={() => handleViewIncident(incident)}
-                                            >
-                                                <div className="flex flex-col">
-                                                    <span className="font-medium text-sm">{incident.title}</span>
-                                                    <span className="text-xs text-muted-foreground">
-                                                        {incident.createdAt?.toDate ?
-                                                            incident.createdAt.toDate().toLocaleDateString() :
-                                                            'Fecha desconocida'}
-                                                    </span>
+                                        .map(incident => {
+                                            const relatedItem = inventory.find(i => i.id === incident.inventoryItemId);
+                                            const isMaterialIncident = !!incident.inventoryItemId;
+
+                                            return (
+                                                <div
+                                                    key={incident.id}
+                                                    className="flex items-center justify-between p-3 rounded-lg border border-border bg-muted/30 cursor-pointer hover:bg-muted transition-colors"
+                                                    onClick={() => handleViewIncident(incident)}
+                                                >
+                                                    <div className="flex items-center gap-3">
+                                                        <div className={`p-2 rounded-lg ${isMaterialIncident ? 'bg-purple-100 text-purple-600' : 'bg-amber-100 text-amber-600'}`}>
+                                                            {isMaterialIncident ? <Music className="h-4 w-4" /> : <Car className="h-4 w-4" />}
+                                                        </div>
+                                                        <div className="flex flex-col">
+                                                            <span className="font-medium text-sm">
+                                                                {incident.title}
+                                                                {isMaterialIncident && relatedItem && (
+                                                                    <span className="ml-2 text-[10px] font-bold text-purple-600 bg-purple-50 px-1.5 py-0.5 rounded border border-purple-100 uppercase">
+                                                                        {relatedItem.name}
+                                                                    </span>
+                                                                )}
+                                                            </span>
+                                                            <span className="text-xs text-muted-foreground">
+                                                                {incident.createdAt?.toDate ?
+                                                                    incident.createdAt.toDate().toLocaleDateString() :
+                                                                    'Fecha desconocida'}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                    <div className="flex items-center gap-2">
+                                                        <span className={`text-[10px] px-2 py-0.5 font-bold rounded-full border uppercase tracking-wider ${incident.priority === 'critical' || incident.priority === 'high' ? 'bg-red-50 text-red-700 border-red-100' :
+                                                            incident.priority === 'medium' ? 'bg-yellow-50 text-yellow-700 border-yellow-100' :
+                                                                'bg-green-50 text-green-700 border-green-100'
+                                                            }`}>
+                                                            {incident.priority}
+                                                        </span>
+                                                        <StatusBadge status={incident.status as any} />
+                                                    </div>
                                                 </div>
-                                                <div className="flex items-center gap-2">
-                                                    <span className={`text-xs px-2 py-1 rounded-full border ${incident.priority === 'critical' || incident.priority === 'high' ? 'bg-red-100 text-red-700 border-red-200' :
-                                                        incident.priority === 'medium' ? 'bg-yellow-100 text-yellow-700 border-yellow-200' :
-                                                            'bg-green-100 text-green-700 border-green-200'
-                                                        }`}>
-                                                        {incident.priority}
-                                                    </span>
-                                                    <StatusBadge status={incident.status as any} />
-                                                </div>
-                                            </div>
-                                        ))
+                                            );
+                                        })
                                     }
                                 </div>
                             ) : (

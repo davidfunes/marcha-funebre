@@ -62,6 +62,8 @@ export default function MyVehiclePage() {
         condition: ''
     });
     const [incidentImage, setIncidentImage] = useState<File | null>(null);
+    const [vehicleIncidents, setVehicleIncidents] = useState<Incident[]>([]);
+    const [isLoadingIncidents, setIsLoadingIncidents] = useState(true);
 
     useEffect(() => {
         const fetchVehicle = async () => {
@@ -168,6 +170,28 @@ export default function MyVehiclePage() {
                 }
             };
             fetchNextAppointment();
+
+            // Fetch Recent Incidents
+            const fetchIncidents = async () => {
+                try {
+                    const q = query(
+                        collection(db, 'incidents'),
+                        where('vehicleId', '==', vehicle.id),
+                        orderBy('createdAt', 'desc'),
+                        limit(5)
+                    );
+                    const snapshot = await getDocs(q);
+                    const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Incident));
+                    setVehicleIncidents(data);
+                } catch (error) {
+                    console.error("Error fetching vehicle incidents:", error);
+                } finally {
+                    setIsLoadingIncidents(false);
+                }
+            };
+            fetchIncidents();
+        } else {
+            setIsLoadingIncidents(false);
         }
     }, [vehicle]);
 
@@ -502,6 +526,68 @@ export default function MyVehiclePage() {
                                 )
                             ) : (
                                 <p className="text-xs text-muted-foreground text-center py-4 italic">No se encontró material</p>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Vehicle Incidents Section (Issue #30) */}
+                    <div className="space-y-4 pt-4 border-t border-border">
+                        <div className="flex items-center justify-between">
+                            <h3 className="font-bold text-foreground">Incidencias Recientes</h3>
+                            <Link href="/driver/report-incident" className="text-xs text-primary font-bold hover:underline">
+                                Reportar Nueva
+                            </Link>
+                        </div>
+
+                        <div className="space-y-2">
+                            {isLoadingIncidents ? (
+                                <div className="flex justify-center py-4">
+                                    <Loader2 className="h-6 w-6 text-primary animate-spin" />
+                                </div>
+                            ) : vehicleIncidents.length > 0 ? (
+                                vehicleIncidents.map((incident) => {
+                                    const relatedItem = material.find(m => m.id === incident.inventoryItemId);
+                                    const isMaterialIncident = !!incident.inventoryItemId;
+
+                                    return (
+                                        <div key={incident.id} className="bg-muted/30 rounded-xl p-3 flex flex-col gap-2 border border-border/50">
+                                            <div className="flex items-start justify-between gap-3">
+                                                <div className="flex items-center gap-2">
+                                                    <div className={`p-1.5 rounded-lg ${isMaterialIncident ? 'bg-purple-500/10 text-purple-500' : 'bg-amber-500/10 text-amber-500'}`}>
+                                                        {isMaterialIncident ? <Music className="h-4 w-4" /> : <Car className="h-4 w-4" />}
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-sm font-semibold leading-tight">{incident.title}</p>
+                                                        {isMaterialIncident && relatedItem && (
+                                                            <p className="text-[10px] text-purple-500 font-bold uppercase mt-0.5">
+                                                                Material: {relatedItem.name}
+                                                            </p>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                                <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold border ${incident.status === 'resolved' ? 'bg-green-500/10 text-green-500 border-green-500/20' : 'bg-amber-500/10 text-amber-500 border-amber-500/20'
+                                                    }`}>
+                                                    {incident.status === 'open' ? 'Abierta' :
+                                                        incident.status === 'in_progress' ? 'En Proceso' :
+                                                            incident.status === 'resolved' ? 'Resuelta' : 'Cerrada'}
+                                                </span>
+                                            </div>
+                                            <p className="text-xs text-muted-foreground line-clamp-2">{incident.description}</p>
+                                            <div className="flex items-center justify-between mt-1">
+                                                <span className="text-[10px] text-muted-foreground">
+                                                    {incident.createdAt?.toDate ? format(incident.createdAt.toDate(), 'd MMM, HH:mm', { locale: es }) : 'Recién reportada'}
+                                                </span>
+                                                <span className={`text-[10px] font-black uppercase tracking-widest ${incident.priority === 'critical' || incident.priority === 'high' ? 'text-red-500' :
+                                                    incident.priority === 'medium' ? 'text-amber-500' : 'text-blue-500'
+                                                    }`}>
+                                                    Prioridad {incident.priority}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    );
+                                })
+                            ) : (
+                                <p className="text-xs text-muted-foreground text-center py-4 italic">No hay incidencias reportadas</p>
                             )}
                         </div>
                     </div>
