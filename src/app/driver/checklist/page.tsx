@@ -24,25 +24,21 @@ const CHECKLIST_STEPS = [
         items: [
             { id: 'tires', label: 'Presión de Neumáticos' },
             { id: 'lights', label: 'Luces / Faros' },
-            { id: 'body', label: 'Carrocería (Golpes/Arañazos)' },
-            { id: 'windows', label: 'Limpieza de Cristales' }
+            { id: 'exterior_cleaning', label: 'Limpieza Exterior' }
         ]
     },
     {
         title: 'Interior',
         items: [
             { id: 'cleanliness', label: 'Limpieza Interior' },
-            { id: 'dashboard', label: 'Testigos del Tablero' },
-            { id: 'fuel_level', label: 'Nivel de Combustible' },
-            { id: 'documents', label: 'Documentación del Vehículo' }
+            { id: 'dashboard', label: 'Testigos del Tablero' }
         ]
     },
     {
         title: 'Equipamiento',
         items: [
             { id: 'vest', label: 'Chaleco Reflectante' },
-            { id: 'triangle', label: 'Triángulos / Señal V-16' },
-            { id: 'spare_tire', label: 'Rueda de Repuesto / Kit' }
+            { id: 'triangle', label: 'Triángulos / Señal V-16' }
         ]
     }
 ];
@@ -52,11 +48,23 @@ export default function ChecklistPage() {
     const router = useRouter();
     const [currentStep, setCurrentStep] = useState(0);
     const [answers, setAnswers] = useState<Record<string, 'ok' | 'issue'>>({});
+    const [comments, setComments] = useState<Record<string, string>>({});
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState(false);
 
     const handleAnswer = (itemId: string, status: 'ok' | 'issue') => {
         setAnswers(prev => ({ ...prev, [itemId]: status }));
+        if (status === 'ok') {
+            setComments(prev => {
+                const newComments = { ...prev };
+                delete newComments[itemId];
+                return newComments;
+            });
+        }
+    };
+
+    const handleCommentChange = (itemId: string, comment: string) => {
+        setComments(prev => ({ ...prev, [itemId]: comment }));
     };
 
     const isStepComplete = () => {
@@ -86,16 +94,38 @@ export default function ChecklistPage() {
                 userId: user.id,
                 vehicleId: user.assignedVehicleId,
                 date: serverTimestamp(),
-                items: Object.entries(answers).map(([id, status]) => ({ id, status, label: id })), // Simplified label for DB
+                items: Object.entries(answers).map(([id, status]) => ({
+                    id,
+                    status,
+                    label: CHECKLIST_STEPS.flatMap(s => s.items).find(i => i.id === id)?.label || id,
+                    comment: comments[id] || ''
+                })),
                 status: Object.values(answers).includes('issue') ? 'warning' : 'passed',
                 createdAt: serverTimestamp()
             };
 
             await addDoc(collection(db, 'checklists'), checklistData);
 
-            // 2. Gamification: Award 50 Points
+            // 2. Automatic Incident Generation
+            const issues = Object.entries(answers).filter(([_, status]) => status === 'issue');
+            for (const [id, _] of issues) {
+                const itemLabel = CHECKLIST_STEPS.flatMap(s => s.items).find(i => i.id === id)?.label || id;
+                const incidentData = {
+                    title: `Incidencia Checklist: ${itemLabel}`,
+                    description: comments[id] || `Problema reportado en el checklist pre-viaje para ${itemLabel}.`,
+                    type: 'checklist',
+                    priority: 'medium',
+                    status: 'open',
+                    vehicleId: user.assignedVehicleId,
+                    reportedByUserId: user.id,
+                    createdAt: serverTimestamp(),
+                    updatedAt: serverTimestamp()
+                };
+                await addDoc(collection(db, 'incidents'), incidentData);
+            }
+
+            // 3. Gamification: Award Points
             if (user.id) {
-                // Dynamic points
                 await awardPointsForAction(user.id, 'checklist_completed');
             }
 
@@ -190,6 +220,17 @@ export default function ChecklistPage() {
                                     <ThumbsDown className="w-4 h-4" /> Problema
                                 </button>
                             </div>
+
+                            {answers[item.id] === 'issue' && (
+                                <div className="mt-4 animate-in slide-in-from-top-2 duration-200">
+                                    <textarea
+                                        value={comments[item.id] || ''}
+                                        onChange={(e) => handleCommentChange(item.id, e.target.value)}
+                                        placeholder="Describe el problema detectado..."
+                                        className="w-full p-3 bg-muted border border-border rounded-lg text-sm outline-none focus:ring-1 focus:ring-primary min-h-[80px]"
+                                    />
+                                </div>
+                            )}
                         </div>
                     ))}
                 </div>
