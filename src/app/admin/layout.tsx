@@ -25,6 +25,7 @@ import { Logo } from '@/components/ui/Logo';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
 import { DataIntegrityChecker } from '@/components/admin/DataIntegrityChecker';
 import { isProfileComplete } from '@/utils/profileUtils';
+import { isChristmasTime } from '@/utils/dateUtils';
 import { ProfileCompletionAlert } from '@/components/profile/ProfileCompletionAlert';
 import { Snowfall } from '@/components/ui/Snowfall';
 
