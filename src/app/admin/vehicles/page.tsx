@@ -12,6 +12,7 @@ import {
 import { DataTable, Column } from '@/components/ui/DataTable';
 import { StatusBadge } from '@/components/ui/StatusBadge';
 import { Modal } from '@/components/ui/Modal';
+import { ImageUpload } from '@/components/ui/ImageUpload';
 import { IncidentDetailsModal } from '@/components/admin/incidents/IncidentDetailsModal';
 import { addItem, updateItem, deleteItem, subscribeToCollection, addVehicleTaxonomy, getInventory, getUsers } from '@/services/FirebaseService';
 import { Vehicle, VehicleMake, Incident, InventoryItem, Workshop, VehicleBrand, RentingCompany, User } from '@/types';
@@ -633,12 +634,10 @@ export default function VehiclesPage() {
                     </div>
 
                     <div className="space-y-2">
-                        <label className="text-sm font-medium">Imagen URL (Opcional)</label>
-                        <input
-                            value={formData.image || ''}
-                            onChange={e => setFormData({ ...formData, image: e.target.value })}
-                            className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary outline-none"
-                            placeholder="https://..."
+                        <ImageUpload
+                            value={formData.image}
+                            onChange={(url) => setFormData({ ...formData, image: url })}
+                            label="Foto del Vehículo"
                         />
                     </div>
 

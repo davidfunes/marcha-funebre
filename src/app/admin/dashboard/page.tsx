@@ -1132,24 +1132,56 @@ export default function AdminDashboard() {
                         </div>
                     </div>
 
-                    {/* Incident Priority Chart */}
+                    {/* Incident Status Chart */}
                     <div className="rounded-xl border border-border bg-card p-6 shadow-sm flex flex-col items-center">
-                        <h3 className="font-semibold mb-4 text-center">Prioridad Incidencias</h3>
-                        <div className="w-full max-w-[200px]">
-                            <Pie
+                        <h3 className="font-semibold mb-4 text-center">Estado de Incidencias</h3>
+                        <div className="w-full">
+                            <Bar
                                 data={{
-                                    labels: ['Alta', 'Media', 'Baja'],
-                                    datasets: [{
-                                        data: [
-                                            incidents.filter(i => i.priority === 'high').length,
-                                            incidents.filter(i => i.priority === 'medium').length,
-                                            incidents.filter(i => i.priority === 'low').length
-                                        ],
-                                        backgroundColor: ['#ef4444', '#f59e0b', '#3b82f6'],
-                                        borderWidth: 0
-                                    }]
+                                    labels: ['Vehículos', 'Materiales'],
+                                    datasets: [
+                                        {
+                                            label: 'Abierta',
+                                            data: [
+                                                incidents.filter(i => !i.inventoryItemId && i.status === 'open').length,
+                                                incidents.filter(i => i.inventoryItemId && i.status === 'open').length
+                                            ],
+                                            backgroundColor: '#ef4444',
+                                        },
+                                        {
+                                            label: 'En Proceso',
+                                            data: [
+                                                incidents.filter(i => !i.inventoryItemId && i.status === 'in_progress').length,
+                                                incidents.filter(i => i.inventoryItemId && i.status === 'in_progress').length
+                                            ],
+                                            backgroundColor: '#f59e0b',
+                                        }
+                                    ]
                                 }}
-                                options={{ plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, padding: 15 } } } }}
+                                options={{
+                                    indexAxis: 'y' as const,
+                                    plugins: {
+                                        legend: {
+                                            position: 'bottom',
+                                            labels: { boxWidth: 12, padding: 15 }
+                                        },
+                                        tooltip: {
+                                            mode: 'index',
+                                            intersect: false
+                                        }
+                                    },
+                                    responsive: true,
+                                    scales: {
+                                        x: {
+                                            stacked: true,
+                                            beginAtZero: true,
+                                            ticks: { stepSize: 1 }
+                                        },
+                                        y: {
+                                            stacked: true
+                                        }
+                                    }
+                                }}
                             />
                         </div>
                     </div>
