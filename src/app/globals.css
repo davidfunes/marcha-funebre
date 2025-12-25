@@ -131,10 +131,19 @@
   position: fixed;
   top: -10vh;
   color: white;
+  background-color: #f0f4f8;
+  /* Very light bluish gray for visibility */
   pointer-events: none;
   z-index: 10;
   animation: snowfall linear infinite;
   opacity: var(--snow-opacity);
+  /* Enhanced shadow for light mode visibility */
+  filter: drop-shadow(0 0 1px rgba(0, 0, 0, 0.2)) blur(0.5px);
+}
+
+.dark .snow-flake {
+  background-color: white;
+  filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.3));
 }
 
 .christmas-accent {

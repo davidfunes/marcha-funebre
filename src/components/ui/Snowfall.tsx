@@ -11,13 +11,14 @@ export function Snowfall() {
         if (!isChristmas) return;
 
         const generateFlakes = () => {
-            const newFlakes = Array.from({ length: 20 }).map((_, i) => ({
+            const newFlakes = Array.from({ length: 40 }).map((_, i) => ({
                 id: i,
                 left: `${Math.random() * 100}vw`,
-                xOffset: `${Math.random() * 20}px`,
-                delay: `${Math.random() * 10}s`,
-                duration: `${10 + Math.random() * 20}s`,
-                size: `${Math.random() * 10 + 5}px`
+                xOffset: `${Math.random() * 30 - 15}px`,
+                delay: `${Math.random() * 15}s`,
+                duration: `${8 + Math.random() * 12}s`,
+                size: `${Math.random() * 6 + 4}px`,
+                opacity: Math.random() * 0.5 + 0.3
             }));
             setFlakes(newFlakes);
         };
@@ -40,9 +41,8 @@ export function Snowfall() {
                         '--snow-x-offset': flake.xOffset,
                         width: flake.size,
                         height: flake.size,
-                        backgroundColor: 'white',
                         borderRadius: '50%',
-                        filter: 'blur(1px)'
+                        filter: 'blur(0.5px)',
                     } as React.CSSProperties}
                 />
             ))}
