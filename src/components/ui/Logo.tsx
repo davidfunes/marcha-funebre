@@ -1,4 +1,5 @@
 import Image from 'next/image';
+import { isChristmasTime } from '@/utils/dateUtils';
 
 interface LogoProps {
     className?: string;
@@ -15,6 +16,8 @@ export function Logo({
     size = 'md',
     layout = 'horizontal'
 }: LogoProps) {
+    const isChristmas = isChristmasTime();
+
     const sizeClasses = {
         sm: 'h-8',
         md: 'h-10',
@@ -46,6 +49,14 @@ export function Logo({
     return (
         <div className={`flex ${containerClasses} gap-3 ${className}`}>
             <div className={`relative aspect-square flex-shrink-0 ${sizeClasses[size]}`}>
+                {isChristmas && (
+                    <span
+                        className="absolute -top-2 -left-2 z-10 text-xl animate-bounce pointer-events-none"
+                        style={{ transform: 'rotate(-20deg)' }}
+                    >
+                        🎅
+                    </span>
+                )}
                 <Image
                     src="/logo.png"
                     alt="Marcha Fúnebre Logo"
@@ -60,6 +71,7 @@ export function Logo({
             {showText && variant !== 'icon-only' && (
                 <div className={`font-display font-bold leading-tight tracking-tight ${textClasses[size]} ${variant === 'white' ? 'text-white' : 'text-foreground'}`}>
                     Marcha<span className="text-primary">Fúnebre</span>
+                    {isChristmas && <span className="ml-1 text-xs align-top opacity-50">🎄</span>}
                 </div>
             )}
         </div>

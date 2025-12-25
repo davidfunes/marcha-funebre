@@ -9,6 +9,7 @@ import { Logo } from '@/components/ui/Logo';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
 import { isProfileComplete } from '@/utils/profileUtils';
 import { ProfileCompletionAlert } from '@/components/profile/ProfileCompletionAlert';
+import { Snowfall } from '@/components/ui/Snowfall';
 
 // Map paths to titles
 const PAGE_TITLES: Record<string, string> = {
@@ -120,7 +121,8 @@ export default function DriverLayout({ children }: { children: React.ReactNode }
             </header>
 
             {/* Page Content */}
-            <main>
+            <main className="relative">
+                <Snowfall />
                 {user && !isProfileComplete(user) && (
                     <div className="max-w-screen-2xl mx-auto">
                         <ProfileCompletionAlert role="conductor" />

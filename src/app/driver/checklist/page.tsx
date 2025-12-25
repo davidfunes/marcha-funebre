@@ -16,6 +16,7 @@ import {
     AlertTriangle
 } from 'lucide-react';
 import Link from 'next/link';
+import { FestiveConfetti } from '@/components/ui/FestiveConfetti';
 
 const CHECKLIST_STEPS = [
     {
@@ -114,6 +115,7 @@ export default function ChecklistPage() {
     if (success) {
         return (
             <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4 text-center animate-in fade-in zoom-in duration-300">
+                <FestiveConfetti />
                 <div className="w-20 h-20 bg-purple-500 rounded-full flex items-center justify-center mb-6 shadow-lg shadow-purple-500/20">
                     <CheckCircle className="w-10 h-10 text-white" />
                 </div>

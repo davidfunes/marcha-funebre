@@ -26,6 +26,7 @@ import { ThemeToggle } from '@/components/ui/ThemeToggle';
 import { DataIntegrityChecker } from '@/components/admin/DataIntegrityChecker';
 import { isProfileComplete } from '@/utils/profileUtils';
 import { ProfileCompletionAlert } from '@/components/profile/ProfileCompletionAlert';
+import { Snowfall } from '@/components/ui/Snowfall';
 
 function SidebarLink({ item, onClick }: { item: any; onClick?: () => void }) {
     const pathname = usePathname();
@@ -147,7 +148,8 @@ export default function AdminLayout({
             )}
 
             {/* Main Content Area */}
-            <main className="flex-1 flex flex-col overflow-hidden w-full">
+            <main className="flex-1 flex flex-col overflow-hidden w-full relative">
+                <Snowfall />
                 {/* Global Integrity Check */}
                 <DataIntegrityChecker />
 
