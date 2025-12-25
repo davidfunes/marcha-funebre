@@ -10,7 +10,6 @@ import { ThemeToggle } from '@/components/ui/ThemeToggle';
 import { isProfileComplete } from '@/utils/profileUtils';
 import { isChristmasTime } from '@/utils/dateUtils';
 import { ProfileCompletionAlert } from '@/components/profile/ProfileCompletionAlert';
-import { Snowfall } from '@/components/ui/Snowfall';
 
 // Map paths to titles
 const PAGE_TITLES: Record<string, string> = {
@@ -65,9 +64,9 @@ export default function DriverLayout({ children }: { children: React.ReactNode }
     const currentTitle = PAGE_TITLES[pathname] || 'Marcha Fúnebre';
 
     return (
-        <div className={`min-h-screen transition-colors ${isChristmasTime() ? 'christmas-theme christmas-forest-bg' : 'bg-background'}`}>
+        <div className={`min-h-screen transition-colors ${isChristmasTime() ? 'christmas-theme' : 'bg-background'}`}>
             {/* Global Sticky Header */}
-            <header className={`sticky top-0 z-50 w-full border-b border-border supports-[backdrop-filter]:bg-card/60 transition-colors ${isChristmasTime() ? 'christmas-forest-bg bg-card/60' : 'bg-card/80'}`}>
+            <header className={`sticky top-0 z-50 w-full border-b border-border supports-[backdrop-filter]:bg-card/60 transition-all ${isChristmasTime() ? 'christmas-header-trees-multicapa bg-card/70' : 'bg-card/80'}`}>
                 <div className="container flex h-14 max-w-screen-2xl items-center px-4 justify-between">
                     <div className="flex items-center gap-4">
                         {isDashboard ? (
@@ -123,7 +122,6 @@ export default function DriverLayout({ children }: { children: React.ReactNode }
 
             {/* Page Content */}
             <main className="relative">
-                <Snowfall />
                 {user && !isProfileComplete(user) && (
                     <div className="max-w-screen-2xl mx-auto">
                         <ProfileCompletionAlert role="conductor" />

@@ -114,39 +114,29 @@
   }
 }
 
-/* 
- * Snowfall Animation (Christmas Initiative)
- * Smooth, subtle snow effect that doesn't distract from data.
+/*
+ * Christmas Initiative Header Decoration
+ * Multicapa green trees for depth effect.
  */
-@keyframes snowfall {
-  0% {
-    transform: translateY(-10vh) translateX(0);
-  }
+.christmas-header-trees-multicapa {
+  background-image:
+    /* Layer 1: Closest trees (Larger, more opaque) */
+    url("data:image/svg+xml,%3Csvg width='160' height='40' viewBox='0 0 160 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M20 40 L30 25 L25 25 L35 10 L30 10 L40 0 L50 10 L45 10 L55 25 L50 25 L60 40 Z' fill='%23164a39' fill-opacity='0.12'/%3E%3C/svg%3E"),
+    /* Layer 2: Mid trees (Smaller, shifted) */
+    url("data:image/svg+xml,%3Csvg width='120' height='30' viewBox='0 0 120 30' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M80 30 L90 18 L86 18 L95 8 L91 8 L100 0 L109 8 L105 8 L114 18 L110 18 L120 30 Z' fill='%23164a39' fill-opacity='0.08'/%3E%3C/svg%3E"),
+    /* Layer 3: Far trees (Smallest, most subtle) */
+    url("data:image/svg+xml,%3Csvg width='80' height='20' viewBox='0 0 80 20' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M10 20 L18 12 L15 12 L22 5 L19 5 L26 0 L33 5 L30 5 L37 12 L34 12 L42 20 Z' fill='%23164a39' fill-opacity='0.04'/%3E%3C/svg%3E");
 
-  100% {
-    transform: translateY(110vh) translateX(var(--snow-x-offset, 20px));
-  }
+  background-repeat: repeat-x;
+  background-position: 10px bottom, 50px bottom, 100px bottom;
+  background-size: 160px 40px, 120px 30px, 80px 20px;
 }
 
-.snow-flake {
-  position: fixed;
-  top: -10vh;
-  color: white;
-  background-color: #e0faff;
-  /* Cold High-Contrast White */
-  pointer-events: none;
-  z-index: 10000;
-  animation: snowfall linear infinite;
-  opacity: var(--snow-opacity);
-  /* Expert High-Contrast: Double shadow + subtle glow */
-  filter: drop-shadow(0 0 1px rgba(0, 0, 0, 0.4)) drop-shadow(0 0 3px rgba(173, 216, 230, 0.6));
-}
-
-.dark .snow-flake {
-  background-color: white;
-  filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.4)) drop-shadow(0 0 2px rgba(255, 255, 255, 0.2));
-  --snow-opacity: 0.4;
-  /* Softer in dark mode */
+.dark .christmas-header-trees-multicapa {
+  background-image:
+    url("data:image/svg+xml,%3Csvg width='160' height='40' viewBox='0 0 160 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M20 40 L30 25 L25 25 L35 10 L30 10 L40 0 L50 10 L45 10 L55 25 L50 25 L60 40 Z' fill='%23ffffff' fill-opacity='0.03'/%3E%3C/svg%3E"),
+    url("data:image/svg+xml,%3Csvg width='120' height='30' viewBox='0 0 120 30' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M80 30 L90 18 L86 18 L95 8 L91 8 L100 0 L109 8 L105 8 L114 18 L110 18 L120 30 Z' fill='%23ffffff' fill-opacity='0.02'/%3E%3C/svg%3E"),
+    url("data:image/svg+xml,%3Csvg width='80' height='20' viewBox='0 0 80 20' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M10 20 L18 12 L15 12 L22 5 L19 5 L26 0 L33 5 L30 5 L37 12 L34 12 L42 20 Z' fill='%23ffffff' fill-opacity='0.01'/%3E%3C/svg%3E");
 }
 
 .christmas-accent {
@@ -194,29 +184,4 @@
 .christmas-card:hover {
   box-shadow: 0 10px 25px -5px rgba(22, 74, 57, 0.3), 0 8px 10px -6px rgba(22, 74, 57, 0.2);
   border-color: hsl(var(--christmas-green) / 0.4);
-}
-
-/* Multi-layered Forest Background for depth effect */
-.christmas-forest-bg {
-  background-image:
-    /* Layer 1: Front trees (Darker, larger, more opaque) */
-    url("data:image/svg+xml,%3Csvg width='240' height='240' viewBox='0 0 120 120' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M20 100 L40 60 L35 60 L50 30 L45 30 L60 0 L75 30 L70 30 L85 60 L80 60 L100 100 Z' fill='%23164a39' fill-opacity='0.08'/%3E%3C/svg%3E"),
-    /* Layer 2: Middle trees (Smaller, shifted) */
-    url("data:image/svg+xml,%3Csvg width='180' height='180' viewBox='0 0 120 120' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M10 110 L25 80 L20 80 L35 50 L30 50 L45 20 L60 50 L55 50 L70 80 L65 80 L80 110 Z' fill='%23164a39' fill-opacity='0.04'/%3E%3C/svg%3E"),
-    /* Layer 3: Background trees (Smallest, very subtle) */
-    url("data:image/svg+xml,%3Csvg width='120' height='120' viewBox='0 0 120 120' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M60 120 L75 95 L70 95 L85 70 L80 70 L95 45 L110 70 L105 70 L120 95 L115 95 L130 120 Z' fill='%23164a39' fill-opacity='0.02'/%3E%3C/svg%3E"),
-    /* Gradient overlay for smooth transition */
-    linear-gradient(to bottom, transparent, hsl(var(--background) / 0.9));
-
-  background-repeat: repeat, repeat, repeat, no-repeat;
-  background-position: 0% 100%, 50% 100%, 80% 110%, center;
-  background-size: 240px 240px, 180px 180px, 120px 120px, auto;
-  background-attachment: fixed;
-}
-
-.dark .christmas-forest-bg {
-  background-image:
-    url("data:image/svg+xml,%3Csvg width='240' height='240' viewBox='0 0 120 120' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M20 100 L40 60 L35 60 L50 30 L45 30 L60 0 L75 30 L70 30 L85 60 L80 60 L100 100 Z' fill='%23ffffff' fill-opacity='0.01'/%3E%3C/svg%3E"),
-    url("data:image/svg+xml,%3Csvg width='180' height='180' viewBox='0 0 120 120' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M10 110 L25 80 L20 80 L35 50 L30 50 L45 20 L60 50 L55 50 L70 80 L65 80 L80 110 Z' fill='%23ffffff' fill-opacity='0.005'/%3E%3C/svg%3E"),
-    linear-gradient(to bottom, transparent, hsl(var(--background) / 0.9));
 }

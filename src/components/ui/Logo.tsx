@@ -50,11 +50,6 @@ export function Logo({
         <div className={`flex ${containerClasses} gap-3 ${className}`}>
             <div className={`relative aspect-square flex-shrink-0 ${sizeClasses[size]}`}>
                 {isChristmas && (
-                    <div className="absolute -top-2 -left-2 z-10 animate-bounce text-xl">
-                        🎅
-                    </div>
-                )}
-                {isChristmas && (
                     <div className="absolute -top-1 -right-1 z-10 animate-pulse text-yellow-400">
                         <span className="text-sm">✨</span>
                     </div>

@@ -27,7 +27,6 @@ import { DataIntegrityChecker } from '@/components/admin/DataIntegrityChecker';
 import { isProfileComplete } from '@/utils/profileUtils';
 import { isChristmasTime } from '@/utils/dateUtils';
 import { ProfileCompletionAlert } from '@/components/profile/ProfileCompletionAlert';
-import { Snowfall } from '@/components/ui/Snowfall';
 
 function SidebarLink({ item, onClick }: { item: any; onClick?: () => void }) {
     const pathname = usePathname();
@@ -96,7 +95,7 @@ export default function AdminLayout({
     ];
 
     const SidebarContent = ({ isMobile = false }) => (
-        <div className={`flex flex-col h-full border-r border-border transition-colors ${isChristmasTime() ? 'christmas-forest-bg bg-card/40' : 'bg-card'}`}>
+        <div className={`flex flex-col h-full border-r border-border transition-colors bg-card`}>
             <div className="flex h-16 items-center px-6 border-b border-border justify-between">
                 <Logo size="md" />
                 {isMobile && (
@@ -129,7 +128,7 @@ export default function AdminLayout({
     );
 
     return (
-        <div className={`flex h-screen text-foreground overflow-hidden transition-colors ${isChristmasTime() ? 'christmas-theme christmas-forest-bg' : 'bg-background'}`}>
+        <div className={`flex h-screen text-foreground overflow-hidden transition-colors bg-background`}>
             {/* Desktop Sidebar */}
             <aside className="hidden md:flex w-64 flex-shrink-0 flex-col">
                 <SidebarContent />
@@ -150,7 +149,6 @@ export default function AdminLayout({
 
             {/* Main Content Area */}
             <main className="flex-1 flex flex-col overflow-hidden w-full relative">
-                <Snowfall />
                 {/* Global Integrity Check */}
                 <DataIntegrityChecker />
 
@@ -161,7 +159,7 @@ export default function AdminLayout({
                 )}
 
                 {/* Header */}
-                <header className={`flex h-16 items-center justify-between border-b border-border px-4 md:px-8 backdrop-blur shrink-0 transition-opacity ${isChristmasTime() ? 'christmas-forest-bg bg-card/40' : 'bg-card/50'}`}>
+                <header className={`flex h-16 items-center justify-between border-b border-border px-4 md:px-8 backdrop-blur shrink-0 transition-all ${isChristmasTime() ? 'christmas-header-trees-multicapa bg-card/60' : 'bg-card/50'}`}>
                     <div className="flex items-center gap-4">
                         <button
                             onClick={() => setMobileMenuOpen(true)}
