@@ -159,7 +159,7 @@ export default function AdminLayout({
                 )}
 
                 {/* Header */}
-                <header className={`flex h-16 items-center justify-between border-b border-border px-4 md:px-8 backdrop-blur shrink-0 transition-all ${isChristmasTime() ? 'christmas-header-trees-multicapa bg-card/60' : 'bg-card/50'}`}>
+                <header className={`flex h-16 items-center justify-between border-b border-border px-4 md:px-8 shrink-0 transition-all ${isChristmasTime() ? 'christmas-header-trees-multicapa bg-card' : 'bg-card'}`}>
                     <div className="flex items-center gap-4">
                         <button
                             onClick={() => setMobileMenuOpen(true)}

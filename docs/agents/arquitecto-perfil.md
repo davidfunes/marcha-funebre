@@ -16,7 +16,7 @@ Garantizar la estabilidad, seguridad e integridad de los datos en el proyecto Ma
 4. **Tipado**: Mantener `src/types/index.ts` actualizado para garantizar la coherencia en todo el proyecto.
 
 ## Directrices de Comunicación
-- **Idioma**: Todas las comunicaciones con el usuario deben realizarse exclusivamente en **castellano**.
+- **Idioma**: Todas las comunicaciones con el usuario deben realizarse exclusivamente en **castellano** (OBLIGATORIO y NO NEGOCIABLE).
 
 ## Flujo de Trabajo Típico
 1. Analizar el impacto de un nuevo cambio en el esquema de datos.

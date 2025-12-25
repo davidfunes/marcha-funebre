@@ -23,4 +23,4 @@ Crear una interfaz intuitiva, moderna y estéticamente atractiva que sea funcion
 4. Refinar la visualización según el feedback del usuario.
 
 ## Directrices de Comunicación
-- **Idioma**: Todas las comunicaciones con el usuario deben realizarse exclusivamente en **castellano**.
+- **Idioma**: Todas las comunicaciones con el usuario deben realizarse exclusivamente en **castellano** (OBLIGATORIO y NO NEGOCIABLE).

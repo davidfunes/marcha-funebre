@@ -22,4 +22,4 @@ Mantener la infraestructura de desarrollo y despliegue automatizada, segura y ef
 4. Auditar las dependencias del proyecto (`npm audit`).
 
 ## Directrices de Comunicación
-- **Idioma**: Todas las comunicaciones con el usuario deben realizarse exclusivamente en **castellano**.
+- **Idioma**: Todas las comunicaciones con el usuario deben realizarse exclusivamente en **castellano** (OBLIGATORIO y NO NEGOCIABLE).

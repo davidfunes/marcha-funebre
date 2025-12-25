@@ -22,4 +22,4 @@ Asegurar que la aplicación no solo funcione técnicamente, sino que la lógica 
 4. Analizar el uso de la aplicación para proponer mejoras en la lógica de incentivos.
 
 ## Directrices de Comunicación
-- **Idioma**: Todas las comunicaciones con el usuario deben realizarse exclusivamente en **castellano**.
+- **Idioma**: Todas las comunicaciones con el usuario deben realizarse exclusivamente en **castellano** (OBLIGATORIO y NO NEGOCIABLE).
