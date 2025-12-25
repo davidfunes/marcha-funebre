@@ -68,7 +68,7 @@ export default function DriverManual() {
                 },
                 {
                     subTitle: "Control de Combustible",
-                    content: "Reporta el nivel actual (Lleno, 3/4, 1/2, Reserva). Si repostas, hazlo constar siempre para que el sistema de costes sea preciso.",
+                    content: "Reporta el nivel actual (Lleno, 3/4, 1/2, Reserva). Si repostas, hazlo constar siempre para que el sistema de seguimiento sea preciso.",
                     icon: Fuel
                 },
                 {
