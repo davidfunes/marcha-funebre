@@ -29,7 +29,8 @@ import {
     Award,
     Star,
     Crown,
-    Medal
+    Medal,
+    BookOpen
 } from 'lucide-react';
 import Link from 'next/link';
 import { Vehicle } from '@/types';
@@ -220,6 +221,16 @@ export default function DriverDashboard() {
             color: 'text-pink-400',
             bg: 'bg-pink-500/10',
             border: 'border-pink-500/20',
+            requiresVehicle: false
+        },
+        {
+            label: 'Manual de Usuario',
+            description: 'Guía rápida para conductores',
+            href: '/driver/manual',
+            icon: BookOpen,
+            color: 'text-sky-400',
+            bg: 'bg-sky-500/10',
+            border: 'border-sky-500/20',
             requiresVehicle: false
         },
     ];

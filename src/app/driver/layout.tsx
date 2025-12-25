@@ -22,7 +22,8 @@ const PAGE_TITLES: Record<string, string> = {
     '/driver/directory': 'Directorio',
     '/driver/fleet': 'Mi Vehículo',
     '/driver/select-vehicle': 'Seleccionar Vehículo',
-    '/driver/profile': 'Mi Perfil'
+    '/driver/profile': 'Mi Perfil',
+    '/driver/manual': 'Guía Rápida'
 };
 
 export default function DriverLayout({ children }: { children: React.ReactNode }) {
