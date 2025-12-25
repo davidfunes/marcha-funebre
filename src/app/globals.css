@@ -36,7 +36,8 @@
     --radius: 0.75rem;
 
     /* Christmas Theme Variables (Administered by UI/UX Agent) */
-    --christmas-green: 156 54% 19%; /* #164a39 */
+    --christmas-green: 156 54% 19%;
+    /* #164a39 */
     --christmas-red: 0 84% 60%;
     --snow-opacity: 0.15;
   }
@@ -74,6 +75,31 @@
     --input: 215 27.9% 16.9%;
     --ring: 38 92% 50%;
   }
+
+  /* Christmas Theme Overrides */
+  .christmas-theme {
+    /* Christmas Light Mode */
+    --christmas-primary: 0 75% 45%;
+    /* Deep Festive Red */
+    --christmas-secondary: 156 54% 19%;
+    /* Forest Green */
+
+    --primary: var(--christmas-primary);
+    --ring: var(--christmas-primary);
+  }
+
+  .christmas-theme.dark {
+    /* Christmas Dark Mode */
+    --christmas-primary: 156 70% 35%;
+    /* Vibrant Forest Green */
+    --christmas-accent: 0 75% 50%;
+    /* Festive Red */
+
+    --primary: var(--christmas-primary);
+    --ring: var(--christmas-primary);
+    /* Subtle background tint */
+    --background: 156 50% 3%;
+  }
 }
 
 @layer base {
@@ -92,8 +118,13 @@
  * Smooth, subtle snow effect that doesn't distract from data.
  */
 @keyframes snowfall {
-  0% { transform: translateY(-10vh) translateX(0); }
-  100% { transform: translateY(110vh) translateX(20px); }
+  0% {
+    transform: translateY(-10vh) translateX(0);
+  }
+
+  100% {
+    transform: translateY(110vh) translateX(20px);
+  }
 }
 
 .snow-flake {
@@ -113,4 +144,20 @@
 .christmas-hover:hover {
   background-color: hsl(var(--christmas-green)) !important;
   color: white !important;
+}
+
+@keyframes subtle-glow {
+
+  0%,
+  100% {
+    text-shadow: 0 0 4px rgba(255, 215, 0, 0.2);
+  }
+
+  50% {
+    text-shadow: 0 0 12px rgba(255, 215, 0, 0.5);
+  }
+}
+
+.animate-subtle-glow {
+  animation: subtle-glow 3s ease-in-out infinite;
 }

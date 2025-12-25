@@ -64,7 +64,7 @@ export default function DriverLayout({ children }: { children: React.ReactNode }
     const currentTitle = PAGE_TITLES[pathname] || 'Marcha Fúnebre';
 
     return (
-        <div className="min-h-screen bg-background">
+        <div className={`min-h-screen bg-background ${isChristmasTime() ? 'christmas-theme' : ''}`}>
             {/* Global Sticky Header */}
             <header className="sticky top-0 z-50 w-full border-b border-border bg-card/80 backdrop-blur supports-[backdrop-filter]:bg-card/60">
                 <div className="container flex h-14 max-w-screen-2xl items-center px-4 justify-between">

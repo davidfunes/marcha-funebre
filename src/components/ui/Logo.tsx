@@ -50,12 +50,9 @@ export function Logo({
         <div className={`flex ${containerClasses} gap-3 ${className}`}>
             <div className={`relative aspect-square flex-shrink-0 ${sizeClasses[size]}`}>
                 {isChristmas && (
-                    <span
-                        className="absolute -top-2 -left-2 z-10 text-xl animate-bounce pointer-events-none"
-                        style={{ transform: 'rotate(-20deg)' }}
-                    >
-                        🎅
-                    </span>
+                    <div className="absolute -top-1 -right-1 z-10 animate-pulse text-yellow-400">
+                        <span className="text-sm">✨</span>
+                    </div>
                 )}
                 <Image
                     src="/logo.png"
@@ -70,8 +67,8 @@ export function Logo({
 
             {showText && variant !== 'icon-only' && (
                 <div className={`font-display font-bold leading-tight tracking-tight ${textClasses[size]} ${variant === 'white' ? 'text-white' : 'text-foreground'}`}>
-                    Marcha<span className="text-primary">Fúnebre</span>
-                    {isChristmas && <span className="ml-1 text-xs align-top opacity-50">🎄</span>}
+                    Marcha<span className={isChristmas ? "text-primary italic animate-subtle-glow" : "text-primary"}>Fúnebre</span>
+                    {isChristmas && <span className="ml-1 text-xs align-top inline-block hover:animate-spin transition-all">⭐</span>}
                 </div>
             )}
         </div>
