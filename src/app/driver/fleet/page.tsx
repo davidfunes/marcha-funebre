@@ -183,11 +183,15 @@ export default function MyVehiclePage() {
                     const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Incident));
 
                     // Sort in memory instead of Firestore to avoid composite index requirement
-                    const sortedData = data.sort((a, b) => {
-                        const dateA = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(0);
-                        const dateB = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(0);
-                        return dateB.getTime() - dateA.getTime();
-                    }).slice(0, 5); // Still show only top 5 in UI
+                    // AND Filter out resolved/closed incidents (User request)
+                    const sortedData = data
+                        .filter(i => i.status !== 'resolved' && i.status !== 'closed')
+                        .sort((a, b) => {
+                            const dateA = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(0);
+                            const dateB = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(0);
+                            return dateB.getTime() - dateA.getTime();
+                        })
+                        .slice(0, 5); // Still show only top 5 in UI
 
                     setVehicleIncidents(sortedData);
                 } catch (error) {
@@ -540,7 +544,7 @@ export default function MyVehiclePage() {
                     {/* Vehicle Incidents Section (Issue #30) */}
                     <div className="space-y-4 pt-4 border-t border-border">
                         <div className="flex items-center justify-between">
-                            <h3 className="font-bold text-foreground">Incidencias Recientes</h3>
+                            <h3 className="font-bold text-foreground">Incidencias</h3>
                             <Link href="/driver/report-incident" className="text-xs text-primary font-bold hover:underline">
                                 Reportar Nueva
                             </Link>
