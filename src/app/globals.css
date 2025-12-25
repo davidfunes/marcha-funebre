@@ -184,17 +184,27 @@
   border-color: hsl(var(--christmas-green) / 0.4);
 }
 
-/* Subtle Forest Background for Light Mode */
+/* Multi-layered Forest Background for depth effect */
 .christmas-forest-bg {
   background-image:
-    linear-gradient(to bottom, transparent, hsl(var(--background) / 0.8)),
-    url("data:image/svg+xml,%3Csvg width='120' height='120' viewBox='0 0 120 120' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M20 90 L30 70 L25 70 L35 50 L30 50 L40 30 L50 50 L45 50 L55 70 L50 70 L60 90 Z' fill='%23164a39' fill-opacity='0.1'/%3E%3Cpath d='M80 110 L90 90 L85 90 L95 70 L90 70 L100 50 L110 70 L105 70 L115 90 L110 90 L120 110 Z' fill='%23164a39' fill-opacity='0.05'/%3E%3C/svg%3E");
-  background-repeat: repeat;
-  background-size: 120px 120px;
+    /* Layer 1: Front trees (Darker, larger, more opaque) */
+    url("data:image/svg+xml,%3Csvg width='240' height='240' viewBox='0 0 120 120' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M20 100 L40 60 L35 60 L50 30 L45 30 L60 0 L75 30 L70 30 L85 60 L80 60 L100 100 Z' fill='%23164a39' fill-opacity='0.08'/%3E%3C/svg%3E"),
+    /* Layer 2: Middle trees (Smaller, shifted) */
+    url("data:image/svg+xml,%3Csvg width='180' height='180' viewBox='0 0 120 120' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M10 110 L25 80 L20 80 L35 50 L30 50 L45 20 L60 50 L55 50 L70 80 L65 80 L80 110 Z' fill='%23164a39' fill-opacity='0.04'/%3E%3C/svg%3E"),
+    /* Layer 3: Background trees (Smallest, very subtle) */
+    url("data:image/svg+xml,%3Csvg width='120' height='120' viewBox='0 0 120 120' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M60 120 L75 95 L70 95 L85 70 L80 70 L95 45 L110 70 L105 70 L120 95 L115 95 L130 120 Z' fill='%23164a39' fill-opacity='0.02'/%3E%3C/svg%3E"),
+    /* Gradient overlay for smooth transition */
+    linear-gradient(to bottom, transparent, hsl(var(--background) / 0.9));
+
+  background-repeat: repeat, repeat, repeat, no-repeat;
+  background-position: 0% 100%, 50% 100%, 80% 110%, center;
+  background-size: 240px 240px, 180px 180px, 120px 120px, auto;
+  background-attachment: fixed;
 }
 
 .dark .christmas-forest-bg {
   background-image:
-    linear-gradient(to bottom, transparent, hsl(var(--background) / 0.8)),
-    url("data:image/svg+xml,%3Csvg width='120' height='120' viewBox='0 0 120 120' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M20 90 L30 70 L25 70 L35 50 L30 50 L40 30 L50 50 L45 50 L55 70 L50 70 L60 90 Z' fill='%23ffffff' fill-opacity='0.02'/%3E%3Cpath d='M80 110 L90 90 L85 90 L95 70 L90 70 L100 50 L110 70 L105 70 L115 90 L110 90 L120 110 Z' fill='%23ffffff' fill-opacity='0.01'/%3E%3C/svg%3E");
+    url("data:image/svg+xml,%3Csvg width='240' height='240' viewBox='0 0 120 120' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M20 100 L40 60 L35 60 L50 30 L45 30 L60 0 L75 30 L70 30 L85 60 L80 60 L100 100 Z' fill='%23ffffff' fill-opacity='0.01'/%3E%3C/svg%3E"),
+    url("data:image/svg+xml,%3Csvg width='180' height='180' viewBox='0 0 120 120' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M10 110 L25 80 L20 80 L35 50 L30 50 L45 20 L60 50 L55 50 L70 80 L65 80 L80 110 Z' fill='%23ffffff' fill-opacity='0.005'/%3E%3C/svg%3E"),
+    linear-gradient(to bottom, transparent, hsl(var(--background) / 0.9));
 }

@@ -129,7 +129,7 @@ export default function AdminLayout({
     );
 
     return (
-        <div className={`flex h-screen bg-background text-foreground overflow-hidden ${isChristmasTime() ? 'christmas-theme' : ''}`}>
+        <div className={`flex h-screen text-foreground overflow-hidden transition-colors ${isChristmasTime() ? 'christmas-theme christmas-forest-bg' : 'bg-background'}`}>
             {/* Desktop Sidebar */}
             <aside className="hidden md:flex w-64 flex-shrink-0 flex-col">
                 <SidebarContent />

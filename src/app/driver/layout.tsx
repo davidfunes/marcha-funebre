@@ -65,7 +65,7 @@ export default function DriverLayout({ children }: { children: React.ReactNode }
     const currentTitle = PAGE_TITLES[pathname] || 'Marcha Fúnebre';
 
     return (
-        <div className={`min-h-screen bg-background ${isChristmasTime() ? 'christmas-theme' : ''}`}>
+        <div className={`min-h-screen transition-colors ${isChristmasTime() ? 'christmas-theme christmas-forest-bg' : 'bg-background'}`}>
             {/* Global Sticky Header */}
             <header className={`sticky top-0 z-50 w-full border-b border-border supports-[backdrop-filter]:bg-card/60 transition-colors ${isChristmasTime() ? 'christmas-forest-bg bg-card/60' : 'bg-card/80'}`}>
                 <div className="container flex h-14 max-w-screen-2xl items-center px-4 justify-between">
