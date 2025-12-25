@@ -1151,7 +1151,7 @@ export default function AdminDashboard() {
                     {/* Incident Status Chart */}
                     <div className="rounded-xl border border-border bg-card p-6 shadow-sm flex flex-col items-center">
                         <h3 className="font-semibold mb-4 text-center">Estado de Incidencias</h3>
-                        <div className="w-full">
+                        <div className="w-full h-[200px]">
                             <Bar
                                 data={{
                                     labels: ['Vehículos', 'Material'],
@@ -1176,6 +1176,12 @@ export default function AdminDashboard() {
                                 }}
                                 options={{
                                     indexAxis: 'y' as const,
+                                    layout: {
+                                        padding: {
+                                            left: 10,
+                                            right: 20
+                                        }
+                                    },
                                     plugins: {
                                         legend: {
                                             position: 'bottom',
@@ -1187,6 +1193,7 @@ export default function AdminDashboard() {
                                         }
                                     },
                                     responsive: true,
+                                    maintainAspectRatio: false,
                                     scales: {
                                         x: {
                                             stacked: true,
@@ -1194,7 +1201,14 @@ export default function AdminDashboard() {
                                             ticks: { stepSize: 1 }
                                         },
                                         y: {
-                                            stacked: true
+                                            stacked: true,
+                                            ticks: {
+                                                padding: 8,
+                                                font: {
+                                                    size: 11,
+                                                    weight: '500'
+                                                }
+                                            }
                                         }
                                     }
                                 }}
