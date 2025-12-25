@@ -7,17 +7,23 @@ import { isChristmasTime } from '@/utils/dateUtils';
 const FESTIVE_ICONS = ['🎄', '🎁', '❄️', '⭐', '🎅', '🦌', '🔥'];
 
 export function FestiveConfetti() {
-    const [icons, setIcons] = useState<{ id: number; icon: string; x: string; delay: number }[]>([]);
+    const [icons, setIcons] = useState<{ id: number; icon: string; x: string; xTarget: string; duration: number; delay: number }[]>([]);
     const isChristmas = isChristmasTime();
 
     useEffect(() => {
-        const newIcons = Array.from({ length: 30 }).map((_, i) => ({
-            id: i,
-            icon: FESTIVE_ICONS[Math.floor(Math.random() * FESTIVE_ICONS.length)],
-            x: `${Math.random() * 100}vw`,
-            delay: Math.random() * 2
-        }));
-        setIcons(newIcons);
+        const generateIcons = () => {
+            const newIcons = Array.from({ length: 30 }).map((_, i) => ({
+                id: i,
+                icon: FESTIVE_ICONS[Math.floor(Math.random() * FESTIVE_ICONS.length)],
+                x: `${Math.random() * 100}vw`,
+                xTarget: `${(Math.random() * 100) + (Math.random() * 50 - 25)}vw`,
+                duration: 3 + Math.random() * 3,
+                delay: Math.random() * 2
+            }));
+            setIcons(newIcons);
+        };
+
+        generateIcons();
     }, []);
 
     if (!isChristmas) return null;
@@ -33,10 +39,10 @@ export function FestiveConfetti() {
                             y: '110vh',
                             opacity: [0, 1, 1, 0],
                             rotate: 360,
-                            x: `calc(${item.x} + ${Math.random() * 50 - 25}px)`
+                            x: item.xTarget
                         }}
                         transition={{
-                            duration: 3 + Math.random() * 3,
+                            duration: item.duration,
                             delay: item.delay,
                             ease: "easeOut"
                         }}

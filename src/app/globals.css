@@ -123,7 +123,7 @@
   }
 
   100% {
-    transform: translateY(110vh) translateX(20px);
+    transform: translateY(110vh) translateX(var(--snow-x-offset, 20px));
   }
 }
 
