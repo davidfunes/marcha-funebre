@@ -121,11 +121,11 @@
 .christmas-header-trees-multicapa {
   background-image:
     /* Layer 1: Closest trees (Larger, more opaque) */
-    url("data:image/svg+xml,%3Csvg width='160' height='40' viewBox='0 0 160 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M20 40 L30 25 L25 25 L35 10 L30 10 L40 0 L50 10 L45 10 L55 25 L50 25 L60 40 Z' fill='%23164a39' fill-opacity='0.12'/%3E%3C/svg%3E"),
+    url("data:image/svg+xml,%3Csvg width='160' height='40' viewBox='0 0 160 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M20 40 L30 25 L25 25 L35 10 L30 10 L40 0 L50 10 L45 10 L55 25 L50 25 L60 40 Z' fill='%2322c55e' fill-opacity='0.15'/%3E%3C/svg%3E"),
     /* Layer 2: Mid trees (Smaller, shifted) */
-    url("data:image/svg+xml,%3Csvg width='120' height='30' viewBox='0 0 120 30' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M80 30 L90 18 L86 18 L95 8 L91 8 L100 0 L109 8 L105 8 L114 18 L110 18 L120 30 Z' fill='%23164a39' fill-opacity='0.08'/%3E%3C/svg%3E"),
+    url("data:image/svg+xml,%3Csvg width='120' height='30' viewBox='0 0 120 30' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M80 30 L90 18 L86 18 L95 8 L91 8 L100 0 L109 8 L105 8 L114 18 L110 18 L120 30 Z' fill='%2322c55e' fill-opacity='0.1'/%3E%3C/svg%3E"),
     /* Layer 3: Far trees (Smallest, most subtle) */
-    url("data:image/svg+xml,%3Csvg width='80' height='20' viewBox='0 0 80 20' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M10 20 L18 12 L15 12 L22 5 L19 5 L26 0 L33 5 L30 5 L37 12 L34 12 L42 20 Z' fill='%23164a39' fill-opacity='0.04'/%3E%3C/svg%3E");
+    url("data:image/svg+xml,%3Csvg width='80' height='20' viewBox='0 0 80 20' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M10 20 L18 12 L15 12 L22 5 L19 5 L26 0 L33 5 L30 5 L37 12 L34 12 L42 20 Z' fill='%2322c55e' fill-opacity='0.05'/%3E%3C/svg%3E");
 
   background-repeat: repeat-x;
   background-position: 10px bottom, 50px bottom, 100px bottom;
