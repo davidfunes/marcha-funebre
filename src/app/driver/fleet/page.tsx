@@ -576,7 +576,10 @@ export default function MyVehiclePage() {
                                                         )}
                                                     </div>
                                                 </div>
-                                                <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold border ${incident.status === 'resolved' ? 'bg-green-500/10 text-green-500 border-green-500/20' : 'bg-amber-500/10 text-amber-500 border-amber-500/20'
+                                                <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold border ${incident.status === 'open' ? 'bg-blue-50 text-blue-600 border-blue-200' :
+                                                    incident.status === 'in_progress' ? 'bg-amber-50 text-amber-600 border-amber-200 shadow-sm' :
+                                                        incident.status === 'resolved' ? 'bg-emerald-50 text-emerald-600 border-emerald-200' :
+                                                            'bg-slate-50 text-slate-400 border-slate-200'
                                                     }`}>
                                                     {incident.status === 'open' ? 'Abierta' :
                                                         incident.status === 'in_progress' ? 'En Proceso' :
@@ -588,8 +591,9 @@ export default function MyVehiclePage() {
                                                 <span className="text-[10px] text-muted-foreground">
                                                     {incident.createdAt?.toDate ? format(incident.createdAt.toDate(), 'd MMM, HH:mm', { locale: es }) : 'Recién reportada'}
                                                 </span>
-                                                <span className={`text-[10px] font-black uppercase tracking-widest ${incident.priority === 'critical' || incident.priority === 'high' ? 'text-red-500' :
-                                                    incident.priority === 'medium' ? 'text-amber-500' : 'text-blue-500'
+                                                <span className={`text-[10px] font-black uppercase tracking-widest ${incident.priority === 'critical' ? 'text-red-600' :
+                                                    incident.priority === 'high' ? 'text-orange-600' :
+                                                        incident.priority === 'medium' ? 'text-yellow-600' : 'text-cyan-600'
                                                     }`}>
                                                     Prioridad {incident.priority}
                                                 </span>
