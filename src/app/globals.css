@@ -39,7 +39,8 @@
     --christmas-green: 156 54% 19%;
     /* #164a39 */
     --christmas-red: 0 84% 60%;
-    --snow-opacity: 0.15;
+    --snow-opacity: 0.85;
+    /* Increased significantly for eradication */
   }
 
   :root.dark {
@@ -131,19 +132,21 @@
   position: fixed;
   top: -10vh;
   color: white;
-  background-color: #f0f4f8;
-  /* Very light bluish gray for visibility */
+  background-color: #e0faff;
+  /* Cold High-Contrast White */
   pointer-events: none;
-  z-index: 10;
+  z-index: 10000;
   animation: snowfall linear infinite;
   opacity: var(--snow-opacity);
-  /* Enhanced shadow for light mode visibility */
-  filter: drop-shadow(0 0 1px rgba(0, 0, 0, 0.2)) blur(0.5px);
+  /* Expert High-Contrast: Double shadow + subtle glow */
+  filter: drop-shadow(0 0 1px rgba(0, 0, 0, 0.4)) drop-shadow(0 0 3px rgba(173, 216, 230, 0.6));
 }
 
 .dark .snow-flake {
   background-color: white;
-  filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.3));
+  filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.4)) drop-shadow(0 0 2px rgba(255, 255, 255, 0.2));
+  --snow-opacity: 0.4;
+  /* Softer in dark mode */
 }
 
 .christmas-accent {

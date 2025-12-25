@@ -11,14 +11,14 @@ export function Snowfall() {
         if (!isChristmas) return;
 
         const generateFlakes = () => {
-            const newFlakes = Array.from({ length: 40 }).map((_, i) => ({
+            const newFlakes = Array.from({ length: 80 }).map((_, i) => ({
                 id: i,
                 left: `${Math.random() * 100}vw`,
-                xOffset: `${Math.random() * 30 - 15}px`,
-                delay: `${Math.random() * 15}s`,
-                duration: `${8 + Math.random() * 12}s`,
-                size: `${Math.random() * 6 + 4}px`,
-                opacity: Math.random() * 0.5 + 0.3
+                xOffset: `${Math.random() * 40 - 20}px`,
+                delay: `${Math.random() * 20}s`,
+                duration: `${7 + Math.random() * 10}s`,
+                size: `${Math.random() * 8 + 4}px`,
+                opacity: Math.random() * 0.4 + 0.6
             }));
             setFlakes(newFlakes);
         };
@@ -29,7 +29,7 @@ export function Snowfall() {
     if (!isChristmas) return null;
 
     return (
-        <div className="fixed inset-0 pointer-events-none overflow-hidden z-[5]" aria-hidden="true">
+        <div className="fixed inset-0 pointer-events-none overflow-hidden z-[99999]" aria-hidden="true">
             {flakes.map((flake) => (
                 <div
                     key={flake.id}
