@@ -96,7 +96,7 @@ export default function AdminLayout({
     ];
 
     const SidebarContent = ({ isMobile = false }) => (
-        <div className="flex flex-col h-full bg-card border-r border-border">
+        <div className={`flex flex-col h-full border-r border-border transition-colors ${isChristmasTime() ? 'christmas-forest-bg bg-card/40' : 'bg-card'}`}>
             <div className="flex h-16 items-center px-6 border-b border-border justify-between">
                 <Logo size="md" />
                 {isMobile && (
@@ -161,7 +161,7 @@ export default function AdminLayout({
                 )}
 
                 {/* Header */}
-                <header className={`flex h-16 items-center justify-between border-b px-4 md:px-8 bg-card/50 backdrop-blur shrink-0 transition-opacity ${isChristmasTime() ? 'christmas-border border-b-0' : 'border-border'}`}>
+                <header className={`flex h-16 items-center justify-between border-b border-border px-4 md:px-8 backdrop-blur shrink-0 transition-opacity ${isChristmasTime() ? 'christmas-forest-bg bg-card/40' : 'bg-card/50'}`}>
                     <div className="flex items-center gap-4">
                         <button
                             onClick={() => setMobileMenuOpen(true)}

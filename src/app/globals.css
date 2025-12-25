@@ -183,3 +183,18 @@
   box-shadow: 0 10px 25px -5px rgba(22, 74, 57, 0.3), 0 8px 10px -6px rgba(22, 74, 57, 0.2);
   border-color: hsl(var(--christmas-green) / 0.4);
 }
+
+/* Subtle Forest Background for Light Mode */
+.christmas-forest-bg {
+  background-image:
+    linear-gradient(to bottom, transparent, hsl(var(--background) / 0.8)),
+    url("data:image/svg+xml,%3Csvg width='120' height='120' viewBox='0 0 120 120' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M20 90 L30 70 L25 70 L35 50 L30 50 L40 30 L50 50 L45 50 L55 70 L50 70 L60 90 Z' fill='%23164a39' fill-opacity='0.1'/%3E%3Cpath d='M80 110 L90 90 L85 90 L95 70 L90 70 L100 50 L110 70 L105 70 L115 90 L110 90 L120 110 Z' fill='%23164a39' fill-opacity='0.05'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 120px 120px;
+}
+
+.dark .christmas-forest-bg {
+  background-image:
+    linear-gradient(to bottom, transparent, hsl(var(--background) / 0.8)),
+    url("data:image/svg+xml,%3Csvg width='120' height='120' viewBox='0 0 120 120' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M20 90 L30 70 L25 70 L35 50 L30 50 L40 30 L50 50 L45 50 L55 70 L50 70 L60 90 Z' fill='%23ffffff' fill-opacity='0.02'/%3E%3Cpath d='M80 110 L90 90 L85 90 L95 70 L90 70 L100 50 L110 70 L105 70 L115 90 L110 90 L120 110 Z' fill='%23ffffff' fill-opacity='0.01'/%3E%3C/svg%3E");
+}
