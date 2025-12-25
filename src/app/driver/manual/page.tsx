@@ -33,7 +33,7 @@ export default function DriverManual() {
 
     const sections = [
         {
-            title: "1. Inicio y Fin de Jornada",
+            title: "1. ¿Cómo usar un coche?",
             icon: Car,
             color: "bg-emerald-500/10 text-emerald-500",
             description: "Cómo empezar el día con el pie derecho y dejar el coche listo para el siguiente.",
