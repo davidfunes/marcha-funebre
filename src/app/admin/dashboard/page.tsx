@@ -947,19 +947,22 @@ export default function AdminDashboard() {
                     {/* Active Incidents */}
                     <div className="rounded-xl border border-border bg-card shadow-sm">
                         <div className="p-6 border-b border-border flex items-center justify-between">
-                            <h3 className="font-semibold">Incidencias de Vehículos Activas</h3>
+                            <h3 className="font-semibold">Incidencias Activas</h3>
                         </div>
                         <div className="p-0">
                             {(() => {
                                 const priorityOrder = { 'critical': 0, 'high': 1, 'medium': 2, 'low': 3 };
-                                const vehicleIncidents = incidents
-                                    .filter(inc => inc.status !== 'resolved' && !inc.inventoryItemId)
+                                const activeIncidents = incidents
+                                    .filter(inc => inc.status !== 'resolved')
                                     .sort((a, b) => (priorityOrder[a.priority as keyof typeof priorityOrder] ?? 99) - (priorityOrder[b.priority as keyof typeof priorityOrder] ?? 99));
 
-                                return vehicleIncidents.length > 0 ? (
+                                return activeIncidents.length > 0 ? (
                                     <div className="divide-y divide-border">
-                                        {vehicleIncidents.map((inc) => {
+                                        {activeIncidents.map((inc) => {
                                             const affectedVehicle = vehicles.find(v => v.id === inc.vehicleId);
+                                            const affectedMaterial = inc.inventoryItemId ? inventory.find(i => i.id === inc.inventoryItemId) : null;
+                                            const isMaterial = !!inc.inventoryItemId;
+
                                             return (
                                                 <div
                                                     key={inc.id}
@@ -967,17 +970,30 @@ export default function AdminDashboard() {
                                                     onClick={() => handleViewIncident(inc)}
                                                 >
                                                     <div className="flex items-center gap-4">
-                                                        <div className={`h-8 w-8 rounded-full flex items-center justify-center ${inc.priority === 'high' ? 'bg-red-100 text-red-600' :
+                                                        <div className={`h-8 w-8 rounded-full flex items-center justify-center ${inc.priority === 'critical' || inc.priority === 'high' ? 'bg-red-100 text-red-600' :
                                                             inc.priority === 'medium' ? 'bg-amber-100 text-amber-600' : 'bg-blue-100 text-blue-600'
                                                             }`}>
-                                                            <AlertTriangle className="h-4 w-4" />
+                                                            {isMaterial ? <Music className="h-4 w-4" /> : <AlertTriangle className="h-4 w-4" />}
                                                         </div>
                                                         <div>
-                                                            <p className="text-sm font-medium">{inc.title}</p>
+                                                            <div className="flex items-center gap-2">
+                                                                <p className="text-sm font-medium">{inc.title}</p>
+                                                                {isMaterial && (
+                                                                    <span className="text-[10px] font-bold bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded border border-purple-200 uppercase">
+                                                                        Material
+                                                                    </span>
+                                                                )}
+                                                            </div>
                                                             {affectedVehicle && (
                                                                 <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
                                                                     <Car className="h-3 w-3" />
                                                                     {affectedVehicle.brand} {affectedVehicle.model} ({affectedVehicle.plate})
+                                                                </p>
+                                                            )}
+                                                            {affectedMaterial && (
+                                                                <p className="text-xs text-purple-600 font-medium flex items-center gap-1 mt-0.5">
+                                                                    <Music className="h-3 w-3" />
+                                                                    {affectedMaterial.name}
                                                                 </p>
                                                             )}
                                                             <p className="text-xs text-muted-foreground">{inc.status}</p>
@@ -1019,7 +1035,7 @@ export default function AdminDashboard() {
                                 ) : (
                                     <div className="flex flex-col items-center justify-center py-12 text-center">
                                         <AlertTriangle className="h-8 w-8 text-muted-foreground mb-3" />
-                                        <p className="text-muted-foreground">No hay incidencias de vehículos activas</p>
+                                        <p className="text-muted-foreground">No hay incidencias activas</p>
                                     </div>
                                 );
                             })()}
@@ -1138,7 +1154,7 @@ export default function AdminDashboard() {
                         <div className="w-full">
                             <Bar
                                 data={{
-                                    labels: ['Vehículos', 'Materiales'],
+                                    labels: ['Vehículos', 'Material'],
                                     datasets: [
                                         {
                                             label: 'Abierta',
