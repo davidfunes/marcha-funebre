@@ -67,7 +67,7 @@ export default function DriverLayout({ children }: { children: React.ReactNode }
     return (
         <div className={`min-h-screen bg-background ${isChristmasTime() ? 'christmas-theme' : ''}`}>
             {/* Global Sticky Header */}
-            <header className="sticky top-0 z-50 w-full border-b border-border bg-card/80 backdrop-blur supports-[backdrop-filter]:bg-card/60">
+            <header className={`sticky top-0 z-50 w-full border-b  supports-[backdrop-filter]:bg-card/60 ${isChristmasTime() ? 'christmas-border border-b-0 bg-card/90' : 'border-border bg-card/80'}`}>
                 <div className="container flex h-14 max-w-screen-2xl items-center px-4 justify-between">
                     <div className="flex items-center gap-4">
                         {isDashboard ? (

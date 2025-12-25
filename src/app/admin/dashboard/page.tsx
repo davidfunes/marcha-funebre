@@ -26,8 +26,10 @@ import {
     Loader2,
     Search,
     Clock,
-    Fuel
+    Fuel,
+    Gift
 } from 'lucide-react';
+import { isChristmasTime } from '@/utils/dateUtils';
 import Link from 'next/link';
 import { Modal } from '@/components/ui/Modal';
 import { IncidentDetailsModal } from '@/components/admin/incidents/IncidentDetailsModal';
@@ -647,9 +649,9 @@ export default function AdminDashboard() {
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                 {stats.map((stat) => (
                     <div
-                        key={stat.label}
+                        key={stat.id}
                         onClick={() => handleStatClick(stat.id)}
-                        className="rounded-xl border border-border bg-card p-6 shadow-sm hover:shadow-md transition-all cursor-pointer block group"
+                        className={`rounded-xl border bg-card p-6 shadow-sm hover:shadow-md transition-all cursor-pointer block group ${isChristmasTime() ? 'christmas-card' : 'border-border'}`}
                     >
                         <div className="flex flex-row items-center justify-between space-y-0 pb-2">
                             <span className="text-sm font-medium text-muted-foreground group-hover:text-primary transition-colors">{stat.label}</span>
@@ -839,100 +841,102 @@ export default function AdminDashboard() {
             </div>
 
             {/* Material Alerts Section (anything not 'new') */}
-            {inventory.some(i => (i.locations || []).some(l => l.status && l.status !== 'new')) && (
-                <div className="rounded-xl border border-red-200 dark:border-red-900/40 bg-red-50 dark:bg-red-950/10 p-6 animate-in fade-in slide-in-from-top-4">
-                    <div className="flex items-center gap-3 mb-4">
-                        <div className="p-2 bg-red-100 dark:bg-red-900/40 rounded-full text-red-600 dark:text-red-400">
-                            <AlertTriangle className="h-6 w-6" />
+            {
+                inventory.some(i => (i.locations || []).some(l => l.status && l.status !== 'new')) && (
+                    <div className="rounded-xl border border-red-200 dark:border-red-900/40 bg-red-50 dark:bg-red-950/10 p-6 animate-in fade-in slide-in-from-top-4">
+                        <div className="flex items-center gap-3 mb-4">
+                            <div className="p-2 bg-red-100 dark:bg-red-900/40 rounded-full text-red-600 dark:text-red-400">
+                                <AlertTriangle className="h-6 w-6" />
+                            </div>
+                            <div>
+                                <h3 className="text-lg font-bold text-red-900 dark:text-red-100">Alertas de Material Roto</h3>
+                                <p className="text-sm text-red-700 dark:text-red-400/80">El siguiente material está marcado como roto y requiere reemplazo.</p>
+                            </div>
                         </div>
-                        <div>
-                            <h3 className="text-lg font-bold text-red-900 dark:text-red-100">Alertas de Material Roto</h3>
-                            <p className="text-sm text-red-700 dark:text-red-400/80">El siguiente material está marcado como roto y requiere reemplazo.</p>
-                        </div>
-                    </div>
 
-                    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                        {inventory.flatMap(item =>
-                            (item.locations || [])
-                                .map((loc, idx) => ({ item, loc, idx }))
-                                .filter(({ loc }) => loc.status && loc.status !== 'new')
-                        ).map(({ item, loc, idx }) => {
-                            // Find linked incident for this broken item to get reporter info
-                            const linkedIncident = incidents.find(inc => inc.inventoryItemId === item.id && inc.status !== 'resolved');
+                        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                            {inventory.flatMap(item =>
+                                (item.locations || [])
+                                    .map((loc, idx) => ({ item, loc, idx }))
+                                    .filter(({ loc }) => loc.status && loc.status !== 'new')
+                            ).map(({ item, loc, idx }) => {
+                                // Find linked incident for this broken item to get reporter info
+                                const linkedIncident = incidents.find(inc => inc.inventoryItemId === item.id && inc.status !== 'resolved');
 
-                            let locationName = 'Desconocido';
-                            if (loc.id === 'REPAIR_POOL') {
-                                if (linkedIncident) {
-                                    const v = vehicles.find(v => v.id === linkedIncident.vehicleId);
-                                    locationName = v ? `🛠️ Origen: ${v.plate}` : '🛠️ Reparación (Origen desc.)';
-                                } else {
-                                    locationName = '🛠️ En Reparación';
+                                let locationName = 'Desconocido';
+                                if (loc.id === 'REPAIR_POOL') {
+                                    if (linkedIncident) {
+                                        const v = vehicles.find(v => v.id === linkedIncident.vehicleId);
+                                        locationName = v ? `🛠️ Origen: ${v.plate}` : '🛠️ Reparación (Origen desc.)';
+                                    } else {
+                                        locationName = '🛠️ En Reparación';
+                                    }
+                                } else if (loc.type === 'vehicle') {
+                                    const v = vehicles.find(v => v.id === loc.id);
+                                    locationName = v ? `🚗 ${v.plate}` : 'Vehículo no encontrado';
+                                } else if (loc.type === 'warehouse') {
+                                    const w = warehouses.find(w => w.id === loc.id);
+                                    locationName = w ? `🏭 ${w.name}` : 'Almacén no encontrado';
                                 }
-                            } else if (loc.type === 'vehicle') {
-                                const v = vehicles.find(v => v.id === loc.id);
-                                locationName = v ? `🚗 ${v.plate}` : 'Vehículo no encontrado';
-                            } else if (loc.type === 'warehouse') {
-                                const w = warehouses.find(w => w.id === loc.id);
-                                locationName = w ? `🏭 ${w.name}` : 'Almacén no encontrado';
-                            }
 
-                            const reporter = linkedIncident ? users.find(u => u.id === linkedIncident.reportedByUserId) : null;
+                                const reporter = linkedIncident ? users.find(u => u.id === linkedIncident.reportedByUserId) : null;
 
-                            return (
-                                <div
-                                    key={`${item.id}-${idx}`}
-                                    className={`bg-white dark:bg-zinc-900 p-4 rounded-lg border border-red-100 dark:border-red-900/20 shadow-sm flex flex-col justify-between gap-3 ${linkedIncident ? 'cursor-pointer hover:border-red-300 transition-colors' : ''}`}
-                                    onClick={() => linkedIncident && handleViewIncident(linkedIncident)}
-                                >
-                                    <div>
-                                        <div className="flex justify-between items-start">
-                                            <h4 className="font-semibold text-red-900 dark:text-red-100">{item.name}</h4>
-                                            <span className="text-xs font-mono bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300 px-2 py-1 rounded">{item.sku}</span>
-                                        </div>
-                                        <div className="flex items-center gap-2 mt-1">
-                                            <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold uppercase ${loc.status === 'totally_broken' ? 'bg-red-200 text-red-800' :
-                                                loc.status === 'ordered' ? 'bg-blue-200 text-blue-800' :
-                                                    'bg-amber-200 text-amber-800'
-                                                }`}>
-                                                {loc.status === 'totally_broken' ? 'Roto Total' :
-                                                    loc.status === 'ordered' ? 'Pedido' :
-                                                        'Urge Cambio'}
-                                            </span>
-                                            <p className="text-sm text-red-600 dark:text-red-400">{locationName}</p>
-                                        </div>
-                                        {reporter && (
-                                            <div className="flex items-center gap-2 mt-3 pt-2 border-t border-red-100/50 dark:border-red-900/30">
-                                                <div className="h-5 w-5 rounded-full bg-secondary flex items-center justify-center shrink-0 text-secondary-foreground font-bold text-[8px]">
-                                                    {getUserInitials(reporter)}
-                                                </div>
-                                                <p className="text-[10px] text-muted-foreground">
-                                                    Reportado por: <span className="font-medium text-foreground">{getFullName(reporter)}</span>
-                                                </p>
+                                return (
+                                    <div
+                                        key={`${item.id}-${idx}`}
+                                        className={`bg-white dark:bg-zinc-900 p-4 rounded-lg border border-red-100 dark:border-red-900/20 shadow-sm flex flex-col justify-between gap-3 ${linkedIncident ? 'cursor-pointer hover:border-red-300 transition-colors' : ''}`}
+                                        onClick={() => linkedIncident && handleViewIncident(linkedIncident)}
+                                    >
+                                        <div>
+                                            <div className="flex justify-between items-start">
+                                                <h4 className="font-semibold text-red-900 dark:text-red-100">{item.name}</h4>
+                                                <span className="text-xs font-mono bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300 px-2 py-1 rounded">{item.sku}</span>
                                             </div>
-                                        )}
-                                        <div className="flex flex-wrap gap-2 mt-4">
-                                            {loc.status !== 'ordered' && (
-                                                <button
-                                                    onClick={() => handleMarkAsOrdered(item, idx)}
-                                                    className="flex-1 bg-blue-50 text-blue-600 hover:bg-blue-100 font-bold py-2.5 px-3 rounded-lg text-[10px] uppercase tracking-tight transition-colors border border-blue-200 text-center leading-tight"
-                                                >
-                                                    Marcar Pedido
-                                                </button>
+                                            <div className="flex items-center gap-2 mt-1">
+                                                <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold uppercase ${loc.status === 'totally_broken' ? 'bg-red-200 text-red-800' :
+                                                    loc.status === 'ordered' ? 'bg-blue-200 text-blue-800' :
+                                                        'bg-amber-200 text-amber-800'
+                                                    }`}>
+                                                    {loc.status === 'totally_broken' ? 'Roto Total' :
+                                                        loc.status === 'ordered' ? 'Pedido' :
+                                                            'Urge Cambio'}
+                                                </span>
+                                                <p className="text-sm text-red-600 dark:text-red-400">{locationName}</p>
+                                            </div>
+                                            {reporter && (
+                                                <div className="flex items-center gap-2 mt-3 pt-2 border-t border-red-100/50 dark:border-red-900/30">
+                                                    <div className="h-5 w-5 rounded-full bg-secondary flex items-center justify-center shrink-0 text-secondary-foreground font-bold text-[8px]">
+                                                        {getUserInitials(reporter)}
+                                                    </div>
+                                                    <p className="text-[10px] text-muted-foreground">
+                                                        Reportado por: <span className="font-medium text-foreground">{getFullName(reporter)}</span>
+                                                    </p>
+                                                </div>
                                             )}
-                                            <button
-                                                onClick={() => handleResolveBroken(item, idx)}
-                                                className="flex-[1.5] bg-red-600 hover:bg-red-700 text-white font-bold py-2.5 px-3 rounded-lg text-[10px] uppercase tracking-tight transition-all shadow-sm shadow-red-200 active:scale-[0.98] text-center leading-tight"
-                                            >
-                                                Marcar Reemplazado
-                                            </button>
+                                            <div className="flex flex-wrap gap-2 mt-4">
+                                                {loc.status !== 'ordered' && (
+                                                    <button
+                                                        onClick={() => handleMarkAsOrdered(item, idx)}
+                                                        className="flex-1 bg-blue-50 text-blue-600 hover:bg-blue-100 font-bold py-2.5 px-3 rounded-lg text-[10px] uppercase tracking-tight transition-colors border border-blue-200 text-center leading-tight"
+                                                    >
+                                                        Marcar Pedido
+                                                    </button>
+                                                )}
+                                                <button
+                                                    onClick={() => handleResolveBroken(item, idx)}
+                                                    className="flex-[1.5] bg-red-600 hover:bg-red-700 text-white font-bold py-2.5 px-3 rounded-lg text-[10px] uppercase tracking-tight transition-all shadow-sm shadow-red-200 active:scale-[0.98] text-center leading-tight"
+                                                >
+                                                    Marcar Reemplazado
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                            );
-                        })}
+                                );
+                            })}
+                        </div>
                     </div>
-                </div>
-            )}
+                )
+            }
 
             {/* Main Content Layout */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -1480,6 +1484,6 @@ export default function AdminDashboard() {
                     router.push('/admin/incidents');
                 }}
             />
-        </div>
+        </div >
     );
 }

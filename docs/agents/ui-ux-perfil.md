@@ -21,3 +21,6 @@ Crear una interfaz intuitiva, moderna y estéticamente atractiva que sea funcion
 2. Implementar componentes atómicos en `src/components`.
 3. Aplicar estilos con Tailwind y animaciones con Framer Motion.
 4. Refinar la visualización según el feedback del usuario.
+
+## Directrices de Comunicación
+- **Idioma**: Todas las comunicaciones con el usuario deben realizarse exclusivamente en **castellano**.

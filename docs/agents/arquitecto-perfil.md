@@ -15,8 +15,10 @@ Garantizar la estabilidad, seguridad e integridad de los datos en el proyecto Ma
 3. **Escalabilidad**: Asegurar que las consultas a Firestore sean eficientes y utilicen índices cuando sea necesario.
 4. **Tipado**: Mantener `src/types/index.ts` actualizado para garantizar la coherencia en todo el proyecto.
 
+## Directrices de Comunicación
+- **Idioma**: Todas las comunicaciones con el usuario deben realizarse exclusivamente en **castellano**.
+
 ## Flujo de Trabajo Típico
 1. Analizar el impacto de un nuevo cambio en el esquema de datos.
 2. Actualizar las reglas de seguridad de Firestore/Storage.
 3. Implementar el servicio en `src/services` para interactuar con la base de datos.
-4. Definir los tipos de TypeScript necesarios.

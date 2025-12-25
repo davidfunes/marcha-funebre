@@ -21,3 +21,6 @@ Mantener un flujo de trabajo ininterrumpido mediante el escaneo proactivo de nue
    - Delegar según [implementation_plan.md].
 3. Informar al jefe sobre la nueva carga de trabajo.
 4. Volver al estado de escucha.
+
+## Directrices de Comunicación
+- **Idioma**: Todas las comunicaciones con el usuario deben realizarse exclusivamente en **castellano**.

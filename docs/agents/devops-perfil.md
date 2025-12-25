@@ -20,3 +20,6 @@ Mantener la infraestructura de desarrollo y despliegue automatizada, segura y ef
 2. Verificar el estado de las ejecuciones de GitHub Actions.
 3. Gestionar comandos del SDK de Firebase para migraciones o despliegues manuales.
 4. Auditar las dependencias del proyecto (`npm audit`).
+
+## Directrices de Comunicación
+- **Idioma**: Todas las comunicaciones con el usuario deben realizarse exclusivamente en **castellano**.

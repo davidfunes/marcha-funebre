@@ -20,3 +20,6 @@ Asegurar que la aplicación no solo funcione técnicamente, sino que la lógica 
 2. Implementar visualizaciones de datos complejas en el Dashboard de Administración.
 3. Verificar la precisión de las lecturas de OCR.
 4. Analizar el uso de la aplicación para proponer mejoras en la lógica de incentivos.
+
+## Directrices de Comunicación
+- **Idioma**: Todas las comunicaciones con el usuario deben realizarse exclusivamente en **castellano**.
