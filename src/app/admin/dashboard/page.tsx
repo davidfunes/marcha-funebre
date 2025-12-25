@@ -1206,7 +1206,7 @@ export default function AdminDashboard() {
                                                 padding: 8,
                                                 font: {
                                                     size: 11,
-                                                    weight: '500'
+                                                    weight: 'bold'
                                                 }
                                             }
                                         }
