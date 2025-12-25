@@ -177,12 +177,19 @@ export default function MyVehiclePage() {
                     const q = query(
                         collection(db, 'incidents'),
                         where('vehicleId', '==', vehicle.id),
-                        orderBy('createdAt', 'desc'),
-                        limit(5)
+                        limit(20) // Fetch more to allow in-memory sorting of a decent set
                     );
                     const snapshot = await getDocs(q);
                     const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Incident));
-                    setVehicleIncidents(data);
+
+                    // Sort in memory instead of Firestore to avoid composite index requirement
+                    const sortedData = data.sort((a, b) => {
+                        const dateA = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(0);
+                        const dateB = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(0);
+                        return dateB.getTime() - dateA.getTime();
+                    }).slice(0, 5); // Still show only top 5 in UI
+
+                    setVehicleIncidents(sortedData);
                 } catch (error) {
                     console.error("Error fetching vehicle incidents:", error);
                 } finally {
