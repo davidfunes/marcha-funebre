@@ -299,50 +299,58 @@ export default function RentingPage() {
                 isOpen={isVehiclesModalOpen}
                 onClose={() => setIsVehiclesModalOpen(false)}
                 title={viewingCompany ? `Vehículos de ${viewingCompany.name}` : 'Detalle de Vehículos'}
-                className="max-w-2xl"
+                className="max-w-3xl"
             >
-                <div className="space-y-4">
+                <div className="space-y-6">
                     {viewingCompany && getCompanyVehicles(viewingCompany.id).length > 0 ? (
-                        <div className="overflow-hidden rounded-lg border border-border">
-                            <table className="w-full text-sm">
-                                <thead className="bg-muted/50 text-muted-foreground text-xs uppercase">
-                                    <tr>
-                                        <th className="px-4 py-3 text-left font-medium">Vehículo</th>
-                                        <th className="px-4 py-3 text-left font-medium">Matrícula</th>
-                                        <th className="px-4 py-3 text-right font-medium">Combustible</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-border bg-card">
-                                    {getCompanyVehicles(viewingCompany.id).map((vehicle) => (
-                                        <tr key={vehicle.id} className="hover:bg-muted/20 transition-colors">
-                                            <td className="px-4 py-3">
-                                                <div className="font-medium">{vehicle.brand} {vehicle.model}</div>
-                                                <div className="text-xs text-muted-foreground">{vehicle.year}</div>
-                                            </td>
-                                            <td className="px-4 py-3">
-                                                <span className="font-mono bg-muted px-1.5 py-0.5 rounded text-xs">
-                                                    {vehicle.plate}
-                                                </span>
-                                            </td>
-                                            <td className="px-4 py-3 text-right">
-                                                <span className="capitalize text-muted-foreground">{vehicle.fuelType}</span>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            {getCompanyVehicles(viewingCompany.id).map((vehicle) => (
+                                <div
+                                    key={vehicle.id}
+                                    className="p-4 rounded-xl border border-border bg-card shadow-sm hover:shadow-md transition-shadow space-y-3"
+                                >
+                                    <div className="flex justify-between items-start">
+                                        <div className="flex items-center gap-3">
+                                            <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+                                                <Car className="h-5 w-5" />
+                                            </div>
+                                            <div>
+                                                <h4 className="font-bold text-foreground leading-tight">
+                                                    {vehicle.brand}
+                                                </h4>
+                                                <p className="text-sm text-muted-foreground">{vehicle.model}</p>
+                                            </div>
+                                        </div>
+                                        <div className="bg-muted px-2 py-1 rounded border border-border/50 text-xs font-mono font-bold tracking-wider">
+                                            {vehicle.plate}
+                                        </div>
+                                    </div>
+
+                                    <div className="grid grid-cols-2 gap-2 pt-1">
+                                        <div className="bg-muted/30 p-2 rounded-lg text-center">
+                                            <p className="text-[10px] text-muted-foreground uppercase font-bold">Año</p>
+                                            <p className="text-sm font-medium">{vehicle.year}</p>
+                                        </div>
+                                        <div className="bg-muted/30 p-2 rounded-lg text-center">
+                                            <p className="text-[10px] text-muted-foreground uppercase font-bold">Combustible</p>
+                                            <p className="text-sm font-medium capitalize">{vehicle.fuelType}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
                         </div>
                     ) : (
-                        <div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
-                            <Car className="h-10 w-10 mb-2 opacity-20" />
-                            <p>No hay vehículos asignados a esta empresa.</p>
+                        <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
+                            <Car className="h-16 w-16 mb-4 opacity-10" />
+                            <p className="text-lg font-medium">No hay vehículos asignados</p>
+                            <p className="text-sm">Esta empresa no tiene contratos activos registrados en el sistema.</p>
                         </div>
                     )}
 
-                    <div className="flex justify-end pt-2">
+                    <div className="flex justify-end pt-4 border-t border-border/50">
                         <button
                             onClick={() => setIsVehiclesModalOpen(false)}
-                            className="px-4 py-2 rounded-lg bg-primary text-primary-foreground font-medium hover:bg-primary/90 transition-colors"
+                            className="px-6 py-2.5 rounded-xl bg-primary text-primary-foreground font-semibold hover:bg-primary/90 transition-all shadow-sm"
                         >
                             Cerrar
                         </button>
