@@ -53,6 +53,6 @@ jobs:
           # Deploy Storage rules (Separated as this often fails due to IAM bucket permissions)
           npx firebase-tools deploy --only storage --project fleet-management-7267c || echo "Storage rules deployment failed, but continuing..."
           
-          # Deploy hosting (crucial for fixing 404s) --force
-          npx firebase-tools deploy --only hosting --project fleet-management-7267c
+          # Deploy hosting (crucial for fixing 404s)
+          npx firebase-tools deploy --only hosting --project fleet-management-7267c --force
           rm service-account.json
