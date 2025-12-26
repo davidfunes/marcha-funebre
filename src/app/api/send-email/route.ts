@@ -11,9 +11,25 @@ export const dynamic = 'force-dynamic';
 
 export async function POST(request: Request) {
     try {
+        const apiKey = process.env.RESEND_API_KEY;
+        if (!apiKey) {
+            console.error('RESEND_API_KEY is missing');
+            return NextResponse.json({
+                error: 'RESEND_API_KEY no configurada en el servidor',
+                envNames: Object.keys(process.env).filter(k => k.includes('RESEND') || k.includes('FIREBASE'))
+            }, { status: 500 });
+        }
+
+        const resend = new Resend(apiKey);
+
         if (!adminDb) {
             console.error('Admin DB not initialized. Check environment variables.');
-            return NextResponse.json({ error: 'Internal Server Error (Database)' }, { status: 500 });
+            return NextResponse.json({
+                error: 'Error de Inicialización de Base de Datos (Admin SDK)',
+                hasClientEmail: !!process.env.FIREBASE_CLIENT_EMAIL,
+                hasPrivateKey: !!process.env.FIREBASE_PRIVATE_KEY,
+                privateKeyLength: process.env.FIREBASE_PRIVATE_KEY?.length || 0
+            }, { status: 500 });
         }
 
         // Fetch all admins
@@ -24,10 +40,10 @@ export async function POST(request: Request) {
 
         if (adminEmails.length === 0) {
             console.warn('No admin emails found to send alert to.');
-            // Fallback to a safety email if needed, or simply log.
-            // For now, we return, as sending to empty list throws error.
             return NextResponse.json({ message: 'No admins found' }, { status: 200 });
         }
+
+        const body = await request.json();
         const {
             type,
             title,
@@ -39,7 +55,7 @@ export async function POST(request: Request) {
             severity,
             imageUrl,
             date
-        } = await request.json();
+        } = body;
 
         const formattedDate = new Date(date).toLocaleString('es-ES', {
             dateStyle: 'full',
@@ -153,7 +169,8 @@ export async function POST(request: Request) {
             error: error.message || 'Error desconocido',
             name: error.name,
             code: error.code,
-            details: error.details || error
+            details: error.details || error,
+            stack: error.stack // Include stack for more context in diagnostics
         }, { status: 500 });
     }
 }
