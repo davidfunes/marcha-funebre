@@ -45,14 +45,14 @@ jobs:
           export GOOGLE_APPLICATION_CREDENTIALS=$(pwd)/service-account.json
           
           # Enable webframeworks experiment for Next.js support
-          npx firebase-tools@13.29.1 experiments:enable webframeworks
+          npx firebase-tools experiments:enable webframeworks
           
           # Deploy Firestore rules (Critical for vehicle returns and app logic)
-          npx firebase-tools@13.29.1 deploy --only firestore:rules --project fleet-management-7267c || echo "Firestore rules deployment failed!"
+          npx firebase-tools deploy --only firestore:rules --project fleet-management-7267c || echo "Firestore rules deployment failed!"
           
           # Deploy Storage rules (Separated as this often fails due to IAM bucket permissions)
-          npx firebase-tools@13.29.1 deploy --only storage --project fleet-management-7267c || echo "Storage rules deployment failed, but continuing..."
+          npx firebase-tools deploy --only storage --project fleet-management-7267c || echo "Storage rules deployment failed, but continuing..."
           
           # Deploy hosting (crucial for fixing 404s)
-          npx firebase-tools@13.29.1 deploy --only hosting --project fleet-management-7267c
+          npx firebase-tools deploy --only hosting --project fleet-management-7267c
           rm service-account.json
