@@ -110,6 +110,7 @@ export default function AdminDashboard() {
     const [pendingUsers, setPendingUsers] = useState<User[]>([]);
     const [isPendingModalOpen, setIsPendingModalOpen] = useState(false);
     const [isMaterialModalOpen, setIsMaterialModalOpen] = useState(false);
+    const [isFleetModalOpen, setIsFleetModalOpen] = useState(false);
     const [userToReview, setUserToReview] = useState<User | null>(null);
     const [isReviewConfirmOpen, setIsReviewConfirmOpen] = useState(false);
     const [reviewAction, setReviewAction] = useState<'accept' | 'reject' | 'block' | null>(null);
@@ -860,6 +861,71 @@ export default function AdminDashboard() {
                     )}
                 </div>
             </Modal>
+            {/* Fleet Efficiency Detail Modal */}
+            <Modal
+                isOpen={isFleetModalOpen}
+                onClose={() => setIsFleetModalOpen(false)}
+                title="Estado de la Flota"
+            >
+                <div className="space-y-6 max-h-[70vh] overflow-y-auto pr-2">
+                    {['active', 'maintenance', 'rented', 'retired'].map(status => {
+                        const statusVehicles = vehicles.filter(v => v.status === status);
+                        if (statusVehicles.length === 0) return null;
+
+                        const statusMap: Record<string, { label: string; color: string; icon: any }> = {
+                            active: { label: 'Operativos', color: 'text-emerald-700 bg-emerald-100 border-emerald-200', icon: Check },
+                            maintenance: { label: 'En Taller', color: 'text-amber-700 bg-amber-100 border-amber-200', icon: Wrench },
+                            rented: { label: 'Alquilados', color: 'text-blue-700 bg-blue-100 border-blue-200', icon: Building2 },
+                            retired: { label: 'Retirados', color: 'text-gray-700 bg-gray-100 border-gray-200', icon: LogOut }
+                        };
+                        const statusConfig = statusMap[status];
+
+                        if (!statusConfig) return null;
+
+                        return (
+                            <div key={status} className="space-y-3">
+                                <div className="flex items-center gap-2 px-1">
+                                    <statusConfig.icon className={`h-4 w-4 ${statusConfig.color.split(' ')[0]}`} />
+                                    <h3 className="font-bold text-sm uppercase tracking-wider text-muted-foreground">
+                                        {statusConfig.label} ({statusVehicles.length})
+                                    </h3>
+                                </div>
+                                <div className="grid gap-2">
+                                    {statusVehicles.map(v => {
+                                        const w = warehouses.find(wh => wh.id === v.warehouseId);
+                                        return (
+                                            <div key={v.id} className="p-3 bg-muted/20 rounded-lg border border-border flex items-center justify-between group hover:border-primary/30 transition-colors">
+                                                <div className="flex items-center gap-3">
+                                                    <div className={`p-1.5 rounded-md ${statusConfig.color}`}>
+                                                        <Car className="h-4 w-4" />
+                                                    </div>
+                                                    <div>
+                                                        <div className="flex items-center gap-2">
+                                                            <span className="font-bold text-foreground">{v.plate}</span>
+                                                            <span className="text-xs text-muted-foreground">{v.brand} {v.model}</span>
+                                                        </div>
+                                                        <div className="flex items-center gap-1 text-[10px] text-muted-foreground mt-0.5">
+                                                            <WarehouseIcon className="h-3 w-3" />
+                                                            <span>{w ? w.name : 'Sin sede asignada'}</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <Link
+                                                    href="/admin/vehicles"
+                                                    className="p-2 hover:bg-muted rounded-full text-muted-foreground hover:text-primary transition-colors"
+                                                    title="Gestionar Vehículos"
+                                                >
+                                                    <ArrowRight className="h-4 w-4" />
+                                                </Link>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        );
+                    })}
+                </div>
+            </Modal>
 
             {/* Operational Metrics */}
             <div className="space-y-6">
@@ -917,19 +983,26 @@ export default function AdminDashboard() {
                     </div>
 
                     {/* Fleet Efficiency */}
-                    <div className="rounded-xl border border-amber-100 dark:border-amber-900/30 bg-gradient-to-br from-amber-50 dark:from-amber-950/20 to-white dark:to-background p-6 shadow-sm">
+                    <div
+                        className="rounded-xl border border-amber-100 dark:border-amber-900/30 bg-gradient-to-br from-amber-50 dark:from-amber-950/20 to-white dark:to-background p-6 shadow-sm cursor-pointer hover:shadow-md transition-all group"
+                        onClick={() => setIsFleetModalOpen(true)}
+                    >
                         <div className="flex justify-between items-start">
                             <div>
-                                <p className="text-sm font-medium text-amber-600 dark:text-amber-400 mb-1">Eficiencia de Flota</p>
+                                <p className="text-sm font-medium text-amber-600 dark:text-amber-400 mb-1 group-hover:text-amber-700 transition-colors">Eficiencia de Flota</p>
                                 <h4 className="text-2xl font-bold text-amber-900 dark:text-amber-50">
-                                    {(vehicles.filter(v => v.status === 'active').length / vehicles.length * 100 || 0).toFixed(0)}%
+                                    {(vehicles.filter(v => v.status === 'active').length / vehicles.length * 100 || 0).toFixed(0)}% Operativa
                                 </h4>
+                                <p className="text-xs text-amber-600/70 font-medium">({vehicles.filter(v => v.status === 'active').length} de {vehicles.length} vehículos)</p>
                             </div>
-                            <div className="p-2 bg-amber-100 dark:bg-amber-900/40 rounded-lg text-amber-600 dark:text-amber-400">
+                            <div className="p-2 bg-amber-100 dark:bg-amber-900/40 rounded-lg text-amber-600 dark:text-amber-400 group-hover:scale-110 transition-transform">
                                 <Percent className="h-5 w-5" />
                             </div>
                         </div>
-                        <p className="text-xs text-amber-700/80 mt-4">Vehículos operativos vs total</p>
+                        <div className="mt-4 flex items-center text-xs text-amber-700/80 dark:text-amber-400/80">
+                            <span className="font-medium underline decoration-amber-200 underline-offset-4">Ver estado de toda la flota</span>
+                            <ArrowRight className="h-3 w-3 ml-1 group-hover:translate-x-1 transition-transform" />
+                        </div>
                     </div>
                 </div>
             </div>
