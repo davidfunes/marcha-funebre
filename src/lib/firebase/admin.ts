@@ -56,33 +56,37 @@ export function getAdminAuth() {
 }
 
 /**
- * Robustly clean a PEM key
- * Handles multiline, literal \n, quotes, and hidden whitespace.
+ * The Ultimate PEM Reconstructor.
+ * Strips everything except the raw base64 and wraps it in fresh headers.
  */
 function cleanPemKey(key: string): string {
     if (!key) return '';
 
-    let cleaned = key.trim();
+    // 1. Remove all quotes and normalize newlines/escapes
+    let raw = key.trim()
+        .replace(/^['"]|['"]$/g, '')
+        .replace(/\\n/g, '\n')
+        .replace(/\\r/g, '');
 
-    // 1. Remove surrounding quotes (handles both single and double, even if mixed)
-    cleaned = cleaned.replace(/^['"]|['"]$/g, '');
-
-    // 2. Handle literal \n or \r\n characters
-    cleaned = cleaned.replace(/\\n/g, '\n').replace(/\\r/g, '');
-
-    // 3. Extract the PEM block to remove any leading/trailing garbage
     const beginHeader = '-----BEGIN PRIVATE KEY-----';
     const endHeader = '-----END PRIVATE KEY-----';
 
-    if (cleaned.includes(beginHeader) && cleaned.includes(endHeader)) {
-        const start = cleaned.indexOf(beginHeader);
-        const end = cleaned.indexOf(endHeader) + endHeader.length;
-        cleaned = cleaned.substring(start, end).trim();
+    // 2. Extract base64 content
+    if (raw.includes(beginHeader) && raw.includes(endHeader)) {
+        const start = raw.indexOf(beginHeader) + beginHeader.length;
+        const end = raw.indexOf(endHeader);
+        raw = raw.substring(start, end);
     }
 
-    // 4. Final sanity check: ensure no spaces after line breaks within the PEM body
-    // This is a common cause of ASN.1 parsing errors
-    cleaned = cleaned.split('\n').map(line => line.trim()).filter(line => line.length > 0).join('\n');
+    // 3. Strip all whitespace, newlines, and non-base64 characters from the body
+    // This is the "nuclear option" to ensure no junk remains
+    const cleanBody = raw.replace(/[^A-Za-z0-9+/=]/g, '');
 
-    return cleaned;
+    // 4. Reconstruct with standard 64-character lines (most compatible format)
+    const lines = [];
+    for (let i = 0; i < cleanBody.length; i += 64) {
+        lines.push(cleanBody.substring(i, i + 64));
+    }
+
+    return `${beginHeader}\n${lines.join('\n')}\n${endHeader}`;
 }
