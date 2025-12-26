@@ -5,6 +5,8 @@ import { adminDb } from '@/lib/firebase/admin';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
+// Use onboarding@resend.dev for Resend accounts in test mode (authorized by default to the owner)
+
 export const dynamic = 'force-dynamic';
 
 export async function POST(request: Request) {
