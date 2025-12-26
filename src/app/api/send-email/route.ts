@@ -1,35 +1,26 @@
-
 import { NextResponse } from 'next/server';
 import { Resend } from 'resend';
-import { adminDb } from '@/lib/firebase/admin';
-
-const resend = new Resend(process.env.RESEND_API_KEY);
-
-// Use onboarding@resend.dev for Resend accounts in test mode (authorized by default to the owner)
+import { getAdminDb } from '@/lib/firebase/admin';
 
 export const dynamic = 'force-dynamic';
 
 export async function POST(request: Request) {
-    console.log('--- API /api/send-email: POST request received ---');
     try {
         const apiKey = process.env.RESEND_API_KEY;
         if (!apiKey) {
             console.error('RESEND_API_KEY is missing');
             return NextResponse.json({
-                error: 'RESEND_API_KEY no configurada en el servidor',
-                envNames: Object.keys(process.env).filter(k => k.includes('RESEND') || k.includes('FIREBASE'))
+                error: 'RESEND_API_KEY no configurada en el servidor'
             }, { status: 500 });
         }
 
         const resend = new Resend(apiKey);
+        const adminDb = getAdminDb();
 
         if (!adminDb) {
-            console.error('Admin DB not initialized. Check environment variables.');
+            console.error('Admin DB not initialized via getAdminDb()');
             return NextResponse.json({
-                error: 'Error de Inicialización de Base de Datos (Admin SDK)',
-                hasClientEmail: !!process.env.FIREBASE_CLIENT_EMAIL,
-                hasPrivateKey: !!process.env.FIREBASE_PRIVATE_KEY,
-                privateKeyLength: process.env.FIREBASE_PRIVATE_KEY?.length || 0
+                error: 'Error de Inicialización de Base de Datos'
             }, { status: 500 });
         }
 
@@ -37,10 +28,9 @@ export async function POST(request: Request) {
         const adminsSnapshot = await adminDb.collection('users').where('role', '==', 'admin').get();
         const adminEmails = adminsSnapshot.docs
             .map((doc: any) => doc.data().email)
-            .filter((email: string) => email); // Filter out undefined/null/empty
+            .filter((email: string) => email);
 
         if (adminEmails.length === 0) {
-            console.warn('No admin emails found to send alert to.');
             return NextResponse.json({ message: 'No admins found' }, { status: 200 });
         }
 
@@ -152,7 +142,7 @@ export async function POST(request: Request) {
         `;
 
         const data = await resend.emails.send({
-            from: 'Marcha Fúnebre <onboarding@resend.dev>', // Use default testing domain or configured domain
+            from: 'Marcha Fúnebre <onboarding@resend.dev>',
             to: adminEmails,
             subject: subject,
             html: htmlContent,
@@ -160,18 +150,9 @@ export async function POST(request: Request) {
 
         return NextResponse.json(data);
     } catch (error: any) {
-        console.error('Detailed Resend/API Error:', {
-            message: error.message,
-            stack: error.stack,
-            name: error.name,
-            code: error.code
-        });
+        console.error('Detailed Resend/API Error:', error.message);
         return NextResponse.json({
-            error: error.message || 'Error desconocido',
-            name: error.name,
-            code: error.code,
-            details: error.details || error,
-            stack: error.stack // Include stack for more context in diagnostics
+            error: error.message || 'Error desconocido'
         }, { status: 500 });
     }
 }
