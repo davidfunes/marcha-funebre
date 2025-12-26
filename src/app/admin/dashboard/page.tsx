@@ -27,7 +27,8 @@ import {
     Search,
     Clock,
     Fuel,
-    Gift
+    Gift,
+    ArrowRight
 } from 'lucide-react';
 import { isChristmasTime } from '@/utils/dateUtils';
 import Link from 'next/link';
@@ -108,6 +109,7 @@ export default function AdminDashboard() {
     // Pending Users State
     const [pendingUsers, setPendingUsers] = useState<User[]>([]);
     const [isPendingModalOpen, setIsPendingModalOpen] = useState(false);
+    const [isMaterialModalOpen, setIsMaterialModalOpen] = useState(false);
     const [userToReview, setUserToReview] = useState<User | null>(null);
     const [isReviewConfirmOpen, setIsReviewConfirmOpen] = useState(false);
     const [reviewAction, setReviewAction] = useState<'accept' | 'reject' | 'block' | null>(null);
@@ -301,7 +303,8 @@ export default function AdminDashboard() {
         return {
             totalItems,
             utilizationRate,
-            breakageRate
+            breakageRate,
+            brokenItems
         };
     };
 
@@ -770,6 +773,93 @@ export default function AdminDashboard() {
                     </div>
                 </div>
             </Modal>
+            {/* Material Incidents Detail Modal */}
+            <Modal
+                isOpen={isMaterialModalOpen}
+                onClose={() => setIsMaterialModalOpen(false)}
+                title="Detalle de Unidades con Incidencia"
+            >
+                <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-2">
+                    {inventory.flatMap(item =>
+                        (item.locations || [])
+                            .map((loc, idx) => ({ item, loc, idx }))
+                            .filter(({ loc }) => loc.status && loc.status !== 'new')
+                    ).length === 0 ? (
+                        <p className="text-center text-muted-foreground py-8">No hay unidades con incidencias reportadas.</p>
+                    ) : (
+                        inventory.flatMap(item =>
+                            (item.locations || [])
+                                .map((loc, idx) => ({ item, loc, idx }))
+                                .filter(({ loc }) => loc.status && loc.status !== 'new')
+                        ).map(({ item, loc, idx }) => {
+                            const linkedIncident = incidents.find(inc => inc.inventoryItemId === item.id && inc.status !== 'resolved');
+
+                            let locationName = 'Desconocido';
+                            let locationDetail = '';
+
+                            if (loc.id === 'REPAIR_POOL') {
+                                locationName = '🛠️ En Reparación';
+                            } else if (loc.type === 'vehicle') {
+                                const v = vehicles.find(v => v.id === loc.id);
+                                if (v) {
+                                    const w = warehouses.find(w => w.id === v.warehouseId);
+                                    locationName = `🚗 ${v.plate}`;
+                                    locationDetail = w ? w.name : '';
+                                } else {
+                                    locationName = 'Vehículo no encontrado';
+                                }
+                            } else if (loc.type === 'warehouse') {
+                                const w = warehouses.find(w => w.id === loc.id);
+                                locationName = w ? `🏭 ${w.name}` : 'Almacén no encontrado';
+                            }
+
+                            return (
+                                <div key={`${item.id}-${idx}`} className="p-4 bg-muted/30 rounded-lg border border-border flex flex-col gap-2">
+                                    <div className="flex justify-between items-start">
+                                        <div>
+                                            <h4 className="font-bold text-foreground">{item.name}</h4>
+                                            <p className="text-xs text-muted-foreground">SKU: {item.sku}</p>
+                                        </div>
+                                        <span className={`text-[10px] px-2 py-1 rounded font-bold uppercase ${loc.status === 'totally_broken' ? 'bg-red-100 text-red-700' :
+                                            loc.status === 'ordered' ? 'bg-blue-100 text-blue-700' :
+                                                'bg-amber-100 text-amber-700'
+                                            }`}>
+                                            {loc.status === 'totally_broken' ? 'Roto Total' :
+                                                loc.status === 'ordered' ? 'Pedido' :
+                                                    loc.status === 'working_urgent_change' ? 'Urgente' : loc.status}
+                                        </span>
+                                    </div>
+
+                                    <div className="flex flex-col gap-1 mt-1 border-t border-border/50 pt-2">
+                                        <div className="flex items-center gap-2 text-sm">
+                                            <span className="text-muted-foreground font-medium">Ubicación:</span>
+                                            <span className="text-foreground">{locationName}</span>
+                                        </div>
+                                        {locationDetail && (
+                                            <div className="flex items-center gap-2 text-xs ml-5">
+                                                <span className="text-muted-foreground">Sede:</span>
+                                                <span className="text-foreground italic">{locationDetail}</span>
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    {linkedIncident && (
+                                        <button
+                                            onClick={() => {
+                                                setIsMaterialModalOpen(false);
+                                                handleViewIncident(linkedIncident);
+                                            }}
+                                            className="mt-2 text-xs text-primary font-bold hover:underline flex items-center gap-1 self-end"
+                                        >
+                                            Ver Incidencia <ArrowRight className="h-3 w-3" />
+                                        </button>
+                                    )}
+                                </div>
+                            );
+                        })
+                    )}
+                </div>
+            </Modal>
 
             {/* Operational Metrics */}
             <div className="space-y-6">
@@ -804,21 +894,25 @@ export default function AdminDashboard() {
                     </div>
 
                     {/* Breakage Card */}
-                    <div className="rounded-xl border border-red-100 dark:border-red-900/30 bg-gradient-to-br from-red-50 dark:from-red-950/20 to-white dark:to-background p-6 shadow-sm">
+                    <div
+                        className="rounded-xl border border-red-100 dark:border-red-900/30 bg-gradient-to-br from-red-50 dark:from-red-950/20 to-white dark:to-background p-6 shadow-sm cursor-pointer hover:shadow-md transition-all group"
+                        onClick={() => setIsMaterialModalOpen(true)}
+                    >
                         <div className="flex justify-between items-start">
                             <div>
-                                <p className="text-sm font-medium text-red-600 dark:text-red-400 mb-1">Tasa de Rotura</p>
+                                <p className="text-sm font-medium text-red-600 dark:text-red-400 mb-1 group-hover:text-red-700 transition-colors">Estado del Material</p>
                                 <h4 className="text-2xl font-bold text-red-900 dark:text-red-50">
-                                    {kpis.breakageRate.toFixed(1)}%
+                                    {kpis.brokenItems} Unidades
                                 </h4>
+                                <p className="text-xs text-red-600/70 font-medium">({kpis.breakageRate.toFixed(1)}% de la flota)</p>
                             </div>
-                            <div className="p-2 bg-red-100 dark:bg-red-900/40 rounded-lg text-red-600 dark:text-red-400">
+                            <div className="p-2 bg-red-100 dark:bg-red-900/40 rounded-lg text-red-600 dark:text-red-400 group-hover:scale-110 transition-transform">
                                 <AlertTriangle className="h-5 w-5" />
                             </div>
                         </div>
                         <div className="mt-4 flex items-center text-xs text-red-700/80 dark:text-red-400/80">
-                            {kpis.breakageRate > 5 ? <ArrowUpRight className="h-3 w-3 mr-1" /> : <ArrowDownRight className="h-3 w-3 mr-1" />}
-                            <span className="font-medium">{kpis.breakageRate > 5 ? 'Atención requerida' : 'Nivel aceptable'}</span>
+                            <span className="font-medium underline decoration-red-200 underline-offset-4">Ver detalle de unidades con incidencia</span>
+                            <ArrowRight className="h-3 w-3 ml-1 group-hover:translate-x-1 transition-transform" />
                         </div>
                     </div>
 
@@ -873,7 +967,12 @@ export default function AdminDashboard() {
                                     }
                                 } else if (loc.type === 'vehicle') {
                                     const v = vehicles.find(v => v.id === loc.id);
-                                    locationName = v ? `🚗 ${v.plate}` : 'Vehículo no encontrado';
+                                    if (v) {
+                                        const w = warehouses.find(w => w.id === v.warehouseId);
+                                        locationName = `🚗 ${v.plate}${w ? ` (${w.name})` : ''}`;
+                                    } else {
+                                        locationName = 'Vehículo no encontrado';
+                                    }
                                 } else if (loc.type === 'warehouse') {
                                     const w = warehouses.find(w => w.id === loc.id);
                                     locationName = w ? `🏭 ${w.name}` : 'Almacén no encontrado';
