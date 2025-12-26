@@ -14,24 +14,19 @@ export function getAdminApp() {
 
     const projectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
     const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
-    let privateKey = process.env.FIREBASE_PRIVATE_KEY;
+    const privateKey = process.env.FIREBASE_PRIVATE_KEY;
 
     if (!projectId || !clientEmail || !privateKey) {
         throw new Error(`Missing credentials: projectId=${!!projectId}, clientEmail=${!!clientEmail}, privateKey=${!!privateKey}`);
     }
 
+    const cleanedKey = cleanPemKey(privateKey);
+
+    if (!cleanedKey.includes('BEGIN PRIVATE KEY')) {
+        throw new Error(`Malformed private key: length=${cleanedKey.length}, prefix=${cleanedKey.substring(0, 20)}`);
+    }
+
     try {
-        // Robust cleaning of private key
-        let cleanedKey = privateKey.trim();
-        if (cleanedKey.startsWith('"') && cleanedKey.endsWith('"')) {
-            cleanedKey = cleanedKey.substring(1, cleanedKey.length - 1);
-        }
-        cleanedKey = cleanedKey.replace(/\\n/g, '\n');
-
-        if (!cleanedKey.includes('BEGIN PRIVATE KEY')) {
-            throw new Error(`Malformed private key: length=${cleanedKey.length}, prefix=${cleanedKey.substring(0, 20)}`);
-        }
-
         return admin.initializeApp({
             credential: admin.credential.cert({
                 projectId,
@@ -60,6 +55,32 @@ export function getAdminAuth() {
     return app ? admin.auth(app) : null;
 }
 
-// Legacy exports for better compatibility with existing code during transition
-export const adminDb = getAdminDb();
-export const adminAuth = getAdminAuth();
+/**
+ * Robustly clean a PEM key
+ */
+function cleanPemKey(key: string): string {
+    let cleaned = key.trim();
+
+    // Remove quotes
+    if (cleaned.startsWith('"') && cleaned.endsWith('"')) {
+        cleaned = cleaned.substring(1, cleaned.length - 1);
+    }
+    if (cleaned.startsWith("'") && cleaned.endsWith("'")) {
+        cleaned = cleaned.substring(1, cleaned.length - 1);
+    }
+
+    // Handle literal \n characters
+    cleaned = cleaned.replace(/\\n/g, '\n');
+
+    // Ensure it has the correct PEM headers and no trailing junk
+    const beginHeader = '-----BEGIN PRIVATE KEY-----';
+    const endHeader = '-----END PRIVATE KEY-----';
+
+    if (cleaned.includes(beginHeader) && cleaned.includes(endHeader)) {
+        const start = cleaned.indexOf(beginHeader);
+        const end = cleaned.indexOf(endHeader) + endHeader.length;
+        cleaned = cleaned.substring(start, end).trim();
+    }
+
+    return cleaned;
+}
