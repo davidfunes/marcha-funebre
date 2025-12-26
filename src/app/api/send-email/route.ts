@@ -5,13 +5,20 @@ import { adminDb } from '@/lib/firebase/admin';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
+export const dynamic = 'force-dynamic';
+
 export async function POST(request: Request) {
     try {
+        if (!adminDb) {
+            console.error('Admin DB not initialized. Check environment variables.');
+            return NextResponse.json({ error: 'Internal Server Error (Database)' }, { status: 500 });
+        }
+
         // Fetch all admins
         const adminsSnapshot = await adminDb.collection('users').where('role', '==', 'admin').get();
         const adminEmails = adminsSnapshot.docs
-            .map(doc => doc.data().email)
-            .filter(email => email); // Filter out undefined/null/empty
+            .map((doc: any) => doc.data().email)
+            .filter((email: string) => email); // Filter out undefined/null/empty
 
         if (adminEmails.length === 0) {
             console.warn('No admin emails found to send alert to.');
