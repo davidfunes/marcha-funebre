@@ -19,6 +19,7 @@ import {
     getDoc
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase/firebase';
+import { EmailService } from './EmailService';
 import {
     Vehicle,
     Incident,
@@ -200,7 +201,7 @@ export const reportMaterialIncident = async (
     locationId: string, // Changed from vehicleId to be more generic
     condition: MaterialCondition
 ): Promise<string> => {
-    return await runTransaction(db, async (transaction) => {
+    const result = await runTransaction(db, async (transaction) => {
         const itemRef = doc(db, 'inventory', itemId);
         const itemDoc = await transaction.get(itemRef);
 
@@ -256,8 +257,40 @@ export const reportMaterialIncident = async (
         };
         transaction.set(incidentRef, fullIncident);
 
-        return incidentRef.id;
+        return { id: incidentRef.id, data: fullIncident, itemName: item.name };
     });
+
+    // Send Email Alert (Non-blocking)
+    try {
+        const { id, data, itemName } = result;
+
+        let reporterName = 'Usuario Desconocido';
+        if ((data as any).reportedByUserId) {
+            const userDoc = await getDoc(doc(db, 'users', (data as any).reportedByUserId));
+            if (userDoc.exists()) {
+                const userData = userDoc.data();
+                if (userData) {
+                    reporterName = `${userData.name} ${userData.firstSurname}`;
+                }
+            }
+        }
+
+        await EmailService.sendIncidentAlert({
+            type: 'material',
+            title: 'Incidencia de Material',
+            description: data.description || 'Sin descripción',
+            incidentId: id,
+            reporterName: reporterName,
+            itemName: itemName || 'Item Desconocido',
+            severity: condition,
+            imageUrl: (data as any).images?.[0] || '', // Use images array, first item
+            date: new Date()
+        });
+    } catch (e) {
+        console.error("Error triggering email alert:", e);
+    }
+
+    return result.id;
 };
 
 /**

@@ -4,7 +4,8 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { db } from '@/lib/firebase/firebase';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, doc, getDoc } from 'firebase/firestore';
+import { EmailService } from '@/services/EmailService';
 import {
     AlertTriangle,
     Camera,
@@ -114,7 +115,35 @@ export default function ReportIncidentPage() {
                 updatedAt: serverTimestamp()
             };
 
-            await addDoc(collection(db, 'incidents'), incidentData);
+            const incidentRef = await addDoc(collection(db, 'incidents'), incidentData);
+
+            // Send Email Alert
+            try {
+                // Fetch vehicle details for the email
+                let vehiclePlate = 'Vehículo Desconocido';
+                if (user.assignedVehicleId) {
+                    const vehicleDoc = await getDoc(doc(db, 'vehicles', user.assignedVehicleId));
+                    if (vehicleDoc.exists()) {
+                        const vehicleData = vehicleDoc.data();
+                        vehiclePlate = `${vehicleData.brand} ${vehicleData.model} (${vehicleData.plate})`;
+                    }
+                }
+
+                await EmailService.sendIncidentAlert({
+                    type: 'vehicle',
+                    title: incidentData.title,
+                    description: incidentData.description,
+                    incidentId: incidentRef.id,
+                    reporterName: `${user.name} ${user.firstSurname}`,
+                    vehiclePlate: vehiclePlate,
+                    severity: incidentData.priority,
+                    imageUrl: imageUrls[0], // Send the first image if available
+                    date: new Date()
+                });
+            } catch (emailError) {
+                console.error("Error sending email alert (background):", emailError);
+                // We don't block the UI flow for this
+            }
 
             if (user.id) {
                 await awardPointsForAction(user.id, 'incident_reported');
