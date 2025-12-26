@@ -10,6 +10,7 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 export const dynamic = 'force-dynamic';
 
 export async function POST(request: Request) {
+    console.log('--- API /api/send-email: POST request received ---');
     try {
         const apiKey = process.env.RESEND_API_KEY;
         if (!apiKey) {
