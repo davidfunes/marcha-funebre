@@ -43,6 +43,10 @@ jobs:
         run: |
           echo "$FIREBASE_SERVICE_ACCOUNT" > service-account.json
           export GOOGLE_APPLICATION_CREDENTIALS=$(pwd)/service-account.json
+          
+          # Enable webframeworks experiment for Next.js support
+          npx firebase-tools experiments:enable webframeworks
+          
           # Deploy Firestore rules (Critical for vehicle returns and app logic)
           npx firebase-tools deploy --only firestore:rules --project fleet-management-7267c || echo "Firestore rules deployment failed!"
           
