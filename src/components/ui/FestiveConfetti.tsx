@@ -2,15 +2,19 @@
 
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { isChristmasTime } from '@/utils/dateUtils';
+import { useChristmas } from '@/hooks/useChristmas';
 
 const FESTIVE_ICONS = ['🎄', '🎁', '❄️', '⭐', '🎅', '🦌', '🔥'];
 
 export function FestiveConfetti() {
     const [icons, setIcons] = useState<{ id: number; icon: string; x: string; xTarget: string; duration: number; delay: number }[]>([]);
-    const isChristmas = isChristmasTime();
+    const isChristmas = useChristmas();
 
     useEffect(() => {
+        if (!isChristmas) {
+            setIcons([]);
+            return;
+        }
         const generateIcons = () => {
             const newIcons = Array.from({ length: 30 }).map((_, i) => ({
                 id: i,

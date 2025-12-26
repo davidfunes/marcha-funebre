@@ -1,14 +1,17 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { isChristmasTime } from '@/utils/dateUtils';
+import { useChristmas } from '@/hooks/useChristmas';
 
 export function Snowfall() {
     const [flakes, setFlakes] = useState<{ id: number; left: string; xOffset: string; delay: string; duration: string; size: string }[]>([]);
-    const isChristmas = isChristmasTime();
+    const isChristmas = useChristmas();
 
     useEffect(() => {
-        if (!isChristmas) return;
+        if (!isChristmas) {
+            setFlakes([]);
+            return;
+        }
 
         const generateFlakes = () => {
             const newFlakes = Array.from({ length: 80 }).map((_, i) => ({

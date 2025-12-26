@@ -31,6 +31,7 @@ import {
     ArrowRight
 } from 'lucide-react';
 import { isChristmasTime } from '@/utils/dateUtils';
+import { useChristmas } from '@/hooks/useChristmas';
 import Link from 'next/link';
 import { Modal } from '@/components/ui/Modal';
 import { IncidentDetailsModal } from '@/components/admin/incidents/IncidentDetailsModal';
@@ -65,6 +66,7 @@ ChartJS.register(
 export default function AdminDashboard() {
     const { user, loading, signOut } = useAuth();
     const router = useRouter();
+    const isChristmas = useChristmas();
 
     // Real Data State
     // Real Data State
@@ -655,7 +657,7 @@ export default function AdminDashboard() {
                     <div
                         key={stat.id}
                         onClick={() => handleStatClick(stat.id)}
-                        className={`rounded-xl border bg-card p-6 shadow-sm hover:shadow-md transition-all cursor-pointer block group ${isChristmasTime() ? 'christmas-card' : 'border-border'}`}
+                        className={`rounded-xl border bg-card p-6 shadow-sm hover:shadow-md transition-all cursor-pointer block group ${isChristmas ? 'christmas-card' : 'border-border'}`}
                     >
                         <div className="flex flex-row items-center justify-between space-y-0 pb-2">
                             <span className="text-sm font-medium text-muted-foreground group-hover:text-primary transition-colors">{stat.label}</span>

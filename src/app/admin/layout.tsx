@@ -26,6 +26,7 @@ import { ThemeToggle } from '@/components/ui/ThemeToggle';
 import { DataIntegrityChecker } from '@/components/admin/DataIntegrityChecker';
 import { isProfileComplete } from '@/utils/profileUtils';
 import { isChristmasTime } from '@/utils/dateUtils';
+import { useChristmas } from '@/hooks/useChristmas';
 import { ProfileCompletionAlert } from '@/components/profile/ProfileCompletionAlert';
 
 function SidebarLink({ item, onClick }: { item: any; onClick?: () => void }) {
@@ -56,6 +57,7 @@ export default function AdminLayout({
     const router = useRouter();
     const [authorized, setAuthorized] = useState(false);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+    const isChristmas = useChristmas();
 
     useEffect(() => {
         if (!loading) {
@@ -159,7 +161,7 @@ export default function AdminLayout({
                 )}
 
                 {/* Header */}
-                <header className={`flex h-16 items-center justify-between border-b border-border px-4 md:px-8 shrink-0 transition-all ${isChristmasTime() ? 'christmas-header-trees-multicapa bg-card' : 'bg-card'}`}>
+                <header className={`flex h-16 items-center justify-between border-b border-border px-4 md:px-8 shrink-0 transition-all ${isChristmas ? 'christmas-header-trees-multicapa bg-card' : 'bg-card'}`}>
                     <div className="flex items-center gap-4">
                         <button
                             onClick={() => setMobileMenuOpen(true)}

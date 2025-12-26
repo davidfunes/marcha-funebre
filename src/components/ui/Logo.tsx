@@ -1,5 +1,6 @@
 import Image from 'next/image';
 import { isChristmasTime } from '@/utils/dateUtils';
+import { useChristmas } from '@/hooks/useChristmas';
 
 interface LogoProps {
     className?: string;
@@ -16,7 +17,7 @@ export function Logo({
     size = 'md',
     layout = 'horizontal'
 }: LogoProps) {
-    const isChristmas = isChristmasTime();
+    const isChristmas = useChristmas();
 
     const sizeClasses = {
         sm: 'h-8',

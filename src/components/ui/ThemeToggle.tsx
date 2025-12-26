@@ -1,19 +1,32 @@
 "use client"
 
 import * as React from "react"
-import { Moon, Sun, Monitor } from "lucide-react"
+import { Moon, Sun, Monitor, TreePine } from "lucide-react"
 import { useTheme } from "next-themes"
 import { cn } from "@/lib/utils"
+import { christmasStore } from "@/utils/christmasStore"
+import { isChristmasTime } from "@/utils/dateUtils"
 
 export function ThemeToggle({ className }: { className?: string }) {
     const { setTheme, theme } = useTheme()
     const [mounted, setMounted] = React.useState(false)
     const [isOpen, setIsOpen] = React.useState(false)
+    const [isChristmasDisabled, setIsChristmasDisabled] = React.useState(false)
+    const [showChristmasOption, setShowChristmasOption] = React.useState(false)
 
     // Avoid hydration mismatch
     React.useEffect(() => {
         setMounted(true)
+        setIsChristmasDisabled(christmasStore.isDisabled())
+        setShowChristmasOption(isChristmasTime())
     }, [])
+
+    const toggleChristmas = () => {
+        const newValue = !isChristmasDisabled;
+        christmasStore.setDisabled(newValue);
+        setIsChristmasDisabled(newValue);
+        setIsOpen(false);
+    };
 
     if (!mounted) {
         return (
@@ -39,7 +52,7 @@ export function ThemeToggle({ className }: { className?: string }) {
                         className="fixed inset-0 z-40"
                         onClick={() => setIsOpen(false)}
                     />
-                    <div className="absolute right-0 mt-2 w-36 rounded-md border bg-popover p-1 shadow-md z-50 animate-in fade-in slide-in-from-top-2">
+                    <div className="absolute right-0 mt-2 w-48 rounded-md border bg-popover p-1 shadow-md z-50 animate-in fade-in slide-in-from-top-2">
                         <button
                             onClick={() => { setTheme("light"); setIsOpen(false); }}
                             className={cn(
@@ -70,6 +83,22 @@ export function ThemeToggle({ className }: { className?: string }) {
                             <Monitor className="h-4 w-4" />
                             <span>Sistema</span>
                         </button>
+
+                        {showChristmasOption && (
+                            <>
+                                <div className="my-1 h-px bg-muted" />
+                                <button
+                                    onClick={toggleChristmas}
+                                    className={cn(
+                                        "flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-sm transition-colors hover:bg-accent hover:text-accent-foreground",
+                                        !isChristmasDisabled ? "text-green-600 dark:text-green-400" : "text-muted-foreground"
+                                    )}
+                                >
+                                    <TreePine className="h-4 w-4" />
+                                    <span>{isChristmasDisabled ? "Activar Navidad" : "Desactivar Navidad"}</span>
+                                </button>
+                            </>
+                        )}
                     </div>
                 </>
             )}

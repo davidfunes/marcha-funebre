@@ -9,6 +9,7 @@ import { Logo } from '@/components/ui/Logo';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
 import { isProfileComplete } from '@/utils/profileUtils';
 import { isChristmasTime } from '@/utils/dateUtils';
+import { useChristmas } from '@/hooks/useChristmas';
 import { ProfileCompletionAlert } from '@/components/profile/ProfileCompletionAlert';
 
 // Map paths to titles
@@ -31,6 +32,7 @@ export default function DriverLayout({ children }: { children: React.ReactNode }
     const router = useRouter();
     const pathname = usePathname();
     const [isChecking, setIsChecking] = useState(true);
+    const isChristmas = useChristmas();
 
     useEffect(() => {
         if (!loading) {
@@ -65,9 +67,9 @@ export default function DriverLayout({ children }: { children: React.ReactNode }
     const currentTitle = PAGE_TITLES[pathname] || 'Marcha Fúnebre';
 
     return (
-        <div className={`min-h-screen transition-colors ${isChristmasTime() ? 'christmas-theme' : 'bg-background'}`}>
+        <div className={`min-h-screen transition-colors ${isChristmas ? 'christmas-theme' : 'bg-background'}`}>
             {/* Global Sticky Header */}
-            <header className={`sticky top-0 z-50 w-full border-b border-border transition-all ${isChristmasTime() ? 'christmas-header-trees-multicapa bg-card' : 'bg-card'}`}>
+            <header className={`sticky top-0 z-50 w-full border-b border-border transition-all ${isChristmas ? 'christmas-header-trees-multicapa bg-card' : 'bg-card'}`}>
                 <div className="container flex h-14 max-w-screen-2xl items-center px-4 justify-between">
                     <div className="flex items-center gap-4">
                         {isDashboard ? (
