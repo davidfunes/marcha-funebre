@@ -142,8 +142,18 @@ export async function POST(request: Request) {
         });
 
         return NextResponse.json(data);
-    } catch (error) {
-        console.error('Resend Error:', error);
-        return NextResponse.json({ error }, { status: 500 });
+    } catch (error: any) {
+        console.error('Detailed Resend/API Error:', {
+            message: error.message,
+            stack: error.stack,
+            name: error.name,
+            code: error.code
+        });
+        return NextResponse.json({
+            error: error.message || 'Error desconocido',
+            name: error.name,
+            code: error.code,
+            details: error.details || error
+        }, { status: 500 });
     }
 }
