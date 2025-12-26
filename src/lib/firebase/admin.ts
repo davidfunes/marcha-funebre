@@ -27,11 +27,11 @@ export function getAdminApp() {
     }
 
     try {
-        console.log('--- Firebase Admin Diagnostic ---');
-        console.log('Project ID:', projectId);
-        console.log('Client Email:', clientEmail);
-        console.log('Key Length:', cleanedKey.length);
-        console.log('Key Diagnostics:', JSON.stringify(diagnostics));
+        // console.log('--- Firebase Admin Diagnostic ---');
+        // console.log('Project ID:', projectId);
+        // console.log('Client Email:', clientEmail);
+        // console.log('Key Length:', cleanedKey.length);
+        // console.log('Key Diagnostics:', JSON.stringify(diagnostics));
 
         return admin.initializeApp({
             credential: admin.credential.cert({
