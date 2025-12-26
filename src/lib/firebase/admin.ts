@@ -20,13 +20,19 @@ export function getAdminApp() {
         throw new Error(`Missing credentials: projectId=${!!projectId}, clientEmail=${!!clientEmail}, privateKey=${!!privateKey}`);
     }
 
-    const cleanedKey = cleanPemKey(privateKey);
+    const { cleanedKey, diagnostics } = cleanPemKeyWithDiagnostics(privateKey);
 
     if (!cleanedKey.includes('BEGIN PRIVATE KEY')) {
-        throw new Error(`Malformed private key: length=${cleanedKey.length}, prefix=${cleanedKey.substring(0, 20)}`);
+        throw new Error(`Malformed private key: ${JSON.stringify(diagnostics)}`);
     }
 
     try {
+        console.log('--- Firebase Admin Diagnostic ---');
+        console.log('Project ID:', projectId);
+        console.log('Client Email:', clientEmail);
+        console.log('Key Length:', cleanedKey.length);
+        console.log('Key Diagnostics:', JSON.stringify(diagnostics));
+
         return admin.initializeApp({
             credential: admin.credential.cert({
                 projectId,
@@ -35,8 +41,45 @@ export function getAdminApp() {
             }),
         }, APP_NAME);
     } catch (error: any) {
-        throw new Error(`Firebase Admin SDK Initialization Error: ${error.message}`);
+        throw new Error(`Firebase Admin SDK Initialization Error: ${error.message}. Diagnostics: ${JSON.stringify(diagnostics)}`);
     }
+}
+
+/**
+ * Enhanced cleaning with diagnostics
+ */
+function cleanPemKeyWithDiagnostics(key: string) {
+    const diagnostics: any = {
+        originalLength: key.length,
+        hasBegin: key.includes('-----BEGIN PRIVATE KEY-----'),
+        hasEnd: key.includes('-----END PRIVATE KEY-----'),
+    };
+
+    let raw = key.trim()
+        .replace(/^['"]|['"]$/g, '')
+        .replace(/\\n/g, '\n')
+        .replace(/\\r/g, '');
+
+    const beginHeader = '-----BEGIN PRIVATE KEY-----';
+    const endHeader = '-----END PRIVATE KEY-----';
+
+    if (raw.includes(beginHeader) && raw.includes(endHeader)) {
+        const start = raw.indexOf(beginHeader) + beginHeader.length;
+        const end = raw.indexOf(endHeader);
+        raw = raw.substring(start, end);
+    }
+
+    const cleanBody = raw.replace(/[^A-Za-z0-9+/=]/g, '');
+    diagnostics.cleanBodyLength = cleanBody.length;
+    diagnostics.bodySample = cleanBody.substring(0, 10) + '...' + cleanBody.substring(cleanBody.length - 10);
+
+    const lines = [];
+    for (let i = 0; i < cleanBody.length; i += 64) {
+        lines.push(cleanBody.substring(i, i + 64));
+    }
+
+    const cleanedKey = `${beginHeader}\n${lines.join('\n')}\n${endHeader}`;
+    return { cleanedKey, diagnostics };
 }
 
 /**
@@ -55,38 +98,3 @@ export function getAdminAuth() {
     return app ? admin.auth(app) : null;
 }
 
-/**
- * The Ultimate PEM Reconstructor.
- * Strips everything except the raw base64 and wraps it in fresh headers.
- */
-function cleanPemKey(key: string): string {
-    if (!key) return '';
-
-    // 1. Remove all quotes and normalize newlines/escapes
-    let raw = key.trim()
-        .replace(/^['"]|['"]$/g, '')
-        .replace(/\\n/g, '\n')
-        .replace(/\\r/g, '');
-
-    const beginHeader = '-----BEGIN PRIVATE KEY-----';
-    const endHeader = '-----END PRIVATE KEY-----';
-
-    // 2. Extract base64 content
-    if (raw.includes(beginHeader) && raw.includes(endHeader)) {
-        const start = raw.indexOf(beginHeader) + beginHeader.length;
-        const end = raw.indexOf(endHeader);
-        raw = raw.substring(start, end);
-    }
-
-    // 3. Strip all whitespace, newlines, and non-base64 characters from the body
-    // This is the "nuclear option" to ensure no junk remains
-    const cleanBody = raw.replace(/[^A-Za-z0-9+/=]/g, '');
-
-    // 4. Reconstruct with standard 64-character lines (most compatible format)
-    const lines = [];
-    for (let i = 0; i < cleanBody.length; i += 64) {
-        lines.push(cleanBody.substring(i, i + 64));
-    }
-
-    return `${beginHeader}\n${lines.join('\n')}\n${endHeader}`;
-}
