@@ -5,11 +5,15 @@ export const dynamic = 'force-dynamic';
 
 export async function POST(request: Request) {
     try {
-        const db = getAdminDb();
-        if (!db) {
+        let db;
+        try {
+            db = getAdminDb();
+            if (!db) throw new Error('getAdminDb() returned null without throwing');
+        } catch (initError: any) {
             return NextResponse.json({
                 status: 'error',
-                message: 'Admin DB could not be initialized'
+                message: 'Database initialization failed',
+                details: initError.message
             }, { status: 500 });
         }
 
@@ -17,7 +21,7 @@ export async function POST(request: Request) {
 
         return NextResponse.json({
             status: 'ok',
-            message: 'Firebase Admin initialized via getAdminDb()',
+            message: 'Firebase Admin initialized successfully',
             usersCount: usersCount
         });
     } catch (error: any) {

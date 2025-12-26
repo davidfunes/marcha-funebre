@@ -15,12 +15,16 @@ export async function POST(request: Request) {
         }
 
         const resend = new Resend(apiKey);
-        const adminDb = getAdminDb();
 
-        if (!adminDb) {
-            console.error('Admin DB not initialized via getAdminDb()');
+        let adminDb;
+        try {
+            adminDb = getAdminDb();
+            if (!adminDb) throw new Error('getAdminDb() returned null without throwing');
+        } catch (initError: any) {
+            console.error('Firebase Admin Init Failure:', initError.message);
             return NextResponse.json({
-                error: 'Error de Inicialización de Base de Datos'
+                error: 'Error de Inicialización de Base de Datos',
+                details: initError.message
             }, { status: 500 });
         }
 

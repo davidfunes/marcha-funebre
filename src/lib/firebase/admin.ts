@@ -12,37 +12,35 @@ export function getAdminApp() {
     const existingApp = admin.apps.find(app => app?.name === APP_NAME);
     if (existingApp) return existingApp;
 
+    const projectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
     const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
     let privateKey = process.env.FIREBASE_PRIVATE_KEY;
 
-    if (!clientEmail || !privateKey) {
-        console.warn('Firebase Admin: Missing credentials. This is expected during build or if server-side features are not needed.');
-        return null;
+    if (!projectId || !clientEmail || !privateKey) {
+        throw new Error(`Missing credentials: projectId=${!!projectId}, clientEmail=${!!clientEmail}, privateKey=${!!privateKey}`);
     }
 
     try {
         // Robust cleaning of private key
-        privateKey = privateKey.trim();
-        if (privateKey.startsWith('"') && privateKey.endsWith('"')) {
-            privateKey = privateKey.substring(1, privateKey.length - 1);
+        let cleanedKey = privateKey.trim();
+        if (cleanedKey.startsWith('"') && cleanedKey.endsWith('"')) {
+            cleanedKey = cleanedKey.substring(1, cleanedKey.length - 1);
         }
-        privateKey = privateKey.replace(/\\n/g, '\n');
+        cleanedKey = cleanedKey.replace(/\\n/g, '\n');
 
-        if (!privateKey.includes('BEGIN PRIVATE KEY')) {
-            console.error('Firebase Admin: Private key is present but malformed (missing BEGIN PRIVATE KEY header).');
-            return null;
+        if (!cleanedKey.includes('BEGIN PRIVATE KEY')) {
+            throw new Error(`Malformed private key: length=${cleanedKey.length}, prefix=${cleanedKey.substring(0, 20)}`);
         }
 
         return admin.initializeApp({
             credential: admin.credential.cert({
-                projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-                clientEmail: clientEmail,
-                privateKey: privateKey,
+                projectId,
+                clientEmail,
+                privateKey: cleanedKey,
             }),
         }, APP_NAME);
     } catch (error: any) {
-        console.error('Firebase Admin Lazy Initialization Error:', error.message);
-        return null;
+        throw new Error(`Firebase Admin SDK Initialization Error: ${error.message}`);
     }
 }
 
