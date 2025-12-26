@@ -57,22 +57,20 @@ export function getAdminAuth() {
 
 /**
  * Robustly clean a PEM key
+ * Handles multiline, literal \n, quotes, and hidden whitespace.
  */
 function cleanPemKey(key: string): string {
+    if (!key) return '';
+
     let cleaned = key.trim();
 
-    // Remove quotes
-    if (cleaned.startsWith('"') && cleaned.endsWith('"')) {
-        cleaned = cleaned.substring(1, cleaned.length - 1);
-    }
-    if (cleaned.startsWith("'") && cleaned.endsWith("'")) {
-        cleaned = cleaned.substring(1, cleaned.length - 1);
-    }
+    // 1. Remove surrounding quotes (handles both single and double, even if mixed)
+    cleaned = cleaned.replace(/^['"]|['"]$/g, '');
 
-    // Handle literal \n characters
-    cleaned = cleaned.replace(/\\n/g, '\n');
+    // 2. Handle literal \n or \r\n characters
+    cleaned = cleaned.replace(/\\n/g, '\n').replace(/\\r/g, '');
 
-    // Ensure it has the correct PEM headers and no trailing junk
+    // 3. Extract the PEM block to remove any leading/trailing garbage
     const beginHeader = '-----BEGIN PRIVATE KEY-----';
     const endHeader = '-----END PRIVATE KEY-----';
 
@@ -81,6 +79,10 @@ function cleanPemKey(key: string): string {
         const end = cleaned.indexOf(endHeader) + endHeader.length;
         cleaned = cleaned.substring(start, end).trim();
     }
+
+    // 4. Final sanity check: ensure no spaces after line breaks within the PEM body
+    // This is a common cause of ASN.1 parsing errors
+    cleaned = cleaned.split('\n').map(line => line.trim()).filter(line => line.length > 0).join('\n');
 
     return cleaned;
 }
