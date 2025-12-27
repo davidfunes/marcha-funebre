@@ -142,7 +142,7 @@ export class SoundManager {
 
     // --- Background Music ---
     private currentAudio: HTMLAudioElement | null = null;
-    private currentTrack: 'pacman' | 'snake' | 'tetris' | null = null;
+    private currentTrack: 'pacman' | 'snake' | 'tetris' | 'arkanoid' | null = null;
     private currentTempo: number = 100; // Base percentage (100 = 1.0x)
 
     public setTempo(tempo: number) {
@@ -177,7 +177,7 @@ export class SoundManager {
         }
     }
 
-    public playMusic(track: 'pacman' | 'snake' | 'tetris') {
+    public playMusic(track: 'pacman' | 'snake' | 'tetris' | 'arkanoid') {
         if (this.currentTrack === track && this.currentAudio && !this.currentAudio.paused) return;
 
         this.stopMusic();
@@ -185,9 +185,10 @@ export class SoundManager {
 
         let path = '';
         switch (track) {
-            case 'pacman': path = '/music/funeral-march.mp3'; break;
-            case 'snake': path = '/music/ride-of-the-valkyries.mp3'; break;
-            case 'tetris': path = '/music/ride-of-the-valkyries.mp3'; break; // Placeholder
+            case 'pacman': path = '/music/pacman-theme.mp3'; break;
+            case 'snake': path = '/music/snake-theme.mp3'; break;
+            case 'tetris': path = '/music/tetris-theme.mp3'; break;
+            case 'arkanoid': path = '/music/arkanoid-theme.mp3'; break;
         }
 
         this.currentAudio = new Audio(path);

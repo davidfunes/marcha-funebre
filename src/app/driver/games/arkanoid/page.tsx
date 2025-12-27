@@ -87,8 +87,8 @@ export default function ArkanoidGame() {
     // Sound Management
     useEffect(() => {
         if (isPlaying && !gameOver && !win) {
-            // Reusing tetris placeholder for now (ride of the valkyries)
-            soundManager.playMusic('tetris');
+            // Using its own theme
+            soundManager.playMusic('arkanoid');
         } else {
             soundManager.stopMusic();
         }
