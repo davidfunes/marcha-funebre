@@ -4,8 +4,9 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { db } from '@/lib/firebase/firebase';
-import { collection, addDoc, doc, updateDoc, increment, serverTimestamp } from 'firebase/firestore';
+import { collection, addDoc, doc, updateDoc, increment, serverTimestamp, getDoc } from 'firebase/firestore';
 import { awardPointsForAction } from '@/services/GamificationService';
+import { EmailService } from '@/services/EmailService';
 import {
     CheckSquare,
     ArrowRight,
@@ -108,11 +109,16 @@ export default function ChecklistPage() {
 
             // 2. Automatic Incident Generation
             const issues = Object.entries(answers).filter(([_, status]) => status === 'issue');
+            const detectedIssuesList: Array<{ label: string, comment: string }> = [];
+
             for (const [id, _] of issues) {
                 const itemLabel = CHECKLIST_STEPS.flatMap(s => s.items).find(i => i.id === id)?.label || id;
+                const comment = comments[id] || '';
+                detectedIssuesList.push({ label: itemLabel, comment });
+
                 const incidentData = {
                     title: `Incidencia Checklist: ${itemLabel}`,
-                    description: comments[id] || `Problema reportado en el checklist pre-viaje para ${itemLabel}.`,
+                    description: comment || `Problema reportado en el checklist pre-viaje para ${itemLabel}.`,
                     type: 'checklist',
                     priority: 'medium',
                     status: 'open',
@@ -124,7 +130,34 @@ export default function ChecklistPage() {
                 await addDoc(collection(db, 'incidents'), incidentData);
             }
 
-            // 3. Gamification: Award Points
+            // 3. Send Email Alert if there are issues
+            if (detectedIssuesList.length > 0) {
+                try {
+                    // Fetch vehicle details for the email
+                    let vehiclePlate = 'Vehículo Desconocido';
+                    if (user.assignedVehicleId) {
+                        const vehicleDoc = await getDoc(doc(db, 'vehicles', user.assignedVehicleId));
+                        if (vehicleDoc.exists()) {
+                            const vehicleData = vehicleDoc.data();
+                            vehiclePlate = `${vehicleData.brand} ${vehicleData.model} (${vehicleData.plate})`;
+                        }
+                    }
+
+                    await EmailService.sendIncidentAlert({
+                        type: 'checklist',
+                        title: 'Incidencias en Checklist Pre-Viaje',
+                        description: `Se han detectado ${detectedIssuesList.length} incidencias durante el checklist.`,
+                        reporterName: `${user.name} ${user.firstSurname || ''}`,
+                        vehiclePlate: vehiclePlate,
+                        date: new Date(),
+                        issues: detectedIssuesList
+                    });
+                } catch (emailError) {
+                    console.error("Error sending checklist email alert:", emailError);
+                }
+            }
+
+            // 4. Gamification: Award Points
             if (user.id) {
                 await awardPointsForAction(user.id, 'checklist_completed');
             }

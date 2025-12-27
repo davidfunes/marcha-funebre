@@ -1,15 +1,16 @@
 
 interface IncidentEmailData {
-    type: 'vehicle' | 'material';
+    type: 'vehicle' | 'material' | 'checklist';
     title: string;
     description: string;
-    incidentId: string;
+    incidentId?: string;
     reporterName: string;
     vehiclePlate?: string;
     itemName?: string;
     severity?: string;
     imageUrl?: string;
     date: Date;
+    issues?: Array<{ label: string, comment: string }>;
 }
 
 export const EmailService = {

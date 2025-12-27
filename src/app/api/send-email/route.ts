@@ -49,7 +49,8 @@ export async function POST(request: Request) {
             itemName,
             severity,
             imageUrl,
-            date
+            date,
+            issues // New field for consolidated checklist issues
         } = body;
 
         const formattedDate = new Date(date).toLocaleString('es-ES', {
@@ -57,7 +58,10 @@ export async function POST(request: Request) {
             timeStyle: 'short'
         });
 
-        const subject = `[ALERTA] Nueva Incidencia de ${type === 'vehicle' ? 'Vehículo' : 'Material'} - ${type === 'vehicle' ? vehiclePlate : itemName}`;
+        let subject = `[ALERTA] Nueva Incidencia de ${type === 'vehicle' ? 'Vehículo' : type === 'checklist' ? 'Checklist' : 'Material'}`;
+        if (type === 'vehicle') subject += ` - ${vehiclePlate}`;
+        else if (type === 'material') subject += ` - ${itemName}`;
+        else if (type === 'checklist') subject += ` - ${vehiclePlate}`;
 
         // Basic HTML Template
         const htmlContent = `
@@ -68,12 +72,15 @@ export async function POST(request: Request) {
             <style>
                 body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; color: #333; }
                 .container { max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 8px; background-color: #f9fafb; }
-                .header { background-color: #dc2626; color: white; padding: 15px; border-radius: 8px 8px 0 0; text-align: center; }
+                .header { background-color: ${type === 'checklist' ? '#f59e0b' : '#dc2626'}; color: white; padding: 15px; border-radius: 8px 8px 0 0; text-align: center; }
                 .content { padding: 20px; background-color: white; border-radius: 0 0 8px 8px; border: 1px solid #e0e0e0; border-top: none; }
                 .field { margin-bottom: 12px; }
                 .label { font-weight: bold; color: #555; display: block; margin-bottom: 4px; font-size: 0.9em; text-transform: uppercase; }
                 .value { background-color: #f3f4f6; padding: 8px 12px; border-radius: 4px; border: 1px solid #e5e7eb; }
                 .description { white-space: pre-wrap; background-color: #fff1f2; border: 1px solid #fecdd3; color: #881337; }
+                .issue-item { margin-bottom: 10px; padding: 10px; border-left: 4px solid #f59e0b; background-color: #fffbeb; }
+                .issue-label { font-weight: bold; color: #92400e; }
+                .issue-comment { color: #b45309; font-style: italic; }
                 .image-container { margin-top: 20px; text-align: center; }
                 .image-container img { max-width: 100%; border-radius: 8px; border: 1px solid #e5e7eb; }
                 .footer { margin-top: 20px; text-align: center; font-size: 0.8em; color: #6b7280; }
@@ -83,12 +90,12 @@ export async function POST(request: Request) {
         <body>
             <div class="container">
                 <div class="header">
-                    <h2 style="margin:0;">🚨 Nueva Incidencia Reportada</h2>
+                    <h2 style="margin:0;">${type === 'checklist' ? '📋 Incidencias Detectadas en Checklist' : '🚨 Nueva Incidencia Reportada'}</h2>
                 </div>
                 <div class="content">
                     <div class="field">
-                        <span class="label">Tipo de Incidencia</span>
-                        <div class="value">${type === 'vehicle' ? 'Vehículo' : 'Material'}</div>
+                        <span class="label">Tipo de Reporte</span>
+                        <div class="value">${type === 'vehicle' ? 'Vehículo' : type === 'checklist' ? 'Checklist Pre-Viaje' : 'Material'}</div>
                     </div>
                     
                     <div class="field">
@@ -101,7 +108,7 @@ export async function POST(request: Request) {
                         <div class="value">${formattedDate}</div>
                     </div>
 
-                    ${type === 'vehicle' ? `
+                    ${(type === 'vehicle' || type === 'checklist') ? `
                     <div class="field">
                         <span class="label">Vehículo</span>
                         <div class="value"><strong>${vehiclePlate}</strong></div>
@@ -113,17 +120,33 @@ export async function POST(request: Request) {
                     </div>
                     `}
 
-                    ${severity ? `
+                    ${type === 'checklist' && issues && issues.length > 0 ? `
+                    <div class="field">
+                        <span class="label">Incidencias Detectadas</span>
+                        <div style="margin-top: 10px;">
+                            ${issues.map((issue: any) => `
+                                <div class="issue-item">
+                                    <div class="issue-label">${issue.label}</div>
+                                    <div class="issue-comment">${issue.comment || 'Sin comentarios adicionales'}</div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                    ` : ''}
+
+                    ${severity && type !== 'checklist' ? `
                     <div class="field">
                         <span class="label">Severidad / Estado</span>
                         <div class="value">${severity}</div>
                     </div>
                     ` : ''}
 
+                    ${description && type !== 'checklist' ? `
                     <div class="field">
                         <span class="label">Descripción del Problema</span>
                         <div class="value description">${description}</div>
                     </div>
+                    ` : ''}
 
                     ${imageUrl ? `
                     <div class="image-container">
@@ -133,9 +156,11 @@ export async function POST(request: Request) {
                     </div>
                     ` : ''}
 
+                    ${incidentId ? `
                     <div style="text-align: center;">
                         <a href="https://marcha-funebre.web.app/admin/incidents/${incidentId}" class="btn">Ver en Dashboard</a>
                     </div>
+                    ` : ''}
                 </div>
                 <div class="footer">
                     <p>Este es un mensaje automático del sistema de gestión Marcha Fúnebre.</p>
