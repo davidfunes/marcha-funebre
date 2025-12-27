@@ -70,100 +70,246 @@ export async function POST(request: Request) {
         <head>
             <meta charset="UTF-8">
             <style>
-                body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; color: #333; }
-                .container { max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 8px; background-color: #f9fafb; }
-                .header { background-color: ${type === 'checklist' ? '#f59e0b' : '#dc2626'}; color: white; padding: 15px; border-radius: 8px 8px 0 0; text-align: center; }
-                .content { padding: 20px; background-color: white; border-radius: 0 0 8px 8px; border: 1px solid #e0e0e0; border-top: none; }
-                .field { margin-bottom: 12px; }
-                .label { font-weight: bold; color: #555; display: block; margin-bottom: 4px; font-size: 0.9em; text-transform: uppercase; }
-                .value { background-color: #f3f4f6; padding: 8px 12px; border-radius: 4px; border: 1px solid #e5e7eb; }
-                .description { white-space: pre-wrap; background-color: #fff1f2; border: 1px solid #fecdd3; color: #881337; }
-                .issue-item { margin-bottom: 10px; padding: 10px; border-left: 4px solid #f59e0b; background-color: #fffbeb; }
-                .issue-label { font-weight: bold; color: #92400e; }
-                .issue-comment { color: #b45309; font-style: italic; }
-                .image-container { margin-top: 20px; text-align: center; }
-                .image-container img { max-width: 100%; border-radius: 8px; border: 1px solid #e5e7eb; }
-                .footer { margin-top: 20px; text-align: center; font-size: 0.8em; color: #6b7280; }
-                .btn { display: inline-block; background-color: #1f2937; color: white; padding: 10px 20px; text-decoration: none; border-radius: 6px; margin-top: 20px; font-weight: bold; }
+                body { 
+                    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
+                    line-height: 1.6; 
+                    color: #1a1a1a; 
+                    background-color: #f0f2f5;
+                    margin: 0;
+                    padding: 0;
+                }
+                .wrapper {
+                    padding: 40px 20px;
+                }
+                .container { 
+                    max-width: 600px; 
+                    margin: 0 auto; 
+                    background-color: #ffffff; 
+                    border-radius: 12px; 
+                    overflow: hidden;
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+                }
+                .header { 
+                    background-color: ${type === 'checklist' ? '#f59e0b' : '#dc2626'}; 
+                    color: white; 
+                    padding: 30px; 
+                    text-align: center; 
+                }
+                .header h2 {
+                    margin: 0;
+                    font-size: 24px;
+                    font-weight: 700;
+                    letter-spacing: -0.5px;
+                }
+                .header-subtitle {
+                    margin-top: 8px;
+                    font-size: 14px;
+                    opacity: 0.9;
+                    text-transform: uppercase;
+                    letter-spacing: 1px;
+                }
+                .content { 
+                    padding: 30px; 
+                }
+                .section-title {
+                    font-size: 12px;
+                    font-weight: 700;
+                    color: #64748b;
+                    text-transform: uppercase;
+                    letter-spacing: 1px;
+                    margin-bottom: 12px;
+                    display: block;
+                }
+                .info-grid {
+                    display: grid;
+                    grid-template-columns: repeat(2, 1fr);
+                    gap: 16px;
+                    margin-bottom: 24px;
+                    background-color: #f8fafc;
+                    padding: 20px;
+                    border-radius: 8px;
+                    border: 1px solid #e2e8f0;
+                }
+                .info-item {
+                    margin-bottom: 0;
+                }
+                .info-label {
+                    font-size: 11px;
+                    font-weight: 600;
+                    color: #94a3b8;
+                    display: block;
+                    margin-bottom: 2px;
+                }
+                .info-value {
+                    font-size: 14px;
+                    font-weight: 600;
+                    color: #334155;
+                }
+                .issues-container {
+                    margin-top: 24px;
+                }
+                .issue-card { 
+                    margin-bottom: 16px; 
+                    padding: 20px; 
+                    border-radius: 8px;
+                    background-color: #fffbeb; 
+                    border: 1px solid #fde68a;
+                    position: relative;
+                }
+                .issue-card::before {
+                    content: '⚠️';
+                    position: absolute;
+                    left: 16px;
+                    top: 20px;
+                    font-size: 18px;
+                }
+                .issue-content {
+                    padding-left: 32px;
+                }
+                .issue-label { 
+                    font-size: 15px;
+                    font-weight: 700; 
+                    color: #92400e; 
+                    display: block;
+                    margin-bottom: 4px;
+                }
+                .issue-comment { 
+                    font-size: 14px;
+                    color: #b45309; 
+                    line-height: 1.5;
+                }
+                .description-box { 
+                    padding: 20px;
+                    background-color: #fff1f2; 
+                    border: 1px solid #fecdd3; 
+                    border-radius: 8px;
+                    color: #881337; 
+                    font-size: 15px;
+                    margin-top: 10px;
+                }
+                .image-container { 
+                    margin-top: 30px; 
+                    text-align: center;
+                    padding: 20px;
+                    background-color: #f8fafc;
+                    border-radius: 8px;
+                    border: 1px solid #e2e8f0;
+                }
+                .image-container img { 
+                    max-width: 100%; 
+                    border-radius: 6px; 
+                    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+                }
+                .footer { 
+                    margin-top: 30px; 
+                    text-align: center; 
+                    font-size: 12px; 
+                    color: #94a3b8;
+                    padding-bottom: 20px;
+                }
+                .btn-container {
+                    text-align: center;
+                    margin-top: 32px;
+                }
+                .btn { 
+                    display: inline-block; 
+                    background-color: #0f172a; 
+                    color: #ffffff !important; 
+                    padding: 14px 28px; 
+                    text-decoration: none; 
+                    border-radius: 6px; 
+                    font-size: 14px;
+                    font-weight: 700; 
+                    transition: background-color 0.2s;
+                }
             </style>
         </head>
         <body>
-            <div class="container">
-                <div class="header">
-                    <h2 style="margin:0;">${type === 'checklist' ? '📋 Incidencias Detectadas en Checklist' : '🚨 Nueva Incidencia Reportada'}</h2>
-                </div>
-                <div class="content">
-                    <div class="field">
-                        <span class="label">Tipo de Reporte</span>
-                        <div class="value">${type === 'vehicle' ? 'Vehículo' : type === 'checklist' ? 'Checklist Pre-Viaje' : 'Material'}</div>
+            <div class="wrapper">
+                <div class="container">
+                    <div class="header">
+                        <div class="header-subtitle">Gestión de Flota - Marcha Fúnebre</div>
+                        <h2>${type === 'checklist' ? 'Incidencias en Checklist' : 'Nueva Incidencia Reportada'}</h2>
                     </div>
-                    
-                    <div class="field">
-                        <span class="label">Reportado Por</span>
-                        <div class="value">${reporterName}</div>
-                    </div>
+                    <div class="content">
+                        <span class="section-title">Detalles del Reporte</span>
+                        <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; margin-bottom: 24px;">
+                            <tr>
+                                <td style="padding: 20px;">
+                                    <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                                        <tr>
+                                            <td width="50%" style="padding-bottom: 12px;">
+                                                <span class="info-label">TIPO</span>
+                                                <span class="info-value">${type === 'vehicle' ? 'Vehículo' : type === 'checklist' ? 'Checklist Pre-Viaje' : 'Material'}</span>
+                                            </td>
+                                            <td width="50%" style="padding-bottom: 12px;">
+                                                <span class="info-label">FECHA</span>
+                                                <span class="info-value">${formattedDate}</span>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td width="50%">
+                                                <span class="info-label">REPORTADO POR</span>
+                                                <span class="info-value">${reporterName}</span>
+                                            </td>
+                                            <td width="50%">
+                                                <span class="info-label">${(type === 'vehicle' || type === 'checklist') ? 'VEHÍCULO' : 'ELEMENTO'}</span>
+                                                <span class="info-value">${(type === 'vehicle' || type === 'checklist') ? vehiclePlate : itemName}</span>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </td>
+                            </tr>
+                        </table>
 
-                    <div class="field">
-                        <span class="label">Fecha</span>
-                        <div class="value">${formattedDate}</div>
-                    </div>
-
-                    ${(type === 'vehicle' || type === 'checklist') ? `
-                    <div class="field">
-                        <span class="label">Vehículo</span>
-                        <div class="value"><strong>${vehiclePlate}</strong></div>
-                    </div>
-                    ` : `
-                    <div class="field">
-                        <span class="label">Item de Inventario</span>
-                        <div class="value"><strong>${itemName}</strong></div>
-                    </div>
-                    `}
-
-                    ${type === 'checklist' && issues && issues.length > 0 ? `
-                    <div class="field">
-                        <span class="label">Incidencias Detectadas</span>
-                        <div style="margin-top: 10px;">
+                        ${type === 'checklist' && issues && issues.length > 0 ? `
+                        <span class="section-title">Incidencias Detectadas (${issues.length})</span>
+                        <div class="issues-container">
                             ${issues.map((issue: any) => `
-                                <div class="issue-item">
-                                    <div class="issue-label">${issue.label}</div>
-                                    <div class="issue-comment">${issue.comment || 'Sin comentarios adicionales'}</div>
+                                <div class="issue-card">
+                                    <div class="issue-content">
+                                        <span class="issue-label">${issue.label}</span>
+                                        <div class="issue-comment">${issue.comment || 'Sin observaciones adicionales proporcionadas por el conductor.'}</div>
+                                    </div>
                                 </div>
                             `).join('')}
                         </div>
-                    </div>
-                    ` : ''}
+                        ` : ''}
 
-                    ${severity && type !== 'checklist' ? `
-                    <div class="field">
-                        <span class="label">Severidad / Estado</span>
-                        <div class="value">${severity}</div>
-                    </div>
-                    ` : ''}
+                        ${severity && type !== 'checklist' ? `
+                        <div style="margin-top: 24px;">
+                            <span class="section-title">Severidad / Prioridad</span>
+                            <div style="padding: 8px 12px; background-color: ${severity === 'high' || severity === 'critical' ? '#fee2e2' : '#f3f4f6'}; color: ${severity === 'high' || severity === 'critical' ? '#991b1b' : '#374151'}; border-radius: 4px; display: inline-block; font-size: 13px; font-weight: 700; text-transform: uppercase;">
+                                ${severity}
+                            </div>
+                        </div>
+                        ` : ''}
 
-                    ${description && type !== 'checklist' ? `
-                    <div class="field">
-                        <span class="label">Descripción del Problema</span>
-                        <div class="value description">${description}</div>
-                    </div>
-                    ` : ''}
+                        ${description && type !== 'checklist' ? `
+                        <div style="margin-top: 24px;">
+                            <span class="section-title">Descripción del Problema</span>
+                            <div class="description-box">${description}</div>
+                        </div>
+                        ` : ''}
 
-                    ${imageUrl ? `
-                    <div class="image-container">
-                        <span class="label">Evidencia Fotográfica</span>
-                        <img src="${imageUrl}" alt="Evidencia de incidencia" />
-                        <p><a href="${imageUrl}" target="_blank" style="color: #dc2626; font-size: 0.9em;">Ver imagen a tamaño completo</a></p>
-                    </div>
-                    ` : ''}
+                        ${imageUrl ? `
+                        <div class="image-container">
+                            <span class="section-title">Evidencia Fotográfica</span>
+                            <img src="${imageUrl}" alt="Evidencia de incidencia" />
+                            <p style="margin-top: 12px;"><a href="${imageUrl}" target="_blank" style="color: #dc2626; font-size: 13px; font-weight: 600; text-decoration: none;">Ampliar imagen →</a></p>
+                        </div>
+                        ` : ''}
 
-                    ${incidentId ? `
-                    <div style="text-align: center;">
-                        <a href="https://marcha-funebre.web.app/admin/incidents/${incidentId}" class="btn">Ver en Dashboard</a>
+                        ${incidentId ? `
+                        <div class="btn-container">
+                            <a href="https://marcha-funebre.web.app/admin/incidents/${incidentId}" class="btn">Gestionar Incidencia</a>
+                        </div>
+                        ` : ''}
                     </div>
-                    ` : ''}
                 </div>
                 <div class="footer">
-                    <p>Este es un mensaje automático del sistema de gestión Marcha Fúnebre.</p>
+                    Este mensaje ha sido generado automáticamente por el sistema Marcha Fúnebre.<br>
+                    Por favor, no responda a este correo electrónico.
                 </div>
             </div>
         </body>
