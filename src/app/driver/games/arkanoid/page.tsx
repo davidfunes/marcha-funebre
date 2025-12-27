@@ -9,8 +9,8 @@ import { soundManager } from '@/utils/sound';
 // --- Arkanoid Constants ---
 const CANVAS_WIDTH = 360;
 const CANVAS_HEIGHT = 480;
-const PADDLE_WIDTH = 80;
-const PADDLE_HEIGHT = 12;
+const PADDLE_WIDTH = 100;
+const PADDLE_HEIGHT = 14;
 const BALL_RADIUS = 6;
 const BRICK_ROWS = 5;
 const BRICK_COLS = 6;
@@ -40,8 +40,8 @@ export default function ArkanoidGame() {
     const paddleX = useRef((CANVAS_WIDTH - PADDLE_WIDTH) / 2);
     const ballX = useRef(CANVAS_WIDTH / 2);
     const ballY = useRef(CANVAS_HEIGHT - 30);
-    const dx = useRef(3);
-    const dy = useRef(-3);
+    const dx = useRef(2.5);
+    const dy = useRef(-2.5);
     const bricks = useRef<Brick[]>([]);
 
     // State for UI rendering
@@ -78,8 +78,8 @@ export default function ArkanoidGame() {
         paddleX.current = (CANVAS_WIDTH - PADDLE_WIDTH) / 2;
         ballX.current = CANVAS_WIDTH / 2;
         ballY.current = CANVAS_HEIGHT - 30;
-        dx.current = 3 + Math.random() * 2;
-        dy.current = -3 - Math.random() * 2;
+        dx.current = 2.5 + Math.random() * 1.5;
+        dy.current = -2.5 - Math.random() * 1.5;
         initBricks();
         setIsPlaying(true);
     };
@@ -324,8 +324,27 @@ export default function ArkanoidGame() {
                     )}
                 </div>
 
-                <p className="mt-8 text-xs text-muted-foreground animate-pulse font-medium">
-                    Desliza para mover la pala o usa las flechas
+                <div className="w-full flex justify-between gap-6 max-w-[320px] mt-6">
+                    <button
+                        onPointerDown={(e) => { e.preventDefault(); moveLeft.current = true; }}
+                        onPointerUp={(e) => { e.preventDefault(); moveLeft.current = false; }}
+                        onPointerLeave={(e) => { e.preventDefault(); moveLeft.current = false; }}
+                        className="flex-1 aspect-square bg-gray-800 rounded-2xl flex items-center justify-center border-b-4 border-black active:border-b-0 active:translate-y-1 transition-all touch-none"
+                    >
+                        <ChevronLeft className="w-12 h-12 text-white" />
+                    </button>
+                    <button
+                        onPointerDown={(e) => { e.preventDefault(); moveRight.current = true; }}
+                        onPointerUp={(e) => { e.preventDefault(); moveRight.current = false; }}
+                        onPointerLeave={(e) => { e.preventDefault(); moveRight.current = false; }}
+                        className="flex-1 aspect-square bg-gray-800 rounded-2xl flex items-center justify-center border-b-4 border-black active:border-b-0 active:translate-y-1 transition-all touch-none"
+                    >
+                        <ChevronRight className="w-12 h-12 text-white" />
+                    </button>
+                </div>
+
+                <p className="mt-6 text-[10px] text-muted-foreground animate-pulse font-bold uppercase tracking-widest">
+                    Usa los cursores o desliza sobre el tablero
                 </p>
 
             </main>
