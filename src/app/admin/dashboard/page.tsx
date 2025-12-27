@@ -181,7 +181,9 @@ export default function AdminDashboard() {
                 const brokenIdx = locations.findIndex(l =>
                     l.status === 'totally_broken' ||
                     l.status === 'working_urgent_change' ||
-                    l.status === 'ordered'
+                    l.status === 'ordered' ||
+                    l.status === 'pending_management' ||
+                    (l.status as any) === 'broken'
                 );
 
                 if (brokenIdx !== -1) {
@@ -193,11 +195,11 @@ export default function AdminDashboard() {
                 }
 
                 // Add to new destination
-                const destIdx = locations.findIndex(l => l.id === targetId && l.type === targetType && l.status === 'new');
+                const destIdx = locations.findIndex(l => l.id === targetId && l.type === targetType && (l.status === 'new_functional' || l.status === 'new'));
                 if (destIdx !== -1) {
                     locations[destIdx].quantity += 1;
                 } else {
-                    locations.push({ id: targetId, type: targetType, quantity: 1, status: 'new' });
+                    locations.push({ id: targetId, type: targetType, quantity: 1, status: 'new_functional' });
                 }
 
                 await updateItem('inventory', item.id!, { locations });
@@ -296,7 +298,7 @@ export default function AdminDashboard() {
             assignedItems += itemAssigned;
 
             // Health (everything except new/functional)
-            const itemHealthIssue = (item.locations || []).filter(l => l.status && l.status !== 'new').reduce((acc, l) => acc + l.quantity, 0);
+            const itemHealthIssue = (item.locations || []).filter(l => l.status && l.status !== 'new_functional' && l.status !== 'new').reduce((acc, l) => acc + l.quantity, 0);
             brokenItems += itemHealthIssue;
         });
 
@@ -786,14 +788,14 @@ export default function AdminDashboard() {
                     {inventory.flatMap(item =>
                         (item.locations || [])
                             .map((loc, idx) => ({ item, loc, idx }))
-                            .filter(({ loc }) => loc.status && loc.status !== 'new')
+                            .filter(({ loc }) => loc.status && loc.status !== 'new_functional' && loc.status !== 'new')
                     ).length === 0 ? (
                         <p className="text-center text-muted-foreground py-8">No hay unidades con incidencias reportadas.</p>
                     ) : (
                         inventory.flatMap(item =>
                             (item.locations || [])
                                 .map((loc, idx) => ({ item, loc, idx }))
-                                .filter(({ loc }) => loc.status && loc.status !== 'new')
+                                .filter(({ loc }) => loc.status && loc.status !== 'new_functional' && loc.status !== 'new')
                         ).map(({ item, loc, idx }) => {
                             const linkedIncident = incidents.find(inc => inc.inventoryItemId === item.id && inc.status !== 'resolved');
 
@@ -823,13 +825,17 @@ export default function AdminDashboard() {
                                             <h4 className="font-bold text-foreground">{item.name}</h4>
                                             <p className="text-xs text-muted-foreground">SKU: {item.sku}</p>
                                         </div>
-                                        <span className={`text-[10px] px-2 py-1 rounded font-bold uppercase ${loc.status === 'totally_broken' ? 'bg-red-100 text-red-700' :
-                                            loc.status === 'ordered' ? 'bg-blue-100 text-blue-700' :
-                                                'bg-amber-100 text-amber-700'
+                                        <span className={`text-[10px] px-2 py-1 rounded font-bold uppercase ${loc.status === 'totally_broken' ? 'bg-rose-100 text-rose-700' :
+                                                loc.status === 'ordered' ? 'bg-blue-100 text-blue-700' :
+                                                    loc.status === 'pending_management' ? 'bg-slate-100 text-slate-700' :
+                                                        loc.status === 'resolved' ? 'bg-teal-100 text-teal-700' :
+                                                            'bg-amber-100 text-amber-700'
                                             }`}>
                                             {loc.status === 'totally_broken' ? 'Roto Total' :
                                                 loc.status === 'ordered' ? 'Pedido' :
-                                                    loc.status === 'working_urgent_change' ? 'Urgente' : loc.status}
+                                                    loc.status === 'pending_management' ? 'Pendiente' :
+                                                        loc.status === 'resolved' ? 'Resuelto' :
+                                                            loc.status === 'working_urgent_change' ? 'Urgente' : loc.status}
                                         </span>
                                     </div>
 
@@ -1009,17 +1015,17 @@ export default function AdminDashboard() {
                 </div>
             </div>
 
-            {/* Material Alerts Section (anything not 'new') */}
+            {/* Material Alerts Section (anything not 'new_functional' or 'new') */}
             {
-                inventory.some(i => (i.locations || []).some(l => l.status && l.status !== 'new')) && (
+                inventory.some(i => (i.locations || []).some(l => l.status && l.status !== 'new_functional' && l.status !== 'new')) && (
                     <div className="rounded-xl border border-red-200 dark:border-red-900/40 bg-red-50 dark:bg-red-950/10 p-6 animate-in fade-in slide-in-from-top-4">
                         <div className="flex items-center gap-3 mb-4">
                             <div className="p-2 bg-red-100 dark:bg-red-900/40 rounded-full text-red-600 dark:text-red-400">
                                 <AlertTriangle className="h-6 w-6" />
                             </div>
                             <div>
-                                <h3 className="text-lg font-bold text-red-900 dark:text-red-100">Alertas de Material Roto</h3>
-                                <p className="text-sm text-red-700 dark:text-red-400/80">El siguiente material está marcado como roto y requiere reemplazo.</p>
+                                <h3 className="text-lg font-bold text-red-900 dark:text-red-100">Alertas de Material con Incidencia</h3>
+                                <p className="text-sm text-red-700 dark:text-red-400/80">El siguiente material tiene incidencias reportadas y requiere atención.</p>
                             </div>
                         </div>
 
@@ -1027,7 +1033,7 @@ export default function AdminDashboard() {
                             {inventory.flatMap(item =>
                                 (item.locations || [])
                                     .map((loc, idx) => ({ item, loc, idx }))
-                                    .filter(({ loc }) => loc.status && loc.status !== 'new')
+                                    .filter(({ loc }) => loc.status && loc.status !== 'new_functional' && loc.status !== 'new')
                             ).map(({ item, loc, idx }) => {
                                 // Find linked incident for this broken item to get reporter info
                                 const linkedIncident = incidents.find(inc => inc.inventoryItemId === item.id && inc.status !== 'resolved');
@@ -1067,13 +1073,15 @@ export default function AdminDashboard() {
                                                 <span className="text-xs font-mono bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300 px-2 py-1 rounded">{item.sku}</span>
                                             </div>
                                             <div className="flex items-center gap-2 mt-1">
-                                                <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold uppercase ${loc.status === 'totally_broken' ? 'bg-red-200 text-red-800' :
-                                                    loc.status === 'ordered' ? 'bg-blue-200 text-blue-800' :
-                                                        'bg-amber-200 text-amber-800'
+                                                <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold uppercase ${loc.status === 'totally_broken' ? 'bg-rose-200 text-rose-800' :
+                                                        loc.status === 'ordered' ? 'bg-blue-200 text-blue-800' :
+                                                            loc.status === 'pending_management' ? 'bg-slate-200 text-slate-800' :
+                                                                'bg-amber-200 text-amber-800'
                                                     }`}>
                                                     {loc.status === 'totally_broken' ? 'Roto Total' :
                                                         loc.status === 'ordered' ? 'Pedido' :
-                                                            'Urge Cambio'}
+                                                            loc.status === 'pending_management' ? 'Pendiente' :
+                                                                'Urge Cambio'}
                                                 </span>
                                                 <p className="text-sm text-red-600 dark:text-red-400">{locationName}</p>
                                             </div>

@@ -214,7 +214,7 @@ export const reportMaterialIncident = async (
         // We prioritize stacks that are "good" (new, functional, ok, or undefined)
         let locIdx = locations.findIndex(l =>
             l.id === locationId &&
-            (!l.status || l.status === 'new' || l.status === 'working_urgent_change' || (l.status as any) === 'ok')
+            (!l.status || l.status === 'new_functional' || l.status === 'working_urgent_change' || l.status === 'new' || (l.status as any) === 'ok')
         );
 
         // Fallback: If no "good" stack found, just find ANY stack in that location (except ordered)
@@ -318,7 +318,9 @@ export const restoreMaterial = async (
             l.status === 'totally_broken' ||
             l.status === 'working_urgent_change' ||
             l.status === 'ordered' ||
-            (l.status as any) === 'broken'
+            l.status === 'pending_management' ||
+            (l.status as any) === 'broken' ||
+            (l.status as any) === 'broken_urgent' // Just in case
         );
 
         if (brokenIdx !== -1) {
@@ -352,7 +354,7 @@ export const restoreMaterial = async (
         }
 
         // 2. Add to Target Destination as 'new'
-        const destIdx = locations.findIndex(l => l.id === targetId && l.type === targetType && l.status === 'new');
+        const destIdx = locations.findIndex(l => l.id === targetId && l.type === targetType && (l.status === 'new_functional' || l.status === 'new'));
         if (destIdx !== -1) {
             locations[destIdx].quantity += 1;
         } else {
@@ -360,7 +362,7 @@ export const restoreMaterial = async (
                 type: targetType,
                 id: targetId,
                 quantity: 1,
-                status: 'new'
+                status: 'new_functional'
             });
         }
 

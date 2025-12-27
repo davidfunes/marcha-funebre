@@ -184,7 +184,7 @@ export default function ReportIncidentPage() {
                 {
                     title: `Incidencia Material: ${selectedMaterial.name}`,
                     description,
-                    priority: condition === 'totally_broken' ? 'high' : 'medium',
+                    priority: condition === 'working_urgent_change' ? 'medium' : 'low',
                     reportedByUserId: user.id!,
                     vehicleId: user.assignedVehicleId,
                     images: imageUrls
@@ -439,8 +439,8 @@ export default function ReportIncidentPage() {
                                 className="w-full px-4 py-3 bg-card border border-input rounded-xl outline-none"
                             >
                                 <option value="" disabled>Selecciona cómo se encuentra...</option>
+                                <option value="new_functional">Nuevo o funcional</option>
                                 <option value="working_urgent_change">Funciona pero urge cambio</option>
-                                <option value="totally_broken">Roto Total (No se puede usar)</option>
                             </select>
                         </div>
 

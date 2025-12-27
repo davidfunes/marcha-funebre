@@ -12,13 +12,17 @@ import {
     Car,
     Warehouse as WarehouseIcon,
     AlertTriangle,
-    Clock
+    Clock,
+    ShieldCheck,
+    CheckCircle2,
+    RotateCcw
 } from 'lucide-react';
 import { DataTable, Column } from '@/components/ui/DataTable';
 import { StatusBadge } from '@/components/ui/StatusBadge';
 import { Modal } from '@/components/ui/Modal';
 import { addItem, updateItem, deleteItem, subscribeToCollection, getWarehouses, getVehicles } from '@/services/FirebaseService';
 import { InventoryItem, Warehouse, Vehicle, MaterialCondition } from '@/types';
+import { StatusAuditor } from '@/components/admin/inventory/StatusAuditor';
 
 interface LocationCellProps {
     item: InventoryItem;
@@ -116,35 +120,43 @@ const LocationCell = ({ item, vehicles, warehouses, onEdit, onReportBroken }: Lo
                                 name = v ? `${v.brand} ${v.model} (${v.plate})` : 'Vehículo desconocido';
                             }
 
-                            const isBroken = loc.status === 'totally_broken';
-                            const isUrgent = loc.status === 'working_urgent_change';
-                            const hasIssue = isBroken || isUrgent;
-                            const iconColor = hasIssue ? (isBroken ? 'text-red-500' : 'text-amber-500') : 'text-muted-foreground';
-                            const bgColor = isBroken ? 'bg-red-50 dark:bg-red-900/20' : isUrgent ? 'bg-amber-50 dark:bg-amber-900/20' : iconBg;
+                            const statusConfig: Record<string, { label: string, color: string, icon: any }> = {
+                                pending_management: { label: 'Pendiente', color: 'text-slate-600 bg-slate-50 border-slate-200', icon: Clock },
+                                new_functional: { label: 'Nuevo/Funcional', color: 'text-emerald-700 bg-emerald-50 border-emerald-200', icon: CheckCircle2 },
+                                working_urgent_change: { label: 'Urge Cambio', color: 'text-amber-700 bg-amber-50 border-amber-200', icon: AlertTriangle },
+                                totally_broken: { label: 'Roto Total', color: 'text-rose-700 bg-rose-50 border-rose-200', icon: AlertTriangle },
+                                ordered: { label: 'Pedido', color: 'text-blue-700 bg-blue-50 border-blue-200', icon: Clock },
+                                resolved: { label: 'Resuelto', color: 'text-teal-700 bg-teal-50 border-teal-200', icon: CheckCircle2 },
+                                // Legacy
+                                new: { label: 'Nuevo (Legacy)', color: 'text-emerald-700 bg-emerald-50 border-emerald-200', icon: CheckCircle2 },
+                                broken: { label: 'Roto (Legacy)', color: 'text-rose-700 bg-rose-50 border-rose-200', icon: AlertTriangle },
+                            };
+
+                            const currentStatus = loc.status || 'new_functional';
+                            const config = statusConfig[currentStatus as string] || statusConfig.new_functional;
+                            const StatusIcon = config.icon;
 
                             return (
                                 <div
                                     key={idx}
                                     onClick={() => onEdit(item)}
-                                    className={`flex items-center justify-between px-2 py-1.5 rounded-md group/item transition-colors cursor-pointer ${isBroken ? 'bg-red-50/50 hover:bg-red-50' : 'hover:bg-muted/50'}`}
+                                    className={`flex items-center justify-between px-2 py-1.5 rounded-md group/item transition-colors cursor-pointer hover:bg-muted/50`}
                                 >
                                     <div className="flex items-center gap-2 overflow-hidden flex-1">
-                                        <div className={`flex-shrink-0 p-1 rounded-md ${bgColor}`}>
-                                            {isBroken ? <AlertTriangle className="w-3.5 h-3.5 text-red-500" /> : isUrgent ? <AlertTriangle className="w-3.5 h-3.5 text-amber-500" /> : loc.status === 'ordered' ? <Clock className="w-3.5 h-3.5 text-blue-500" /> : icon}
+                                        <div className={`flex-shrink-0 p-1 rounded-md ${config.color.split(' ').slice(1).join(' ')}`}>
+                                            <StatusIcon className={`w-3.5 h-3.5 ${config.color.split(' ')[0]}`} />
                                         </div>
                                         <div className="flex flex-col overflow-hidden">
-                                            <span className={`truncate text-xs font-medium ${isBroken ? 'text-red-700' : isUrgent ? 'text-amber-700' : loc.status === 'ordered' ? 'text-blue-700' : 'text-foreground'}`} title={name}>{name}</span>
-                                            {isBroken && <span className="text-[9px] font-bold text-red-500 uppercase leading-none">Roto Total</span>}
-                                            {isUrgent && <span className="text-[9px] font-bold text-amber-500 uppercase leading-none">Urge Cambio</span>}
-                                            {loc.status === 'ordered' && <span className="text-[9px] font-bold text-blue-500 uppercase leading-none">Pedido</span>}
+                                            <span className={`truncate text-xs font-medium text-foreground`} title={name}>{name}</span>
+                                            <span className={`text-[9px] font-bold uppercase leading-none ${config.color.split(' ')[0]}`}>{config.label}</span>
                                         </div>
                                     </div>
 
                                     <div className="flex items-center gap-1 pl-2">
-                                        <span className={`flex-shrink-0 font-mono text-[10px] items-center justify-center border px-1.5 py-0.5 rounded ${isBroken ? 'bg-red-100 border-red-200 text-red-700' : isUrgent ? 'bg-amber-100 border-amber-200 text-amber-700' : loc.status === 'ordered' ? 'bg-blue-100 border-blue-200 text-blue-700' : 'bg-muted border-border text-muted-foreground'}`}>
+                                        <span className={`flex-shrink-0 font-mono text-[10px] items-center justify-center border px-1.5 py-0.5 rounded ${config.color}`}>
                                             x{loc.quantity}
                                         </span>
-                                        {!hasIssue && (
+                                        {currentStatus !== 'totally_broken' && currentStatus !== 'working_urgent_change' && (
                                             <button
                                                 onClick={(e) => {
                                                     e.stopPropagation();
@@ -182,6 +194,9 @@ export default function InventoryPage() {
     const [itemToBreak, setItemToBreak] = useState<InventoryItem | null>(null);
     const [breakIndex, setBreakIndex] = useState<number>(-1);
 
+    // Auditor State
+    const [isAuditorOpen, setIsAuditorOpen] = useState(false);
+
     // Modal & Form
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingItem, setEditingItem] = useState<InventoryItem | null>(null);
@@ -198,7 +213,7 @@ export default function InventoryPage() {
     const [newLocType, setNewLocType] = useState<'warehouse' | 'vehicle'>('warehouse');
     const [newLocId, setNewLocId] = useState<string>('');
     const [newLocQty, setNewLocQty] = useState<number>(1);
-    const [newLocStatus, setNewLocStatus] = useState<MaterialCondition>('new');
+    const [newLocStatus, setNewLocStatus] = useState<MaterialCondition>('new_functional');
 
     useEffect(() => {
         const unsubscribe = subscribeToCollection<InventoryItem>('inventory', (data) => {
@@ -461,6 +476,13 @@ export default function InventoryPage() {
                     <h1 className="text-3xl font-bold tracking-tight">Inventario Musical</h1>
                     <p className="text-muted-foreground mt-2">Control de instrumentos, sonido e iluminación.</p>
                 </div>
+                <button
+                    onClick={() => setIsAuditorOpen(true)}
+                    className="inline-flex items-center justify-center rounded-lg bg-amber-50 px-4 py-2 text-sm font-medium text-amber-700 border border-amber-200 shadow-sm transition-colors hover:bg-amber-100"
+                >
+                    <ShieldCheck className="mr-2 h-4 w-4" />
+                    Auditor de Estados
+                </button>
             </div>
 
             <DataTable
@@ -672,10 +694,12 @@ export default function InventoryPage() {
                                             <div className="flex flex-col">
                                                 <span>{loc.type === 'warehouse' ? '🏭' : '🚗'} {locName} (Cant: {loc.quantity})</span>
                                                 <span className="text-[10px] uppercase font-bold text-muted-foreground italic">
-                                                    {loc.status === 'new' ? 'Nuevo o funcional' :
+                                                    {loc.status === 'new_functional' ? 'Nuevo o funcional' :
                                                         loc.status === 'working_urgent_change' ? 'Urge cambio' :
                                                             loc.status === 'ordered' ? 'Pedido' :
-                                                                loc.status === 'totally_broken' ? 'Roto' : 'Normal'}
+                                                                loc.status === 'totally_broken' ? 'Roto' :
+                                                                    loc.status === 'pending_management' ? 'Pendiente' :
+                                                                        loc.status === 'resolved' ? 'Resuelto' : 'Normal'}
                                                 </span>
                                             </div>
                                             <button type="button" onClick={() => removeLocation(idx)} className="text-red-500 hover:bg-red-50 p-1 rounded">
@@ -706,10 +730,12 @@ export default function InventoryPage() {
                                         onChange={e => setNewLocStatus(e.target.value as MaterialCondition)}
                                         className="w-full text-sm px-2 py-1 border rounded"
                                     >
-                                        <option value="new">Nuevo o funcional</option>
+                                        <option value="pending_management">Pendiente de gestión</option>
+                                        <option value="new_functional">Nuevo o funcional</option>
                                         <option value="working_urgent_change">Urge cambio</option>
+                                        <option value="totally_broken">Completamente Roto</option>
                                         <option value="ordered">Pedido</option>
-                                        <option value="totally_broken">Roto</option>
+                                        <option value="resolved">Resuelto</option>
                                     </select>
                                 </div>
                                 <div className="space-y-1 flex-[2]">
@@ -845,6 +871,18 @@ export default function InventoryPage() {
                         </button>
                     </div>
                 </div>
+            </Modal>
+            {/* Status Auditor Modal */}
+            <Modal
+                isOpen={isAuditorOpen}
+                onClose={() => setIsAuditorOpen(false)}
+                title="Auditor de Estados de Material"
+            >
+                <StatusAuditor
+                    items={inventory}
+                    onClose={() => setIsAuditorOpen(false)}
+                    onUpdate={() => { }} // It subscribes to data, so it will update automatically
+                />
             </Modal>
         </div>
     );

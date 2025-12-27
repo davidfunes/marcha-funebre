@@ -59,7 +59,15 @@ export interface VehicleMake {
 
 export type IncidentPriority = 'low' | 'medium' | 'high' | 'critical';
 export type IncidentStatus = 'open' | 'in_progress' | 'resolved' | 'closed';
-export type MaterialCondition = 'new' | 'working_urgent_change' | 'totally_broken' | 'ordered';
+export type MaterialCondition =
+    | 'pending_management'
+    | 'new_functional'
+    | 'working_urgent_change'
+    | 'totally_broken'
+    | 'ordered'
+    | 'resolved'
+    | 'new' // Legacy
+    | 'broken'; // Legacy
 
 export interface Incident {
     id?: string;
