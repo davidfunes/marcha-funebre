@@ -28,6 +28,7 @@ import { isProfileComplete } from '@/utils/profileUtils';
 import { isChristmasTime } from '@/utils/dateUtils';
 import { useChristmas } from '@/hooks/useChristmas';
 import { ProfileCompletionAlert } from '@/components/profile/ProfileCompletionAlert';
+import { USER_ROLE_LABELS } from '@/types';
 
 function SidebarLink({ item, onClick }: { item: any; onClick?: () => void }) {
     const pathname = usePathname();
@@ -170,7 +171,7 @@ export default function AdminLayout({
                             <Menu className="h-6 w-6" />
                         </button>
                         <Logo size="sm" className="md:hidden" />
-                        <div className="hidden md:block text-sm font-medium text-muted-foreground">Admin Portal</div>
+                        <div className="hidden md:block text-sm font-medium text-muted-foreground">Portal de Administración</div>
                         <div className="h-6 w-px bg-border hidden md:block"></div>
                         <Link
                             href="/driver/dashboard"
@@ -190,7 +191,9 @@ export default function AdminLayout({
                         <Link href="/admin/profile" className="flex items-center gap-3 hover:bg-muted/50 p-1.5 rounded-lg transition-colors">
                             <div className="text-right hidden sm:block">
                                 <p className="text-sm font-medium leading-none">{user?.name}</p>
-                                <p className="text-xs text-muted-foreground mt-1 capitalize">{user?.role}</p>
+                                <p className="text-xs text-muted-foreground mt-1 capitalize">
+                                    {user?.role ? USER_ROLE_LABELS[user.role] || user.role : ''}
+                                </p>
                             </div>
                             <div className="h-10 w-10 rounded-full bg-secondary flex items-center justify-center shrink-0 overflow-hidden">
                                 {user?.avatar ? (

@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { db } from '@/lib/firebase/firebase';
 import { collection, query, where, getDocs, doc, getDoc, orderBy, limit, Timestamp } from 'firebase/firestore';
-import { Vehicle, RentingCompany, MaintenanceRecord } from '@/types';
+import { Vehicle, RentingCompany, MaintenanceRecord, VEHICLE_STATUS_LABELS, FUEL_TYPE_LABELS } from '@/types';
 import {
     Search,
     Car,
@@ -383,8 +383,7 @@ export default function DirectoryPage() {
                                         <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase border ${selectedVehicle.status === 'maintenance' ? 'bg-red-500/10 text-red-500 border-red-500/20' :
                                             selectedVehicle.assignedDriverId ? 'bg-amber-500/10 text-amber-500 border-amber-500/20' : 'bg-green-500/10 text-green-500 border-green-500/20'
                                             }`}>
-                                            {selectedVehicle.status === 'maintenance' ? 'Mantenimiento' :
-                                                selectedVehicle.assignedDriverId ? 'En Uso' : 'Disponible'}
+                                            {VEHICLE_STATUS_LABELS[selectedVehicle.status as any] || selectedVehicle.status}
                                         </span>
                                         {selectedVehicle.requiresParkingSpot && (
                                             <span className="text-[10px] font-bold px-2 py-0.5 rounded-full uppercase bg-blue-500/10 text-blue-500 border border-blue-500/20">
@@ -407,10 +406,9 @@ export default function DirectoryPage() {
                                 <div className="p-3 rounded-xl bg-muted/50 border border-border">
                                     <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1">Combustible</p>
                                     <div className="flex flex-col gap-0.5">
-                                        <div className="flex items-center gap-2">
-                                            <Fuel className="w-4 h-4 text-primary" />
-                                            <span className="font-bold">{selectedVehicle.fuelType} {selectedVehicle.fuelLevel}%</span>
-                                        </div>
+                                        <span className="font-bold">
+                                            {FUEL_TYPE_LABELS[selectedVehicle.fuelType as any] || selectedVehicle.fuelType} {selectedVehicle.fuelLevel}%
+                                        </span>
                                         {selectedVehicle.fuelLevel !== undefined && (
                                             <p className={`text-[9px] font-medium ${getFuelLevelMessage(selectedVehicle.fuelLevel).color}`}>
                                                 {getFuelLevelMessage(selectedVehicle.fuelLevel).message}

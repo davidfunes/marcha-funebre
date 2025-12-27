@@ -271,7 +271,7 @@ export default function DriverDashboard() {
                         )}
                     </div>
                     <p className="text-muted-foreground text-sm">
-                        ¿Qué tarea vamos a realizar ahora?
+                        ¿Qué quieres hacer hoy?
                     </p>
                 </div>
 

@@ -23,7 +23,7 @@ import Link from 'next/link';
 import { IncidentPriority, IncidentStatus, InventoryItem, MaterialCondition } from '@/types';
 import { awardPointsForAction } from '@/services/GamificationService';
 import { getInventory, reportMaterialIncident, uploadFile } from '@/services/FirebaseService';
-import { MATERIAL_STATUS_LABELS } from '@/types';
+import { MATERIAL_STATUS_LABELS, INCIDENT_PRIORITY_LABELS, FUEL_TYPE_LABELS, VEHICLE_STATUS_LABELS } from '@/types';
 
 import { Modal } from '@/components/ui/Modal';
 
@@ -337,16 +337,15 @@ export default function ReportIncidentPage() {
                                 </select>
                             </div>
                             <div>
-                                <label className="block text-sm font-medium mb-1.5 px-1">Prioridad</label>
                                 <select
                                     value={priority}
                                     onChange={(e) => setPriority(e.target.value as IncidentPriority)}
                                     className="w-full px-4 py-3 bg-card border border-input rounded-xl outline-none"
                                 >
-                                    <option value="low">Baja</option>
-                                    <option value="medium">Media</option>
-                                    <option value="high">Alta</option>
-                                    <option value="critical">Crítica</option>
+                                    <option value="low">{INCIDENT_PRIORITY_LABELS.low}</option>
+                                    <option value="medium">{INCIDENT_PRIORITY_LABELS.medium}</option>
+                                    <option value="high">{INCIDENT_PRIORITY_LABELS.high}</option>
+                                    <option value="critical">{INCIDENT_PRIORITY_LABELS.critical}</option>
                                 </select>
                             </div>
                         </div>
@@ -493,6 +492,6 @@ export default function ReportIncidentPage() {
                     </div>
                 </Modal>
             </main>
-        </div>
+        </div >
     );
 }

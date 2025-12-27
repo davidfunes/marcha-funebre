@@ -21,7 +21,7 @@ import { DataTable, Column } from '@/components/ui/DataTable';
 import { StatusBadge } from '@/components/ui/StatusBadge';
 import { Modal } from '@/components/ui/Modal';
 import { addItem, updateItem, deleteItem, subscribeToCollection, getWarehouses, getVehicles } from '@/services/FirebaseService';
-import { InventoryItem, Warehouse, Vehicle, MaterialCondition, MATERIAL_STATUS_LABELS } from '@/types';
+import { InventoryItem, Warehouse, Vehicle, MaterialCondition, MATERIAL_STATUS_LABELS, INVENTORY_CATEGORY_LABELS, INVENTORY_STATUS_LABELS } from '@/types';
 import { StatusAuditor } from '@/components/admin/inventory/StatusAuditor';
 
 interface LocationCellProps {
@@ -379,6 +379,8 @@ export default function InventoryPage() {
         switch (category) {
             case 'sound': return <Mic className="h-4 w-4 text-primary" />;
             case 'cables': return <Cable className="h-4 w-4 text-gray-500" />;
+            case 'lighting': return <Box className="h-4 w-4 text-amber-500" />;
+            case 'instruments': return <Music className="h-4 w-4 text-purple-500" />;
             default: return <Music className="h-4 w-4 text-primary" />;
         }
     };
@@ -388,9 +390,9 @@ export default function InventoryPage() {
             key: 'category',
             label: 'Cat',
             render: (i) => (
-                <div className="flex items-center gap-2 capitalize">
+                <div className="flex items-center gap-2">
                     {getIcon(i.category)}
-                    {i.category}
+                    {INVENTORY_CATEGORY_LABELS[i.category] || i.category}
                 </div>
             )
         },
@@ -434,10 +436,10 @@ export default function InventoryPage() {
                 <StatusBadge
                     status={i.status}
                     options={[
-                        { label: 'Available', value: 'available' },
-                        { label: 'Assigned', value: 'assigned' },
-                        { label: 'Repair', value: 'repair' },
-                        { label: 'Lost', value: 'lost' }
+                        { label: INVENTORY_STATUS_LABELS.available, value: 'available' },
+                        { label: INVENTORY_STATUS_LABELS.assigned, value: 'assigned' },
+                        { label: INVENTORY_STATUS_LABELS.repair, value: 'repair' },
+                        { label: INVENTORY_STATUS_LABELS.lost, value: 'lost' }
                     ]}
                     onChange={(newStatus) => {
                         if (i.id) {
@@ -511,10 +513,10 @@ export default function InventoryPage() {
                             <StatusBadge
                                 status={item.status}
                                 options={[
-                                    { label: 'Available', value: 'available' },
-                                    { label: 'Assigned', value: 'assigned' },
-                                    { label: 'Repair', value: 'repair' },
-                                    { label: 'Lost', value: 'lost' }
+                                    { label: INVENTORY_STATUS_LABELS.available, value: 'available' },
+                                    { label: INVENTORY_STATUS_LABELS.assigned, value: 'assigned' },
+                                    { label: INVENTORY_STATUS_LABELS.repair, value: 'repair' },
+                                    { label: INVENTORY_STATUS_LABELS.lost, value: 'lost' }
                                 ]}
                                 onChange={(newStatus) => {
                                     if (item.id) {
@@ -554,7 +556,7 @@ export default function InventoryPage() {
                                             <span className="truncate max-w-[120px]">
                                                 {loc.type === 'warehouse'
                                                     ? warehouses.find(w => w.id === loc.id)?.name
-                                                    : vehicles.find(v => v.id === loc.id)?.plate
+                                                    : vehicles.find(v => v.id === loc.id)?.plate + ' - ' + vehicles.find(v => v.id === loc.id)?.model
                                                 }
                                             </span>
                                             <span className="text-[10px] font-mono text-muted-foreground ml-0.5 px-1 bg-background rounded-sm border">
@@ -637,11 +639,11 @@ export default function InventoryPage() {
                                 onChange={e => setFormData({ ...formData, category: e.target.value as any })}
                                 className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary outline-none"
                             >
-                                <option value="sound">Sonido</option>
-                                <option value="lighting">Iluminación</option>
-                                <option value="instruments">Instrumentos</option>
-                                <option value="cables">Cableado</option>
-                                <option value="misc">Varios</option>
+                                <option value="sound">{INVENTORY_CATEGORY_LABELS.sound}</option>
+                                <option value="lighting">{INVENTORY_CATEGORY_LABELS.lighting}</option>
+                                <option value="instruments">{INVENTORY_CATEGORY_LABELS.instruments}</option>
+                                <option value="cables">{INVENTORY_CATEGORY_LABELS.cables}</option>
+                                <option value="misc">{INVENTORY_CATEGORY_LABELS.misc}</option>
                             </select>
                         </div>
                         <div className="space-y-2">
@@ -664,10 +666,10 @@ export default function InventoryPage() {
                                 onChange={e => setFormData({ ...formData, status: e.target.value as any })}
                                 className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary outline-none"
                             >
-                                <option value="available">Disponible</option>
-                                <option value="assigned">Asignado</option>
-                                <option value="repair">En reparación</option>
-                                <option value="lost">Perdido</option>
+                                <option value="available">{INVENTORY_STATUS_LABELS.available}</option>
+                                <option value="assigned">{INVENTORY_STATUS_LABELS.assigned}</option>
+                                <option value="repair">{INVENTORY_STATUS_LABELS.repair}</option>
+                                <option value="lost">{INVENTORY_STATUS_LABELS.lost}</option>
                             </select>
                         </div>
                         <div className="col-span-2 space-y-3 border-t pt-4">

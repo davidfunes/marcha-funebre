@@ -15,7 +15,7 @@ import { DataTable, Column } from '@/components/ui/DataTable';
 import { Modal } from '@/components/ui/Modal';
 import { formatPhoneNumber } from '@/lib/utils';
 import { addItem, updateItem, deleteItem, subscribeToCollection } from '@/services/FirebaseService';
-import { RentingCompany, Vehicle } from '@/types';
+import { RentingCompany, Vehicle, FUEL_TYPE_LABELS } from '@/types';
 
 export default function RentingPage() {
     const [companies, setCompanies] = useState<RentingCompany[]>([]);
@@ -333,7 +333,7 @@ export default function RentingPage() {
                                         </div>
                                         <div className="bg-muted/30 p-2 rounded-lg text-center">
                                             <p className="text-[10px] text-muted-foreground uppercase font-bold">Combustible</p>
-                                            <p className="text-sm font-medium capitalize">{vehicle.fuelType}</p>
+                                            <p className="text-sm font-medium capitalize">{FUEL_TYPE_LABELS[vehicle.fuelType as any] || vehicle.fuelType}</p>
                                         </div>
                                     </div>
                                 </div>

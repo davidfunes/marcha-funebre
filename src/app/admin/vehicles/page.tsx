@@ -16,7 +16,7 @@ import { Modal } from '@/components/ui/Modal';
 import { ImageUpload } from '@/components/ui/ImageUpload';
 import { IncidentDetailsModal } from '@/components/admin/incidents/IncidentDetailsModal';
 import { addItem, updateItem, deleteItem, subscribeToCollection, addVehicleTaxonomy, getInventory, getUsers } from '@/services/FirebaseService';
-import { Vehicle, VehicleMake, Incident, InventoryItem, Workshop, VehicleBrand, RentingCompany, User } from '@/types';
+import { Vehicle, VehicleMake, Incident, InventoryItem, Workshop, VehicleBrand, RentingCompany, User, VEHICLE_STATUS_LABELS, FUEL_TYPE_LABELS, TRANSMISSION_LABELS, INCIDENT_PRIORITY_LABELS, INCIDENT_STATUS_LABELS } from '@/types';
 import { Timestamp } from 'firebase/firestore';
 import { formatLicensePlate, getFuelLevelLabel } from '@/lib/utils';
 import { AlertTriangle, ShieldAlert, MapPin } from 'lucide-react';
@@ -256,10 +256,10 @@ export default function VehiclesPage() {
                 <StatusBadge
                     status={v.status}
                     options={[
-                        { label: 'Active', value: 'active' },
-                        { label: 'Maintenance', value: 'maintenance' },
-                        { label: 'Rented', value: 'rented' },
-                        { label: 'Retired', value: 'retired' }
+                        { label: VEHICLE_STATUS_LABELS.active, value: 'active' },
+                        { label: VEHICLE_STATUS_LABELS.maintenance, value: 'maintenance' },
+                        { label: VEHICLE_STATUS_LABELS.rented, value: 'rented' },
+                        { label: VEHICLE_STATUS_LABELS.retired, value: 'retired' }
                     ]}
                     onChange={(newStatus) => {
                         if (v.id) {
@@ -309,12 +309,14 @@ export default function VehiclesPage() {
                     <button
                         onClick={(e) => { e.stopPropagation(); handleOpenModal(v); }}
                         className="p-2 hover:bg-muted rounded-full transition-colors"
+                        title="Editar"
                     >
                         <Edit className="h-4 w-4 text-gray-500" />
                     </button>
                     <button
                         onClick={(e) => { e.stopPropagation(); if (v.id) confirmDelete(v.id); }}
                         className="p-2 hover:bg-red-50 rounded-full transition-colors"
+                        title="Eliminar"
                     >
                         <Trash2 className="h-4 w-4 text-red-500" />
                     </button>
@@ -368,10 +370,10 @@ export default function VehiclesPage() {
                             <StatusBadge
                                 status={vehicle.status}
                                 options={[
-                                    { label: 'Active', value: 'active' },
-                                    { label: 'Maintenance', value: 'maintenance' },
-                                    { label: 'Rented', value: 'rented' },
-                                    { label: 'Retired', value: 'retired' }
+                                    { label: VEHICLE_STATUS_LABELS.active, value: 'active' },
+                                    { label: VEHICLE_STATUS_LABELS.maintenance, value: 'maintenance' },
+                                    { label: VEHICLE_STATUS_LABELS.rented, value: 'rented' },
+                                    { label: VEHICLE_STATUS_LABELS.retired, value: 'retired' }
                                 ]}
                                 onChange={(newStatus) => {
                                     if (vehicle.id) {
@@ -421,12 +423,14 @@ export default function VehiclesPage() {
                                 <button
                                     onClick={(e) => { e.stopPropagation(); handleOpenModal(vehicle); }}
                                     className="p-2 hover:bg-muted rounded-lg text-muted-foreground hover:text-foreground transition-colors"
+                                    title="Editar"
                                 >
                                     <Edit className="h-4 w-4" />
                                 </button>
                                 <button
                                     onClick={(e) => { e.stopPropagation(); if (vehicle.id) confirmDelete(vehicle.id); }}
                                     className="p-2 hover:bg-red-50 hover:text-red-600 rounded-lg text-muted-foreground transition-colors dark:hover:bg-red-900/20"
+                                    title="Eliminar"
                                 >
                                     <Trash2 className="h-4 w-4" />
                                 </button>
@@ -530,10 +534,10 @@ export default function VehiclesPage() {
                                 onChange={e => setFormData({ ...formData, fuelType: e.target.value as any })}
                                 className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary outline-none"
                             >
-                                <option value="diesel">Diésel</option>
-                                <option value="gasoline">Gasolina</option>
-                                <option value="electric">Eléctrico</option>
-                                <option value="hybrid">Híbrido</option>
+                                <option value="diesel">{FUEL_TYPE_LABELS.diesel}</option>
+                                <option value="gasoline">{FUEL_TYPE_LABELS.gasoline}</option>
+                                <option value="electric">{FUEL_TYPE_LABELS.electric}</option>
+                                <option value="hybrid">{FUEL_TYPE_LABELS.hybrid}</option>
                             </select>
                         </div>
                         <div className="space-y-2">
@@ -543,8 +547,8 @@ export default function VehiclesPage() {
                                 onChange={e => setFormData({ ...formData, transmission: e.target.value as any })}
                                 className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary outline-none"
                             >
-                                <option value="manual">Manual</option>
-                                <option value="automatic">Automática</option>
+                                <option value="manual">{TRANSMISSION_LABELS.manual}</option>
+                                <option value="automatic">{TRANSMISSION_LABELS.automatic}</option>
                             </select>
                         </div>
                     </div>
@@ -557,10 +561,10 @@ export default function VehiclesPage() {
                                 onChange={e => setFormData({ ...formData, status: e.target.value as any })}
                                 className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary outline-none"
                             >
-                                <option value="active">Activo</option>
-                                <option value="maintenance">Mantenimiento</option>
-                                <option value="rented">Alquilado</option>
-                                <option value="retired">Retirado</option>
+                                <option value="active">{VEHICLE_STATUS_LABELS.active}</option>
+                                <option value="maintenance">{VEHICLE_STATUS_LABELS.maintenance}</option>
+                                <option value="rented">{VEHICLE_STATUS_LABELS.rented}</option>
+                                <option value="retired">{VEHICLE_STATUS_LABELS.retired}</option>
                             </select>
                         </div>
                         <div className="space-y-2">
@@ -789,18 +793,14 @@ export default function VehiclesPage() {
                             <div className="space-y-1">
                                 <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Combustible</span>
                                 <p className="font-medium text-lg capitalize">
-                                    {viewingVehicle.fuelType === 'electric' ? 'Eléctrico' :
-                                        viewingVehicle.fuelType === 'hybrid' ? 'Híbrido' :
-                                            viewingVehicle.fuelType === 'diesel' ? 'Diésel' :
-                                                viewingVehicle.fuelType === 'gasoline' ? 'Gasolina' : '-'}
+                                    {FUEL_TYPE_LABELS[viewingVehicle.fuelType] || '-'}
                                 </p>
                             </div>
 
                             <div className="space-y-1">
                                 <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Transmisión</span>
                                 <p className="font-medium text-lg capitalize">
-                                    {viewingVehicle.transmission === 'automatic' ? 'Automática' :
-                                        viewingVehicle.transmission === 'manual' ? 'Manual' : '-'}
+                                    {TRANSMISSION_LABELS[viewingVehicle.transmission] || '-'}
                                 </p>
                             </div>
 
@@ -907,7 +907,7 @@ export default function VehiclesPage() {
                                                             incident.priority === 'medium' ? 'bg-yellow-50 text-yellow-700 border-yellow-100' :
                                                                 'bg-green-50 text-green-700 border-green-100'
                                                             }`}>
-                                                            {incident.priority}
+                                                            {INCIDENT_PRIORITY_LABELS[incident.priority] || incident.priority}
                                                         </span>
                                                         <StatusBadge status={incident.status as any} />
                                                     </div>

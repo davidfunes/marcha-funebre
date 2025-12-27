@@ -1,5 +1,14 @@
 import { cn } from '@/lib/utils';
-import { MATERIAL_STATUS_LABELS } from '@/types';
+import {
+    MATERIAL_STATUS_LABELS,
+    VEHICLE_STATUS_LABELS,
+    INCIDENT_PRIORITY_LABELS,
+    INCIDENT_STATUS_LABELS,
+    USER_STATUS_LABELS,
+    USER_ROLE_LABELS,
+    MAINTENANCE_STATUS_LABELS,
+    MAINTENANCE_TYPE_LABELS
+} from '@/types';
 
 interface StatusBadgeProps {
     status: string;
@@ -59,7 +68,15 @@ export function StatusBadge({ status, className, options, onChange }: StatusBadg
                     className
                 )}
             >
-                {MATERIAL_STATUS_LABELS[safeStatus.toLowerCase()] || safeStatus.replace('_', ' ')}
+                {MATERIAL_STATUS_LABELS[safeStatus.toLowerCase()] ||
+                    VEHICLE_STATUS_LABELS[safeStatus.toLowerCase()] ||
+                    INCIDENT_PRIORITY_LABELS[safeStatus.toLowerCase()] ||
+                    INCIDENT_STATUS_LABELS[safeStatus.toLowerCase()] ||
+                    USER_STATUS_LABELS[safeStatus.toLowerCase()] ||
+                    USER_ROLE_LABELS[safeStatus.toLowerCase()] ||
+                    MAINTENANCE_STATUS_LABELS[safeStatus.toLowerCase()] ||
+                    MAINTENANCE_TYPE_LABELS[safeStatus.toLowerCase()] ||
+                    safeStatus.replace('_', ' ')}
                 {isEditable && (
                     <span className="ml-1 opacity-50 text-[10px]">▼</span>
                 )}

@@ -18,7 +18,7 @@ import { DataTable, Column } from '@/components/ui/DataTable';
 import { Modal } from '@/components/ui/Modal';
 import { cn, formatPhoneNumber } from '@/lib/utils';
 import { addItem, updateItem, deleteItem, subscribeToCollection, getVehicles } from '@/services/FirebaseService';
-import { Workshop, Vehicle, VehicleBrand } from '@/types';
+import { Workshop, Vehicle, VehicleBrand, VEHICLE_STATUS_LABELS } from '@/types';
 import { Timestamp } from 'firebase/firestore';
 
 export default function WorkshopsPage() {
@@ -205,7 +205,7 @@ export default function WorkshopsPage() {
                         }}
                         className="text-sm font-medium text-primary hover:underline cursor-pointer"
                     >
-                        {assignedVehicles.length} vehículo{assignedVehicles.length !== 1 ? 's' : ''}
+                        {assignedVehicles.length} {assignedVehicles.length === 1 ? 'vehículo' : 'vehículos'}
                     </button>
                 );
             }
@@ -575,7 +575,7 @@ export default function WorkshopsPage() {
                                     </p>
                                 </div>
                                 <div className="text-xs px-2 py-1 rounded-full bg-muted font-medium">
-                                    {vehicle.status}
+                                    {VEHICLE_STATUS_LABELS[vehicle.status as any] || vehicle.status}
                                 </div>
                             </div>
                         ))

@@ -23,7 +23,7 @@ import { StatusBadge } from '@/components/ui/StatusBadge';
 import { Modal } from '@/components/ui/Modal';
 import { IncidentDetailsModal } from '@/components/admin/incidents/IncidentDetailsModal';
 import { addItem, updateItem, deleteItem, subscribeToCollection, getVehicles, getUsers, getInventory } from '@/services/FirebaseService';
-import { Incident, Vehicle, User, IncidentPriority, IncidentStatus, InventoryItem } from '@/types';
+import { Incident, Vehicle, User, IncidentPriority, IncidentStatus, InventoryItem, INCIDENT_PRIORITY_LABELS, INCIDENT_STATUS_LABELS } from '@/types';
 import { Timestamp } from 'firebase/firestore';
 import { getFullName, getUserInitials } from '@/utils/userUtils';
 
@@ -279,7 +279,7 @@ export default function IncidentsPage() {
                                             incident.priority === 'medium' ? 'bg-yellow-100 text-yellow-700' :
                                                 'bg-blue-100 text-blue-700'
                                         }`}>
-                                        {incident.priority}
+                                        {INCIDENT_PRIORITY_LABELS[incident.priority] || incident.priority}
                                     </span>
                                 </div>
                             </div>
@@ -428,10 +428,10 @@ export default function IncidentsPage() {
                                 onChange={e => setFormData({ ...formData, priority: e.target.value as IncidentPriority })}
                                 className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary outline-none"
                             >
-                                <option value="low">Baja</option>
-                                <option value="medium">Media</option>
-                                <option value="high">Alta</option>
-                                <option value="critical">Crítica</option>
+                                <option value="low">{INCIDENT_PRIORITY_LABELS.low}</option>
+                                <option value="medium">{INCIDENT_PRIORITY_LABELS.medium}</option>
+                                <option value="high">{INCIDENT_PRIORITY_LABELS.high}</option>
+                                <option value="critical">{INCIDENT_PRIORITY_LABELS.critical}</option>
                             </select>
                         </div>
                         <div className="space-y-2">
@@ -441,10 +441,10 @@ export default function IncidentsPage() {
                                 onChange={e => setFormData({ ...formData, status: e.target.value as IncidentStatus })}
                                 className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary outline-none"
                             >
-                                <option value="open">Abierta</option>
-                                <option value="in_progress">En Progreso</option>
-                                <option value="resolved">Resuelta</option>
-                                <option value="closed">Cerrada</option>
+                                <option value="open">{INCIDENT_STATUS_LABELS.open}</option>
+                                <option value="in_progress">{INCIDENT_STATUS_LABELS.in_progress}</option>
+                                <option value="resolved">{INCIDENT_STATUS_LABELS.resolved}</option>
+                                <option value="closed">{INCIDENT_STATUS_LABELS.closed}</option>
                             </select>
                         </div>
                     </div>

@@ -37,7 +37,24 @@ import { Modal } from '@/components/ui/Modal';
 import { IncidentDetailsModal } from '@/components/admin/incidents/IncidentDetailsModal';
 import { getVehicles, getIncidents, getInventory, getUsers, getWarehouses, updateItem, addItem, deleteItem, getAdminMessages, restoreMaterial } from '@/services/FirebaseService';
 import { seedDatabase } from '@/services/seed';
-import { Vehicle, Incident, InventoryItem, User, Warehouse, MaterialCondition, IncidentPriority, IncidentStatus, MATERIAL_STATUS_LABELS } from '@/types';
+import {
+    Vehicle,
+    Incident,
+    InventoryItem,
+    User,
+    Warehouse,
+    MaterialCondition,
+    IncidentPriority,
+    IncidentStatus,
+    MATERIAL_STATUS_LABELS,
+    VEHICLE_STATUS_LABELS,
+    INCIDENT_PRIORITY_LABELS,
+    INCIDENT_STATUS_LABELS,
+    INVENTORY_CATEGORY_LABELS,
+    USER_STATUS_LABELS,
+    USER_ROLE_LABELS,
+    FUEL_TYPE_LABELS
+} from '@/types';
 import { Timestamp } from 'firebase/firestore';
 import { getFullName, getUserInitials } from '@/utils/userUtils';
 import { getFuelLevelLabel } from '@/lib/utils';
@@ -447,7 +464,7 @@ export default function AdminDashboard() {
                                 <span className={`text-xs px-2 py-1 rounded-full ${v.status === 'active' ? 'bg-green-100 text-green-700' :
                                     v.status === 'maintenance' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'
                                     }`}>
-                                    {v.status}
+                                    {VEHICLE_STATUS_LABELS[v.status] || v.status}
                                 </span>
                             </div>
                         ))}
@@ -471,10 +488,10 @@ export default function AdminDashboard() {
                                             <AlertTriangle className="h-4 w-4 text-amber-500" />
                                             <div>
                                                 <p className="text-sm font-medium">{i.title}</p>
-                                                <p className="text-xs text-muted-foreground">{i.priority.toUpperCase()}</p>
+                                                <p className="text-xs text-muted-foreground">{(INCIDENT_PRIORITY_LABELS[i.priority] || i.priority).toUpperCase()}</p>
                                             </div>
                                         </div>
-                                        <span className="text-xs uppercase bg-secondary px-2 py-1 rounded">{i.status}</span>
+                                        <span className="text-xs uppercase bg-secondary px-2 py-1 rounded">{INCIDENT_STATUS_LABELS[i.status] || i.status}</span>
                                     </div>
 
                                     <div className="text-xs text-muted-foreground pl-7 space-y-1">
@@ -525,7 +542,7 @@ export default function AdminDashboard() {
                                                 </p>
                                             </div>
                                         </div>
-                                        <span className="text-xs bg-secondary px-2 py-1 rounded capitalize">{i.category}</span>
+                                        <span className="text-xs bg-secondary px-2 py-1 rounded capitalize">{INVENTORY_CATEGORY_LABELS[i.category] || i.category}</span>
                                     </div>
 
                                     <div className="text-xs text-muted-foreground pl-7 grid grid-cols-2 gap-2">
@@ -690,7 +707,7 @@ export default function AdminDashboard() {
                                     <div>
                                         <p className="font-medium text-foreground">{getFullName(u)}</p>
                                         <p className="text-sm text-muted-foreground">{u.email}</p>
-                                        <p className="text-xs text-muted-foreground capitalize mt-0.5">{u.role}</p>
+                                        <p className="text-xs text-muted-foreground capitalize mt-0.5">{USER_ROLE_LABELS[u.role] || u.role}</p>
                                     </div>
                                 </div>
                                 <div className="flex gap-2 w-full sm:w-auto">
@@ -1171,7 +1188,7 @@ export default function AdminDashboard() {
                                                                     {affectedMaterial.name}
                                                                 </p>
                                                             )}
-                                                            <p className="text-xs text-muted-foreground">{inc.status}</p>
+                                                            <p className="text-xs text-muted-foreground">{INCIDENT_STATUS_LABELS[inc.status] || inc.status}</p>
                                                             {(() => {
                                                                 const reporter = users.find(u => u.id === inc.reportedByUserId);
                                                                 return reporter ? (
@@ -1187,7 +1204,7 @@ export default function AdminDashboard() {
                                                     </div>
                                                     <div className="flex items-center gap-2">
                                                         <div className="text-xs font-medium px-2 py-1 rounded-full bg-secondary">
-                                                            {inc.priority}
+                                                            {INCIDENT_PRIORITY_LABELS[inc.priority] || inc.priority}
                                                         </div>
                                                         {inc.status !== 'resolved' && (
                                                             <button
@@ -1263,7 +1280,7 @@ export default function AdminDashboard() {
                                                     }}
                                                     className="text-xs font-medium px-2 py-1 rounded hover:bg-muted-foreground/10 transition-colors"
                                                 >
-                                                    {car.status}
+                                                    {VEHICLE_STATUS_LABELS[car.status] || car.status}
                                                 </button>
                                                 {showStatusMenu === car.id && (
                                                     <div className="absolute right-0 mt-1 w-40 bg-card border border-border rounded-lg shadow-lg z-10">
@@ -1278,7 +1295,7 @@ export default function AdminDashboard() {
                                                                 }}
                                                                 className="w-full text-left px-3 py-2 text-xs hover:bg-muted transition-colors first:rounded-t-lg last:rounded-b-lg"
                                                             >
-                                                                {status}
+                                                                {VEHICLE_STATUS_LABELS[status] || status}
                                                             </button>
                                                         ))}
                                                     </div>
@@ -1399,7 +1416,7 @@ export default function AdminDashboard() {
                                 data={{
                                     labels: ['Son.', 'Ilum.', 'Instr.', 'Cabl.', 'Otro'],
                                     datasets: [{
-                                        label: 'Items',
+                                        label: 'Elementos',
                                         data: [
                                             inventory.filter(i => i.category === 'sound').length,
                                             inventory.filter(i => i.category === 'lighting').length,
@@ -1526,7 +1543,7 @@ export default function AdminDashboard() {
                     {incidentToResolve && (
                         <div className="bg-muted/50 p-3 rounded-lg space-y-1">
                             <p className="text-sm font-medium">{incidentToResolve.title}</p>
-                            <p className="text-xs text-muted-foreground">Prioridad: {incidentToResolve.priority}</p>
+                            <p className="text-xs text-muted-foreground">Prioridad: {INCIDENT_PRIORITY_LABELS[incidentToResolve.priority] || incidentToResolve.priority}</p>
                             {(() => {
                                 const affectedVehicle = vehicles.find(v => v.id === incidentToResolve.vehicleId);
                                 return affectedVehicle ? (
@@ -1582,9 +1599,9 @@ export default function AdminDashboard() {
                             <p className="text-sm font-medium">{vehicleToUpdate.brand} {vehicleToUpdate.model}</p>
                             <p className="text-xs text-muted-foreground">{vehicleToUpdate.plate}</p>
                             <div className="flex items-center gap-2 text-xs pt-2">
-                                <span className="px-2 py-1 rounded bg-muted">{vehicleToUpdate.status}</span>
+                                <span className="px-2 py-1 rounded bg-muted">{VEHICLE_STATUS_LABELS[vehicleToUpdate.status] || vehicleToUpdate.status}</span>
                                 <span>→</span>
-                                <span className="px-2 py-1 rounded bg-primary text-primary-foreground">{newStatus}</span>
+                                <span className="px-2 py-1 rounded bg-primary text-primary-foreground">{newStatus ? VEHICLE_STATUS_LABELS[newStatus] || newStatus : ''}</span>
                             </div>
                         </div>
                     )}
@@ -1664,10 +1681,10 @@ export default function AdminDashboard() {
                                 onChange={e => setIncidentFormData({ ...incidentFormData, priority: e.target.value as any })}
                                 className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary outline-none"
                             >
-                                <option value="low">Baja</option>
-                                <option value="medium">Media</option>
-                                <option value="high">Alta</option>
-                                <option value="critical">Crítica</option>
+                                <option value="low">{INCIDENT_PRIORITY_LABELS.low}</option>
+                                <option value="medium">{INCIDENT_PRIORITY_LABELS.medium}</option>
+                                <option value="high">{INCIDENT_PRIORITY_LABELS.high}</option>
+                                <option value="critical">{INCIDENT_PRIORITY_LABELS.critical}</option>
                             </select>
                         </div>
                         <div className="space-y-2">

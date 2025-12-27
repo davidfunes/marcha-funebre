@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { db } from '@/lib/firebase/firebase';
 import { doc, getDoc, collection, query, where, getDocs, updateDoc, orderBy, limit, Timestamp } from 'firebase/firestore';
-import { Vehicle, RentingCompany, MaintenanceRecord } from '@/types';
+import { Vehicle, RentingCompany, MaintenanceRecord, VEHICLE_STATUS_LABELS, FUEL_TYPE_LABELS, INCIDENT_PRIORITY_LABELS, INCIDENT_STATUS_LABELS } from '@/types';
 import {
     Car,
     Calendar,
@@ -397,7 +397,7 @@ export default function MyVehiclePage() {
                             </div>
                         )}
                         <div className="absolute top-4 right-4 bg-black/50 backdrop-blur-md px-3 py-1 rounded-full text-white text-xs font-bold border border-white/10 uppercase tracking-wider">
-                            {vehicle.status}
+                            {VEHICLE_STATUS_LABELS[vehicle.status as any] || vehicle.status}
                         </div>
                     </div>
                     <div className="p-5">
@@ -418,7 +418,7 @@ export default function MyVehiclePage() {
                                     <div className="flex items-center gap-2">
                                         <Fuel className="w-4 h-4 text-primary" />
                                         <span className="font-semibold capitalize">
-                                            {vehicle.fuelType} {vehicle.fuelLevel ? `(${vehicle.fuelLevel}%)` : ''}
+                                            {FUEL_TYPE_LABELS[vehicle.fuelType as any] || vehicle.fuelType} {vehicle.fuelLevel ? `(${vehicle.fuelLevel}%)` : ''}
                                         </span>
                                     </div>
                                     {vehicle.fuelLevel !== undefined && (
@@ -581,9 +581,7 @@ export default function MyVehiclePage() {
                                                         incident.status === 'resolved' ? 'bg-emerald-50 text-emerald-600 border-emerald-200' :
                                                             'bg-slate-50 text-slate-400 border-slate-200'
                                                     }`}>
-                                                    {incident.status === 'open' ? 'Abierta' :
-                                                        incident.status === 'in_progress' ? 'En Proceso' :
-                                                            incident.status === 'resolved' ? 'Resuelta' : 'Cerrada'}
+                                                    {INCIDENT_STATUS_LABELS[incident.status as any] || incident.status}
                                                 </span>
                                             </div>
                                             <p className="text-xs text-muted-foreground line-clamp-2">{incident.description}</p>
@@ -595,7 +593,7 @@ export default function MyVehiclePage() {
                                                     incident.priority === 'high' ? 'text-orange-600' :
                                                         incident.priority === 'medium' ? 'text-yellow-600' : 'text-cyan-600'
                                                     }`}>
-                                                    Prioridad {incident.priority}
+                                                    Prioridad {INCIDENT_PRIORITY_LABELS[incident.priority as any] || incident.priority}
                                                 </span>
                                             </div>
                                         </div>

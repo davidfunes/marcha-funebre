@@ -80,6 +80,88 @@ export const MATERIAL_STATUS_LABELS: Record<string, string> = {
     broken: 'Completamente roto'
 };
 
+export const VEHICLE_STATUS_LABELS: Record<string, string> = {
+    active: 'Activo',
+    maintenance: 'En Mantenimiento',
+    rented: 'Alquilado',
+    retired: 'Retirado'
+};
+
+export const FUEL_TYPE_LABELS: Record<string, string> = {
+    gasoline: 'Gasolina',
+    diesel: 'Diésel',
+    electric: 'Eléctrico',
+    hybrid: 'Híbrido'
+};
+
+export const TRANSMISSION_LABELS: Record<string, string> = {
+    manual: 'Manual',
+    automatic: 'Automático'
+};
+
+export const INCIDENT_PRIORITY_LABELS: Record<string, string> = {
+    low: 'Baja',
+    medium: 'Media',
+    high: 'Alta',
+    critical: 'Crítica'
+};
+
+export const INCIDENT_STATUS_LABELS: Record<string, string> = {
+    open: 'Abierta',
+    in_progress: 'En Progreso',
+    resolved: 'Resuelta',
+    closed: 'Cerrada'
+};
+
+export const INVENTORY_CATEGORY_LABELS: Record<string, string> = {
+    sound: 'Sonido',
+    lighting: 'Iluminación',
+    instruments: 'Instrumentos',
+    cables: 'Cableado',
+    misc: 'Varios'
+};
+
+export const MAINTENANCE_TYPE_LABELS: Record<string, string> = {
+    preventive: 'Preventivo',
+    corrective: 'Correctivo',
+    inspection: 'Inspección',
+    tire_change: 'Cambio de Neumáticos'
+};
+
+export const MAINTENANCE_STATUS_LABELS: Record<string, string> = {
+    scheduled: 'Programado',
+    completed: 'Completado',
+    in_progress: 'En Curso'
+};
+
+export const REPORT_TYPE_LABELS: Record<string, string> = {
+    financial: 'Financiero',
+    operational: 'Operativo',
+    inventory: 'Inventario',
+    personnel: 'Personal'
+};
+
+export const INVENTORY_STATUS_LABELS: Record<string, string> = {
+    available: 'Disponible',
+    assigned: 'Asignado',
+    repair: 'En Reparación',
+    lost: 'Perdido'
+};
+
+export const USER_STATUS_LABELS: Record<string, string> = {
+    active: 'Activo',
+    inactive: 'Inactivo',
+    pending: 'Pendiente',
+    rejected: 'Rechazado',
+    blocked: 'Bloqueado'
+};
+
+export const USER_ROLE_LABELS: Record<string, string> = {
+    admin: 'Administrador',
+    conductor: 'Conductor',
+    manager: 'Gestor'
+};
+
 export interface Incident {
     id?: string;
     title: string;

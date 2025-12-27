@@ -13,7 +13,7 @@ import { DataTable, Column } from '@/components/ui/DataTable';
 import { StatusBadge } from '@/components/ui/StatusBadge';
 import { Modal } from '@/components/ui/Modal';
 import { addItem, updateItem, deleteItem, subscribeToCollection, registerUser } from '@/services/FirebaseService';
-import { User, UserRole } from '@/types';
+import { User, UserRole, USER_ROLE_LABELS, USER_STATUS_LABELS } from '@/types';
 import { Timestamp } from 'firebase/firestore';
 import { getFullName, getUserInitials } from '@/utils/userUtils';
 
@@ -159,7 +159,7 @@ export default function UsersPage() {
             render: (u) => (
                 <div className="flex items-center gap-2">
                     {u.role === 'admin' ? <ShieldCheck className="h-4 w-4 text-purple-600" /> : <UserIcon className="h-4 w-4 text-blue-600" />}
-                    <span className="capitalize">{u.role}</span>
+                    <span>{USER_ROLE_LABELS[u.role] || u.role}</span>
                 </div>
             )
         },
@@ -182,11 +182,11 @@ export default function UsersPage() {
                 <StatusBadge
                     status={u.status}
                     options={[
-                        { label: 'Active', value: 'active' },
-                        { label: 'Inactive', value: 'inactive' },
-                        { label: 'Pending', value: 'pending' },
-                        { label: 'Rejected', value: 'rejected' },
-                        { label: 'Blocked', value: 'blocked' }
+                        { label: USER_STATUS_LABELS.active, value: 'active' },
+                        { label: USER_STATUS_LABELS.inactive, value: 'inactive' },
+                        { label: USER_STATUS_LABELS.pending, value: 'pending' },
+                        { label: USER_STATUS_LABELS.rejected, value: 'rejected' },
+                        { label: USER_STATUS_LABELS.blocked, value: 'blocked' }
                     ]}
                     onChange={(newStatus) => {
                         if (u.id) {
@@ -249,7 +249,7 @@ export default function UsersPage() {
                             </div>
                             <div className="flex items-center gap-1 bg-muted px-2 py-1 rounded text-xs font-medium border border-border">
                                 {user.role === 'admin' ? <ShieldCheck className="h-3 w-3 text-purple-600" /> : <UserIcon className="h-3 w-3 text-blue-600" />}
-                                <span className="capitalize">{user.role}</span>
+                                <span>{USER_ROLE_LABELS[user.role] || user.role}</span>
                             </div>
                         </div>
 
@@ -259,11 +259,11 @@ export default function UsersPage() {
                                 <StatusBadge
                                     status={user.status}
                                     options={[
-                                        { label: 'Active', value: 'active' },
-                                        { label: 'Inactive', value: 'inactive' },
-                                        { label: 'Pending', value: 'pending' },
-                                        { label: 'Rejected', value: 'rejected' },
-                                        { label: 'Blocked', value: 'blocked' }
+                                        { label: USER_STATUS_LABELS.active, value: 'active' },
+                                        { label: USER_STATUS_LABELS.inactive, value: 'inactive' },
+                                        { label: USER_STATUS_LABELS.pending, value: 'pending' },
+                                        { label: USER_STATUS_LABELS.rejected, value: 'rejected' },
+                                        { label: USER_STATUS_LABELS.blocked, value: 'blocked' }
                                     ]}
                                     onChange={(newStatus) => {
                                         if (user.id) {
@@ -370,9 +370,9 @@ export default function UsersPage() {
                                 onChange={e => setFormData({ ...formData, role: e.target.value as UserRole })}
                                 className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary outline-none"
                             >
-                                <option value="conductor">Conductor</option>
-                                <option value="admin">Administrador</option>
-                                <option value="manager">Gestor</option>
+                                <option value="conductor">{USER_ROLE_LABELS.conductor}</option>
+                                <option value="admin">{USER_ROLE_LABELS.admin}</option>
+                                <option value="manager">{USER_ROLE_LABELS.manager}</option>
                             </select>
                         </div>
                         <div className="space-y-2">
@@ -382,11 +382,11 @@ export default function UsersPage() {
                                 onChange={e => setFormData({ ...formData, status: e.target.value as any })}
                                 className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary outline-none"
                             >
-                                <option value="active">Activo</option>
-                                <option value="inactive">Inactivo</option>
-                                <option value="pending">Pendiente</option>
-                                <option value="rejected">Rechazado</option>
-                                <option value="blocked">Bloqueado</option>
+                                <option value="active">{USER_STATUS_LABELS.active}</option>
+                                <option value="inactive">{USER_STATUS_LABELS.inactive}</option>
+                                <option value="pending">{USER_STATUS_LABELS.pending}</option>
+                                <option value="rejected">{USER_STATUS_LABELS.rejected}</option>
+                                <option value="blocked">{USER_STATUS_LABELS.blocked}</option>
                             </select>
                         </div>
                     </div>
