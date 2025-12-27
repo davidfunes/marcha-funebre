@@ -103,7 +103,25 @@ export default function DriverManual() {
             ]
         },
         {
-            title: "4. Puntos y Sistema de Rangos",
+            title: "4. Tiempo de Descanso",
+            icon: Gamepad2,
+            color: "bg-pink-500/10 text-pink-500",
+            description: "Juega y relájate mientras esperas. ¡Ser un buen conductor también incluye descansar!",
+            details: [
+                {
+                    subTitle: "La Zona de Descanso",
+                    content: "Entra en 'Zona de Descanso' para desconectar. Tienes clásicos como Snake, Pac-Man, Tetris y Arkanoid. Jugar no solo te ayuda a estar más alerta, sino que te premia.",
+                    icon: Gamepad2
+                },
+                {
+                    subTitle: "Puntos por Jugar",
+                    content: "Por cada minuto que pases en cualquiera de nuestros juegos, recibirás 1 punto de experiencia automáticamente.",
+                    icon: Trophy
+                }
+            ]
+        },
+        {
+            title: "5. Puntos y Sistema de Rangos",
             icon: Trophy,
             color: "bg-purple-500/10 text-purple-500",
             description: "Descubre exactamente cuántos puntos ganas por cada acción y cómo subir de rango.",
@@ -130,8 +148,8 @@ export default function DriverManual() {
         { name: "Especialista", range: "2.001 - 5.000", icon: Zap, color: "text-purple-400" },
         { name: "Veterano", range: "5.001 - 10.000", icon: Award, color: "text-orange-400" },
         { name: "Maestro de Flota", range: "10.001 - 25.000", icon: Star, color: "text-emerald-400" },
-        { name: "Leyenda", range: "25.001 - 50.000", icon: Crown, color: "text-pink-400" },
-        { name: "Guardián", range: "+50.001", icon: Trophy, color: "text-yellow-400" },
+        { name: "Leyenda de la Carretera", range: "25.001 - 50.000", icon: Crown, color: "text-pink-400" },
+        { name: "Guardián de la Marcha", range: "+50.001", icon: Trophy, color: "text-yellow-400" },
     ];
 
     return (

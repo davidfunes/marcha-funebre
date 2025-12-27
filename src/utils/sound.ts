@@ -108,10 +108,41 @@ export class SoundManager {
         osc.start();
         osc.stop(ctx.currentTime + 0.1);
     }
+    // Tetris Sounds
+    public playTetrisRotate() {
+        this.playTone(400, 'sine', 0.05, 0.05);
+    }
+
+    public playTetrisMove() {
+        this.playTone(200, 'sine', 0.03, 0.03);
+    }
+
+    public playTetrisDrop() {
+        this.playTone(150, 'triangle', 0.1, 0.1);
+    }
+
+    public playTetrisLine() {
+        if (this.isMuted) return;
+        const ctx = this.getContext();
+        if (!ctx) return;
+        const now = ctx.currentTime;
+        [600, 800, 1200].forEach((freq, i) => {
+            this.playTone(freq, 'sine', 0.1, 0.1);
+        });
+    }
+
+    // Arkanoid Sounds
+    public playArkanoidBounce() {
+        this.playTone(440, 'sine', 0.05, 0.1);
+    }
+
+    public playArkanoidBreak() {
+        this.playTone(220, 'square', 0.05, 0.05);
+    }
 
     // --- Background Music ---
     private currentAudio: HTMLAudioElement | null = null;
-    private currentTrack: 'pacman' | 'snake' | null = null;
+    private currentTrack: 'pacman' | 'snake' | 'tetris' | null = null;
     private currentTempo: number = 100; // Base percentage (100 = 1.0x)
 
     public setTempo(tempo: number) {
@@ -146,15 +177,18 @@ export class SoundManager {
         }
     }
 
-    public playMusic(track: 'pacman' | 'snake') {
+    public playMusic(track: 'pacman' | 'snake' | 'tetris') {
         if (this.currentTrack === track && this.currentAudio && !this.currentAudio.paused) return;
 
         this.stopMusic();
         this.currentTrack = track;
 
-        const path = track === 'pacman'
-            ? '/music/funeral-march.mp3'
-            : '/music/ride-of-the-valkyries.mp3';
+        let path = '';
+        switch (track) {
+            case 'pacman': path = '/music/funeral-march.mp3'; break;
+            case 'snake': path = '/music/ride-of-the-valkyries.mp3'; break;
+            case 'tetris': path = '/music/ride-of-the-valkyries.mp3'; break; // Placeholder
+        }
 
         this.currentAudio = new Audio(path);
         this.currentAudio.loop = true;

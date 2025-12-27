@@ -42,8 +42,8 @@ export default function SelectVehiclePage() {
                     // Filter:
                     // 1. Not assigned
                     // 2. Not management
-                    // 3. Status is 'active' OR 'available' (recovery from bug)
-                    const isStatusOk = data.status === 'active' || (data.status as any) === 'available';
+                    // 3. Status is 'active'
+                    const isStatusOk = data.status === 'active';
 
                     if (!data.assignedDriverId && !data.isManagement && isStatusOk) {
                         available.push({ id: doc.id, ...data });
