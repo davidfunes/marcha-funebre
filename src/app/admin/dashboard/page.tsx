@@ -37,7 +37,7 @@ import { Modal } from '@/components/ui/Modal';
 import { IncidentDetailsModal } from '@/components/admin/incidents/IncidentDetailsModal';
 import { getVehicles, getIncidents, getInventory, getUsers, getWarehouses, updateItem, addItem, deleteItem, getAdminMessages, restoreMaterial } from '@/services/FirebaseService';
 import { seedDatabase } from '@/services/seed';
-import { Vehicle, Incident, InventoryItem, User, Warehouse, MaterialCondition } from '@/types';
+import { Vehicle, Incident, InventoryItem, User, Warehouse, MaterialCondition, IncidentPriority, IncidentStatus, MATERIAL_STATUS_LABELS } from '@/types';
 import { Timestamp } from 'firebase/firestore';
 import { getFullName, getUserInitials } from '@/utils/userUtils';
 import { getFuelLevelLabel } from '@/lib/utils';
@@ -826,16 +826,12 @@ export default function AdminDashboard() {
                                             <p className="text-xs text-muted-foreground">SKU: {item.sku}</p>
                                         </div>
                                         <span className={`text-[10px] px-2 py-1 rounded font-bold uppercase ${loc.status === 'totally_broken' ? 'bg-rose-100 text-rose-700' :
-                                                loc.status === 'ordered' ? 'bg-blue-100 text-blue-700' :
-                                                    loc.status === 'pending_management' ? 'bg-slate-100 text-slate-700' :
-                                                        loc.status === 'resolved' ? 'bg-teal-100 text-teal-700' :
-                                                            'bg-amber-100 text-amber-700'
+                                            loc.status === 'ordered' ? 'bg-blue-100 text-blue-700' :
+                                                loc.status === 'pending_management' ? 'bg-slate-100 text-slate-700' :
+                                                    loc.status === 'resolved' ? 'bg-teal-100 text-teal-700' :
+                                                        'bg-amber-100 text-amber-700'
                                             }`}>
-                                            {loc.status === 'totally_broken' ? 'Roto Total' :
-                                                loc.status === 'ordered' ? 'Pedido' :
-                                                    loc.status === 'pending_management' ? 'Pendiente' :
-                                                        loc.status === 'resolved' ? 'Resuelto' :
-                                                            loc.status === 'working_urgent_change' ? 'Urgente' : loc.status}
+                                            {MATERIAL_STATUS_LABELS[loc.status || ''] || loc.status}
                                         </span>
                                     </div>
 
@@ -1074,14 +1070,11 @@ export default function AdminDashboard() {
                                             </div>
                                             <div className="flex items-center gap-2 mt-1">
                                                 <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold uppercase ${loc.status === 'totally_broken' ? 'bg-rose-200 text-rose-800' :
-                                                        loc.status === 'ordered' ? 'bg-blue-200 text-blue-800' :
-                                                            loc.status === 'pending_management' ? 'bg-slate-200 text-slate-800' :
-                                                                'bg-amber-200 text-amber-800'
+                                                    loc.status === 'ordered' ? 'bg-blue-200 text-blue-800' :
+                                                        loc.status === 'pending_management' ? 'bg-slate-200 text-slate-800' :
+                                                            'bg-amber-200 text-amber-800'
                                                     }`}>
-                                                    {loc.status === 'totally_broken' ? 'Roto Total' :
-                                                        loc.status === 'ordered' ? 'Pedido' :
-                                                            loc.status === 'pending_management' ? 'Pendiente' :
-                                                                'Urge Cambio'}
+                                                    {MATERIAL_STATUS_LABELS[loc.status || ''] || loc.status}
                                                 </span>
                                                 <p className="text-sm text-red-600 dark:text-red-400">{locationName}</p>
                                             </div>

@@ -1,4 +1,5 @@
 import { cn } from '@/lib/utils';
+import { MATERIAL_STATUS_LABELS } from '@/types';
 
 interface StatusBadgeProps {
     status: string;
@@ -58,7 +59,7 @@ export function StatusBadge({ status, className, options, onChange }: StatusBadg
                     className
                 )}
             >
-                {safeStatus.replace('_', ' ')}
+                {MATERIAL_STATUS_LABELS[safeStatus.toLowerCase()] || safeStatus.replace('_', ' ')}
                 {isEditable && (
                     <span className="ml-1 opacity-50 text-[10px]">▼</span>
                 )}

@@ -21,7 +21,7 @@ import { DataTable, Column } from '@/components/ui/DataTable';
 import { StatusBadge } from '@/components/ui/StatusBadge';
 import { Modal } from '@/components/ui/Modal';
 import { addItem, updateItem, deleteItem, subscribeToCollection, getWarehouses, getVehicles } from '@/services/FirebaseService';
-import { InventoryItem, Warehouse, Vehicle, MaterialCondition } from '@/types';
+import { InventoryItem, Warehouse, Vehicle, MaterialCondition, MATERIAL_STATUS_LABELS } from '@/types';
 import { StatusAuditor } from '@/components/admin/inventory/StatusAuditor';
 
 interface LocationCellProps {
@@ -121,15 +121,15 @@ const LocationCell = ({ item, vehicles, warehouses, onEdit, onReportBroken }: Lo
                             }
 
                             const statusConfig: Record<string, { label: string, color: string, icon: any }> = {
-                                pending_management: { label: 'Pendiente', color: 'text-slate-600 bg-slate-50 border-slate-200', icon: Clock },
-                                new_functional: { label: 'Nuevo/Funcional', color: 'text-emerald-700 bg-emerald-50 border-emerald-200', icon: CheckCircle2 },
-                                working_urgent_change: { label: 'Urge Cambio', color: 'text-amber-700 bg-amber-50 border-amber-200', icon: AlertTriangle },
-                                totally_broken: { label: 'Roto Total', color: 'text-rose-700 bg-rose-50 border-rose-200', icon: AlertTriangle },
-                                ordered: { label: 'Pedido', color: 'text-blue-700 bg-blue-50 border-blue-200', icon: Clock },
-                                resolved: { label: 'Resuelto', color: 'text-teal-700 bg-teal-50 border-teal-200', icon: CheckCircle2 },
+                                pending_management: { label: MATERIAL_STATUS_LABELS.pending_management, color: 'text-slate-600 bg-slate-50 border-slate-200', icon: Clock },
+                                new_functional: { label: MATERIAL_STATUS_LABELS.new_functional, color: 'text-emerald-700 bg-emerald-50 border-emerald-200', icon: CheckCircle2 },
+                                working_urgent_change: { label: MATERIAL_STATUS_LABELS.working_urgent_change, color: 'text-amber-700 bg-amber-50 border-amber-200', icon: AlertTriangle },
+                                totally_broken: { label: MATERIAL_STATUS_LABELS.totally_broken, color: 'text-rose-700 bg-rose-50 border-rose-200', icon: AlertTriangle },
+                                ordered: { label: MATERIAL_STATUS_LABELS.ordered, color: 'text-blue-700 bg-blue-50 border-blue-200', icon: Clock },
+                                resolved: { label: MATERIAL_STATUS_LABELS.resolved, color: 'text-teal-700 bg-teal-50 border-teal-200', icon: CheckCircle2 },
                                 // Legacy
-                                new: { label: 'Nuevo (Legacy)', color: 'text-emerald-700 bg-emerald-50 border-emerald-200', icon: CheckCircle2 },
-                                broken: { label: 'Roto (Legacy)', color: 'text-rose-700 bg-rose-50 border-rose-200', icon: AlertTriangle },
+                                new: { label: MATERIAL_STATUS_LABELS.new, color: 'text-emerald-700 bg-emerald-50 border-emerald-200', icon: CheckCircle2 },
+                                broken: { label: MATERIAL_STATUS_LABELS.broken, color: 'text-rose-700 bg-rose-50 border-rose-200', icon: AlertTriangle },
                             };
 
                             const currentStatus = loc.status || 'new_functional';
@@ -730,12 +730,12 @@ export default function InventoryPage() {
                                         onChange={e => setNewLocStatus(e.target.value as MaterialCondition)}
                                         className="w-full text-sm px-2 py-1 border rounded"
                                     >
-                                        <option value="pending_management">Pendiente de gestión</option>
-                                        <option value="new_functional">Nuevo o funcional</option>
-                                        <option value="working_urgent_change">Urge cambio</option>
-                                        <option value="totally_broken">Completamente Roto</option>
-                                        <option value="ordered">Pedido</option>
-                                        <option value="resolved">Resuelto</option>
+                                        <option value="pending_management">{MATERIAL_STATUS_LABELS.pending_management}</option>
+                                        <option value="new_functional">{MATERIAL_STATUS_LABELS.new_functional}</option>
+                                        <option value="working_urgent_change">{MATERIAL_STATUS_LABELS.working_urgent_change}</option>
+                                        <option value="totally_broken">{MATERIAL_STATUS_LABELS.totally_broken}</option>
+                                        <option value="ordered">{MATERIAL_STATUS_LABELS.ordered}</option>
+                                        <option value="resolved">{MATERIAL_STATUS_LABELS.resolved}</option>
                                     </select>
                                 </div>
                                 <div className="space-y-1 flex-[2]">

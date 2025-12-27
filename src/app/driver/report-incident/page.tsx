@@ -23,6 +23,7 @@ import Link from 'next/link';
 import { IncidentPriority, IncidentStatus, InventoryItem, MaterialCondition } from '@/types';
 import { awardPointsForAction } from '@/services/GamificationService';
 import { getInventory, reportMaterialIncident, uploadFile } from '@/services/FirebaseService';
+import { MATERIAL_STATUS_LABELS } from '@/types';
 
 import { Modal } from '@/components/ui/Modal';
 
@@ -439,8 +440,8 @@ export default function ReportIncidentPage() {
                                 className="w-full px-4 py-3 bg-card border border-input rounded-xl outline-none"
                             >
                                 <option value="" disabled>Selecciona cómo se encuentra...</option>
-                                <option value="new_functional">Nuevo o funcional</option>
-                                <option value="working_urgent_change">Funciona pero urge cambio</option>
+                                <option value="new_functional">{MATERIAL_STATUS_LABELS.new_functional}</option>
+                                <option value="working_urgent_change">{MATERIAL_STATUS_LABELS.working_urgent_change}</option>
                             </select>
                         </div>
 

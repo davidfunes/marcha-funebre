@@ -69,6 +69,17 @@ export type MaterialCondition =
     | 'new' // Legacy
     | 'broken'; // Legacy
 
+export const MATERIAL_STATUS_LABELS: Record<string, string> = {
+    pending_management: 'Pendiente de gestionar',
+    new_functional: 'Nuevo o funcional',
+    working_urgent_change: 'Funciona pero urge un cambio',
+    totally_broken: 'Completamente roto',
+    ordered: 'Pedido',
+    resolved: 'Resuelto',
+    new: 'Nuevo o funcional',
+    broken: 'Completamente roto'
+};
+
 export interface Incident {
     id?: string;
     title: string;

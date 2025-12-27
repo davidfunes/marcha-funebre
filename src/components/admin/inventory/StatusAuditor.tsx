@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { InventoryItem, MaterialCondition } from '@/types';
+import { InventoryItem, MaterialCondition, MATERIAL_STATUS_LABELS } from '@/types';
 import { updateItem } from '@/services/FirebaseService';
 import { ShieldCheck, AlertCircle, RefreshCcw, CheckCircle2 } from 'lucide-react';
 
@@ -68,7 +68,7 @@ export const StatusAuditor = ({ items, onClose, onUpdate }: StatusAuditorProps) 
                         <div className="flex flex-col items-end gap-1">
                             {item.locations?.map((loc, idx) => (
                                 <span key={idx} className="text-[10px] bg-amber-100 text-amber-700 px-2 py-0.5 rounded font-mono">
-                                    {loc.status || 'undefined'} → new_functional
+                                    {MATERIAL_STATUS_LABELS[loc.status || ''] || loc.status || 'Indefinido'} → {MATERIAL_STATUS_LABELS['new_functional']}
                                 </span>
                             ))}
                         </div>
